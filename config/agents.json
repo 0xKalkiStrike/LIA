@@ -1,0 +1,12 @@
+{
+  "agents": [
+    {"name": "commander",    "module": "agents.commander",      "role": "Central brain — routes every request"},
+    {"name": "voice",        "module": "agents.voice_agent",    "role": "Wake word, STT, TTS, voiceprint"},
+    {"name": "vision",       "module": "agents.vision_agent",   "role": "YOLO + VLM object intelligence"},
+    {"name": "memory",       "module": "agents.memory_agent",   "role": "Long-term memory, search, recall"},
+    {"name": "auth",         "module": "agents.auth_agent",     "role": "Accounts, sessions, RBAC"},
+    {"name": "language",     "module": "agents.language_agent", "role": "Language detection + mixed modes"},
+    {"name": "ocr",          "module": "agents.ocr_agent",      "role": "Tesseract text reading"},
+    {"name": "device",       "module": "agents.device_agent",   "role": "System stats, device control"}
+  ]
+}

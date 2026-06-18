@@ -1,0 +1,13 @@
+{
+  "app_name": "JARVIS AI",
+  "version": "1.0.0",
+  "host": "127.0.0.1",
+  "port": 8001,
+  "ollama_url": "http://localhost:11434",
+  "ollama_model": "llama3.1:latest",
+  "ollama_vision_model": "llava",
+  "wake_words": [
+    "jarvis"
+  ],
+  "session_hours": 12
+}

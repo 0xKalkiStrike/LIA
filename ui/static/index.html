@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JARVIS AI — Personal AI Operating System</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%23060A13' stroke='%2353D7F0' stroke-width='2'/><text x='16' y='22' text-anchor='middle' font-size='16' font-family='sans-serif' fill='%2353D7F0'>⚡</text></svg>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/style.css?v=2.2.0"/>
+
+<!-- CDN imports for WebGL and MediaPipe Computer Vision -->
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.139.2/build/three.module.js",
+      "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.139.2/examples/jsm/loaders/GLTFLoader.js",
+      "three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@1.0.8/lib/three-vrm.module.js"
+    }
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<!-- ════════════════ BOOT SPLASH ════════════════ -->
+<section id="screen-boot" class="screen active">
+  <div class="boot-core">
+    <div class="boot-ring"></div>
+    <h1 class="boot-title">JARVIS<span> AI</span></h1>
+    <p class="boot-sub" id="boot-status">Initialising systems…</p>
+  </div>
+</section>
+
+<!-- ════════════════ ONBOARDING WIZARD ════════════════ -->
+<section id="screen-onboard" class="screen">
+  <header class="ob-head">
+    <span class="eyebrow">First boot · Create your AI</span>
+    <div class="ob-steps" id="ob-steps"></div>
+  </header>
+
+  <div class="ob-body">
+    <!-- live character preview, always visible -->
+    <div class="ob-preview">
+      <div class="holo-pod small">
+        <div class="pod-ring"></div>
+        <div id="ob-avatar" class="avatar-slot"></div>
+      </div>
+      <p class="pod-caption" id="ob-charname">JARVIS</p>
+    </div>
+
+    <!-- wizard panels -->
+    <div class="ob-panel glass">
+
+      <div class="ob-step active" data-step="0">
+        <h2>Choose Your AI Companion</h2>
+        <p class="hint">Pick your default companion — or import your own VRM avatar.</p>
+        <div class="pick-row companion-row" data-key="avatar_type">
+          <button class="pick-card big companion-card sel" data-val="lia">
+            <span class="pick-emoji">✨</span>
+            <strong>LIA</strong>
+            <small>Default · Female VRM</small>
+          </button>
+          <button class="pick-card big companion-card" data-val="male">
+            <span class="pick-emoji">🤖</span>
+            <strong>Procedural Companion</strong>
+            <small>Customisable · 3D</small>
+          </button>
+          <button class="pick-card big companion-card" data-val="custom" id="companion-custom-card">
+            <span class="pick-emoji">📁</span>
+            <strong>Import Custom VRM</strong>
+            <small>Upload your own .vrm file</small>
+          </button>
+        </div>
+        <div id="vrm-upload-area" style="display:none; margin-top:16px;">
+          <label class="field-label">Upload your VRM file</label>
+          <input type="file" id="vrm-file-input" accept=".vrm" class="text-input" style="padding:6px;"/>
+          <p class="hint" id="vrm-upload-status"></p>
+        </div>
+      </div>
+
+      <div class="ob-step" data-step="1-gender">
+        <h2>Choose your AI's character</h2>
+        <p class="hint">This is who wakes up on your screen every time you log in.</p>
+        <div class="pick-row" data-key="char_gender">
+          <button class="pick-card big" data-val="male"><span class="pick-emoji">👨</span>Male</button>
+          <button class="pick-card big" data-val="female"><span class="pick-emoji">👩</span>Female</button>
+        </div>
+      </div>
+
+      <div class="ob-step" data-step="2">
+        <h2>Skin tone</h2>
+        <p class="hint">Pick the tone — the preview updates live.</p>
+        <div class="pick-row swatches" data-key="char_skin">
+          <button class="swatch" data-val="porcelain" style="--c:#F6E3D5"><i></i>Porcelain</button>
+          <button class="swatch" data-val="fair"      style="--c:#F0C8A8"><i></i>Fair</button>
+          <button class="swatch" data-val="tan"       style="--c:#D9A06E"><i></i>Tan</button>
+          <button class="swatch" data-val="brown"     style="--c:#A86A3E"><i></i>Brown</button>
+          <button class="swatch" data-val="deep"      style="--c:#6E4426"><i></i>Deep</button>
+        </div>
+      </div>
+
+      <div class="ob-step" data-step="3">
+        <h2>Hair</h2>
+        <div class="field-label">Style</div>
+        <div class="pick-row wrap" data-key="char_hair_style">
+          <button class="pick-card" data-val="long">Long</button>
+          <button class="pick-card" data-val="wave">Wavy</button>
+          <button class="pick-card" data-val="bun">Bun</button>
+          <button class="pick-card" data-val="curly">Curly</button>
+          <button class="pick-card" data-val="short">Short</button>
+          <button class="pick-card" data-val="spiky">Spiky</button>
+        </div>
+        <div class="field-label">Color</div>
+        <div class="pick-row swatches" data-key="char_hair_color">
+          <button class="swatch" data-val="black"  style="--c:#2A2533"><i></i>Black</button>
+          <button class="swatch" data-val="brown"  style="--c:#5A3A22"><i></i>Brown</button>
+          <button class="swatch" data-val="blonde" style="--c:#E7C273"><i></i>Blonde</button>
+          <button class="swatch" data-val="pink"   style="--c:#E87BA8"><i></i>Pink</button>
+          <button class="swatch" data-val="blue"   style="--c:#4E74C8"><i></i>Blue</button>
+          <button class="swatch" data-val="violet" style="--c:#7A5CC0"><i></i>Violet</button>
+          <button class="swatch" data-val="white"  style="--c:#D9DCE6"><i></i>White</button>
+        </div>
+        <div class="field-label">Eye color</div>
+        <div class="pick-row swatches" data-key="char_eyes">
+          <button class="swatch" data-val="sapphire" style="--c:#3B6FD4"><i></i>Sapphire</button>
+          <button class="swatch" data-val="emerald"  style="--c:#2E9C72"><i></i>Emerald</button>
+          <button class="swatch" data-val="amber"    style="--c:#C98A2E"><i></i>Amber</button>
+          <button class="swatch" data-val="violet"   style="--c:#8B5CD6"><i></i>Violet</button>
+          <button class="swatch" data-val="rose"     style="--c:#D45C82"><i></i>Rose</button>
+          <button class="swatch" data-val="crimson"  style="--c:#C0392B"><i></i>Crimson</button>
+        </div>
+      </div>
+
+      <div class="ob-step" data-step="4">
+        <h2>Suit & name</h2>
+        <div class="field-label">Suit accent</div>
+        <div class="pick-row swatches" data-key="char_outfit">
+          <button class="swatch" data-val="cyan"    style="--c:#53D7F0"><i></i>Arc Cyan</button>
+          <button class="swatch" data-val="gold"    style="--c:#E8B44A"><i></i>Gold</button>
+          <button class="swatch" data-val="rose"    style="--c:#FF8FB1"><i></i>Rose</button>
+          <button class="swatch" data-val="crimson" style="--c:#F2647C"><i></i>Crimson</button>
+          <button class="swatch" data-val="violet"  style="--c:#9D7BF0"><i></i>Violet</button>
+        </div>
+        <div class="field-label">Name your AI</div>
+        <input id="in-charname" class="text-input" maxlength="24" value="JARVIS" autocomplete="off"/>
+      </div>
+
+      <div class="ob-step" data-step="5">
+        <h2>Choose a voice</h2>
+        <p class="hint">Tap ▶ to hear a sample.</p>
+        <div class="pick-row wrap voice-row" data-key="voice_persona" id="voice-cards"></div>
+      </div>
+
+      <div class="ob-step" data-step="6">
+        <h2>Language mode</h2>
+        <p class="hint">How should your AI talk to you?</p>
+        <div class="pick-row wrap lang-row" data-key="language_mode" id="lang-cards"></div>
+      </div>
+
+      <div class="ob-step" data-step="7">
+        <h2>Create your commander account</h2>
+        <div class="field-label">Your name</div>
+        <input id="in-username" class="text-input" placeholder="e.g. tony" autocomplete="off"/>
+        <div class="field-label">Secret word <span class="dim">(your spoken password)</span></div>
+        <input id="in-secret" class="text-input" type="password" placeholder="something only you know"/>
+        <p class="form-error" id="signup-error"></p>
+      </div>
+
+      <footer class="ob-nav">
+        <button id="ob-back" class="btn ghost">Back</button>
+        <button id="ob-next" class="btn solid">Next</button>
+      </footer>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ LOGIN ════════════════ -->
+<section id="screen-login" class="screen">
+  <div class="login-wrap glass">
+    <div class="holo-pod small dormant">
+      <div class="pod-ring"></div>
+      <div id="login-avatar" class="avatar-slot"></div>
+    </div>
+    <h2 class="login-title">Your AI is asleep</h2>
+    <p class="hint center">Log in to wake it up.</p>
+    <input id="login-username" class="text-input" placeholder="Your name" autocomplete="username"/>
+    <input id="login-secret" class="text-input" type="password" placeholder="Secret word" autocomplete="current-password"/>
+    <p class="form-error" id="login-error"></p>
+    <button id="btn-login" class="btn solid wide">Wake up my AI</button>
+    <button id="btn-new-account" class="btn ghost wide">Create a new AI instead</button>
+  </div>
+</section>
+
+<!-- ════════════════ DASHBOARD (CYBERPUNK AI COMMAND CENTER) ════════════════ -->
+<section id="screen-dash" class="screen">
+  
+  <!-- LEFT COLUMN: LIA Viewport, Voice Visualizer, System HUD -->
+  <aside class="dash-left">
+    <!-- LIA Avatar Viewport -->
+    <div class="holo-pod" id="dash-pod">
+      <div class="pod-ring"></div>
+      <div class="pod-scan"></div>
+      <div id="dash-avatar" class="avatar-slot"></div>
+    </div>
+
+    <!-- Greeting Bubble -->
+    <div class="greet-bubble" id="greet-bubble" hidden>
+      <p id="greet-text"></p>
+    </div>
+
+    <!-- LIA Name + Status -->
+    <p class="pod-caption" id="dash-charname"></p>
+    <div class="status-line">
+      <span class="dot ok"></span>
+      <span id="engine-status">Local · ready</span>
+    </div>
+
+    <!-- Voice Visualizer (driven by Piper audio or mic) -->
+    <div class="voice-visualizer glass" id="voice-visualizer">
+      <div class="vv-label">VOICE OUTPUT</div>
+      <div class="vv-bars">
+        <span class="vv-bar"></span><span class="vv-bar"></span><span class="vv-bar"></span>
+        <span class="vv-bar"></span><span class="vv-bar"></span><span class="vv-bar"></span>
+        <span class="vv-bar"></span><span class="vv-bar"></span><span class="vv-bar"></span>
+        <span class="vv-bar"></span><span class="vv-bar"></span><span class="vv-bar"></span>
+        <span class="vv-bar"></span><span class="vv-bar"></span><span class="vv-bar"></span>
+        <span class="vv-bar"></span>
+      </div>
+    </div>
+
+    <!-- Mini Gauges in HUD -->
+    <div class="mini-hud-gauges glass">
+      <div class="gauge-card">
+        <div class="gauge-val" id="hud-cpu">--%</div>
+        <div class="gauge-lbl">CPU</div>
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-val" id="hud-ram">--%</div>
+        <div class="gauge-lbl">RAM</div>
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-val" id="hud-bat">--%</div>
+        <div class="gauge-lbl">BATT</div>
+      </div>
+    </div>
+
+    <!-- Agent Monitor -->
+    <div class="agent-monitor glass">
+      <div class="am-header">AGENT MONITOR</div>
+      <div class="am-agents" id="agent-monitor-list">
+        <div class="am-agent"><span class="am-dot active"></span>Commander</div>
+        <div class="am-agent"><span class="am-dot active"></span>Memory</div>
+        <div class="am-agent"><span class="am-dot active"></span>Voice</div>
+        <div class="am-agent"><span class="am-dot" id="am-vision-dot"></span>Vision</div>
+        <div class="am-agent"><span class="am-dot" id="am-piper-dot"></span>Piper TTS</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CENTER COLUMN: Workspace / Panels -->
+  <main class="dash-main glass">
+    <nav class="dash-nav">
+      <button class="tab active" data-tab="chat">Chat</button>
+      <button class="tab" data-tab="files">Files & Shell</button>
+      <button class="tab" data-tab="memory">Memory Vault</button>
+      <button class="tab" data-tab="activity">Activity Feed</button>
+      <button class="tab" data-tab="device">Control Center</button>
+      <button class="tab" data-tab="settings">Settings</button>
+      <span class="spacer"></span>
+      <span class="commander-tag" id="commander-tag"></span>
+      <button class="btn solid sm" id="btn-live-call" style="margin-right: 12px; background: linear-gradient(180deg, #10B981, #059669); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);">📞 Live Call</button>
+      <button class="btn ghost sm" id="btn-logout">Log out</button>
+    </nav>
+
+    <!-- CHAT PANEL -->
+    <div class="tab-panel active" data-panel="chat">
+      <div class="chat-log" id="chat-log"></div>
+      <div class="chat-bar">
+        <button id="btn-mic" class="mic-btn" title="Hold to speak">🎤</button>
+        <input id="chat-input" class="text-input grow" placeholder="Talk to your AI… (kem cho / kaise ho / hello)"/>
+        <button id="btn-send" class="btn solid">Send</button>
+      </div>
+    </div>
+
+    <!-- FILES & SHELL PANEL -->
+    <div class="tab-panel" data-panel="files">
+      <div class="files-split">
+        <div class="file-explorer-box">
+          <div class="section-header">
+            <h3>Workspace Files</h3>
+            <button class="btn ghost sm" id="btn-up-dir">⬆ Up</button>
+          </div>
+          <div class="file-path-header">
+            <span id="current-file-path">C:/hacker/LIA</span>
+          </div>
+          <ul class="file-list" id="explorer-file-list">
+            <li class="dim">Loading workspace files...</li>
+          </ul>
+        </div>
+        <div class="terminal-shell-box">
+          <h3>Local Command Center</h3>
+          <div class="terminal-output" id="terminal-stdout">
+            <div class="term-line sys">JARVIS OS Command shell active. Type commands below.</div>
+          </div>
+          <div class="terminal-input-row">
+            <span class="prompt">commander@jarvis:~$</span>
+            <input class="text-input grow" id="terminal-input" placeholder="Type command... (e.g. dir, ipconfig, check disk)"/>
+            <button class="btn solid sm" id="btn-run-terminal">Run</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMORY PANEL -->
+    <div class="tab-panel" data-panel="memory">
+      <div class="panel-head">
+        <h3>Memory ledger</h3>
+        <p class="hint">Facts and preferences automatically learned from conversations are saved below.</p>
+        <div class="row">
+          <input id="memory-input" class="text-input grow" placeholder="Teach it something… e.g. My bike is a Royal Enfield"/>
+          <button id="btn-add-memory" class="btn solid">Remember</button>
+        </div>
+      </div>
+      <ul class="memory-list" id="memory-list"></ul>
+    </div>
+
+    <!-- ACTIVITY FEED PANEL -->
+    <div class="tab-panel" data-panel="activity">
+      <div class="panel-head">
+        <h3>Activity Feed</h3>
+        <p class="hint">Real-time log of LIA's actions, agent events, and system signals.</p>
+      </div>
+      <div class="activity-feed" id="activity-feed">
+        <div class="af-entry sys">
+          <span class="af-time">--:--</span>
+          <span class="af-tag">SYSTEM</span>
+          <span class="af-msg">LIA Command Center initialized.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROL CENTER PANEL (DEVICES & PROCESSES) -->
+    <div class="tab-panel" data-panel="device">
+      <h3>System check</h3>
+      <div class="stat-grid" id="device-grid"></div>
+      
+      <h3 style="margin-top: 24px;">Active Processes</h3>
+      <div class="process-table-container glass">
+        <table class="process-table">
+          <thead>
+            <tr>
+              <th>PID</th>
+              <th>Name</th>
+              <th>CPU %</th>
+              <th>RAM %</th>
+            </tr>
+          </thead>
+          <tbody id="process-list-body">
+            <tr>
+              <td colspan="4" class="center dim">Loading systems report...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SETTINGS PANEL -->
+    <div class="tab-panel" data-panel="settings">
+      <h3>Voice</h3>
+      <div class="pick-row wrap voice-row" data-key="voice_persona" id="settings-voices"></div>
+      <h3>Language mode</h3>
+      <div class="pick-row wrap lang-row" data-key="language_mode" id="settings-langs"></div>
+      <h3>Character Customization</h3>
+      <p class="hint">Gender / skin / hair / suit — changes apply instantly.</p>
+      <div class="settings-char" id="settings-char"></div>
+    </div>
+  </main>
+
+  <!-- RIGHT COLUMN: Webcam Stream & Telemetry Overlay -->
+  <aside class="dash-right glass">
+    <div class="webcam-box">
+      <h3>Sensory Stream</h3>
+      <div class="video-container">
+        <video id="webcam-video" autoplay playsinline muted></video>
+        <canvas id="webcam-overlay"></canvas>
+        <div class="webcam-off-overlay" id="webcam-placeholder">Vision Sensors Inactive</div>
+      </div>
+      <div class="webcam-controls">
+        <button class="btn solid sm" id="btn-toggle-webcam">Engage Vision Sensors</button>
+      </div>
+    </div>
+    
+    <div class="telemetry-box">
+      <h3>Vision Telemetry</h3>
+    
+      <div class="telemetry-grid">
+        <div class="tel-card">
+          <div class="label">PRESENCE</div>
+          <div class="value" id="tel-presence">Offline</div>
+        </div>
+        <div class="tel-card">
+          <div class="label">ATTENTION</div>
+          <div class="value" id="tel-attention">--</div>
+        </div>
+        <div class="tel-card">
+          <div class="label">EXPRESSION</div>
+          <div class="value" id="tel-expression">--</div>
+        </div>
+        <div class="tel-card">
+          <div class="label">HAND GESTURE</div>
+          <div class="value" id="tel-gesture">--</div>
+        </div>
+      </div>
+    </div><!-- /telemetry-box -->
+  </aside><!-- /dash-right -->
+
+</section><!-- /screen-dash -->
+
+<!-- ════════════════ LIVE CALL FULL-SCREEN OVERLAY ════════════════ -->
+<div id="live-call-overlay" class="call-overlay">
+
+  <!-- Top bar -->
+  <div class="call-topbar">
+    <div class="call-status-pill">
+      <span class="call-status-dot" id="call-status-dot"></span>
+      <span id="call-status-text">CONNECTING…</span>
+    </div>
+    <span class="call-label-name" id="call-lia-name">LIA</span>
+    <button class="call-close-btn" id="btn-close-call" title="Minimise">✕</button>
+  </div>
+
+  <!-- Main arena: LIA full-screen, user PiP bottom-right -->
+  <div class="call-arena">
+    <!-- LIA avatar — fills entire viewport height -->
+    <div class="call-lia-side">
+      <div class="holo-pod call-lia-pod">
+        <div class="pod-ring"></div>
+        <div class="pod-scan"></div>
+        <div id="call-avatar" class="avatar-slot"></div>
+      </div>
+      <!-- LIA voice wave (driven by Piper or browser TTS) -->
+      <div class="call-lia-wave">
+        <span class="cw-bar"></span><span class="cw-bar"></span><span class="cw-bar"></span>
+        <span class="cw-bar"></span><span class="cw-bar"></span><span class="cw-bar"></span>
+        <span class="cw-bar"></span><span class="cw-bar"></span><span class="cw-bar"></span>
+        <span class="cw-bar"></span><span class="cw-bar"></span><span class="cw-bar"></span>
+        <span class="cw-bar"></span><span class="cw-bar"></span><span class="cw-bar"></span>
+        <span class="cw-bar"></span>
+      </div>
+    </div>
+
+    <!-- User camera feed (PiP bottom-right) -->
+    <div class="call-user-side">
+      <video id="call-webcam" autoplay playsinline muted class="call-user-cam"></video>
+      <div class="call-user-label">YOU</div>
+      <!-- User mic waveform -->
+      <div class="user-voice-waveform" id="user-waveform">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        <span class="bar"></span><span class="bar"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom controls -->
+  <div class="call-controls">
+    <button class="call-action-btn mute" id="btn-call-mute" title="Toggle mic">🎙</button>
+    <button class="call-action-btn cam-btn" id="btn-call-cam" title="Toggle camera">📷</button>
+    <button class="call-action-btn hangup" id="btn-end-call" title="End call">📵</button>
+  </div>
+
+</div>
+
+<!-- ════════════════ SECURE TASK APPROVAL OVERLAY ════════════════ -->
+<div id="execution-approval-overlay" class="modal-overlay">
+  <div class="approval-modal glass">
+    <span class="warning-tag">⚠ SECURE ACTION REQUIRED</span>
+    <div class="modal-body">
+      <p>LIA wants to perform a desktop action on your behalf:</p>
+      <div class="requested-command-box">
+        <span class="cmd-type" id="approval-task-type"></span>
+        <code id="approval-task-target"></code>
+      </div>
+      <p class="caution-note">Review carefully before allowing. This will execute on your local system.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn ghost" id="btn-deny-task">✗ Deny</button>
+      <button class="btn solid" id="btn-approve-task">✅ Allow</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ TELEMETRY + RIGHT SIDEBAR CLOSE ════════════════ -->
+<!-- NOTE: dash-right closing and telemetry grid are in the main section above -->
+
+<!-- ════════════════ SCRIPTS ════════════════ -->
+<script type="module" src="/static/app.js?v=4.0.0"></script>
+</body>
+</html>

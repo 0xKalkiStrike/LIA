@@ -1,0 +1,32 @@
+{
+  "personas": {
+    "jarvis_classic": {
+      "label": "JARVIS",
+      "style": "Male · deep · calm · formal",
+      "pitch": 0.88, "rate": 0.90,
+      "web_voice_hint": ["Microsoft David Online (Natural)", "Daniel", "Microsoft George", "Google UK English Male"],
+      "piper_model": "en_GB-alan-medium"
+    },
+    "friday": {
+      "label": "FRIDAY",
+      "style": "Female · warm · professional",
+      "pitch": 1.12, "rate": 0.85,
+      "web_voice_hint": ["Microsoft Aria Online (Natural)", "Microsoft Hazel", "Samantha", "Google UK English Female"],
+      "piper_model": "en_US-amy-medium"
+    },
+    "nova": {
+      "label": "NOVA",
+      "style": "Female · energetic · casual",
+      "pitch": 1.22, "rate": 0.95,
+      "web_voice_hint": ["Microsoft Zira", "Microsoft Jenny Online (Natural)", "Victoria", "Google US English"],
+      "piper_model": "en_US-libritts-high"
+    },
+    "sage": {
+      "label": "SAGE",
+      "style": "Male · soft · slow · gentle",
+      "pitch": 0.92, "rate": 0.78,
+      "web_voice_hint": ["Alex", "Microsoft David", "Google US English Male"],
+      "piper_model": "en_GB-cori-medium"
+    }
+  }
+}

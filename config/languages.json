@@ -1,0 +1,43 @@
+{
+  "modes": {
+    "auto":             {"label": "Auto Detect",          "sample": "I reply in your language"},
+    "english":          {"label": "English Only",         "sample": "Hello! How can I help?"},
+    "english_gujarati": {"label": "English + Gujarati",   "sample": "Kem cho! Hu ready chu."},
+    "english_hindi":    {"label": "English + Hindi",      "sample": "Kaise ho! Sab ready hai."},
+    "english_marathi":  {"label": "English + Marathi",    "sample": "Kasa kay! Mi tayar aahe."},
+    "english_tamil":    {"label": "English + Tamil",      "sample": "Eppadi irukkinga! Ready."},
+    "english_bengali":  {"label": "English + Bengali",    "sample": "Kemon acho! Ami ready."}
+  },
+  "tts_lang": {
+    "auto": "en-US", "english": "en-US",
+    "english_gujarati": "gu-IN", "english_hindi": "hi-IN",
+    "english_marathi": "mr-IN", "english_tamil": "ta-IN",
+    "english_bengali": "bn-IN"
+  },
+  "greetings": {
+    "english":          {"morning": "Good morning, {name}. All systems online.",
+                         "afternoon": "Good afternoon, {name}. I am ready.",
+                         "evening": "Good evening, {name}. Welcome back.",
+                         "night": "Working late, {name}? I am right here."},
+    "english_gujarati": {"morning": "Suprabhat, {name}! Hu jaagi gayo chu — badhu ready che.",
+                         "afternoon": "Kem cho, {name}! Systems badha online che.",
+                         "evening": "Shubh sandhya, {name}! Welcome back, sir.",
+                         "night": "Modu thayu, {name}! Hu hamesha ready chu."},
+    "english_hindi":    {"morning": "Suprabhat, {name}! Main jaag gaya hoon — sab ready hai.",
+                         "afternoon": "Kaise ho, {name}! Saare systems online hain.",
+                         "evening": "Shubh sandhya, {name}! Welcome back.",
+                         "night": "Itni raat tak, {name}? Main yahin hoon."},
+    "english_marathi":  {"morning": "Suprabhat, {name}! Mi jaaga zalo — sagla ready aahe.",
+                         "afternoon": "Kasa kay, {name}! Sarva systems online aahet.",
+                         "evening": "Shubh sandhyakal, {name}! Welcome back.",
+                         "night": "Ushira paryant, {name}? Mi ithech aahe."},
+    "english_tamil":    {"morning": "Kaalai vanakkam, {name}! Ellam ready.",
+                         "afternoon": "Eppadi irukkinga, {name}! Systems online.",
+                         "evening": "Maalai vanakkam, {name}! Welcome back.",
+                         "night": "Late-ah velai, {name}? Naan inge irukken."},
+    "english_bengali":  {"morning": "Suprobhat, {name}! Shob ready ache.",
+                         "afternoon": "Kemon acho, {name}! Systems online.",
+                         "evening": "Shubho shondha, {name}! Welcome back.",
+                         "night": "Eto raat porjonto, {name}? Ami ekhanei achi."}
+  }
+}
