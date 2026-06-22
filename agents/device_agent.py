@@ -45,35 +45,61 @@ def status_text() -> str:
 
 def run_command(command: str) -> dict:
     """Execute shell command securely and return output."""
+    if not command or not command.strip():
+        return {
+            "ok": False,
+            "stdout": "",
+            "stderr": "No command provided",
+            "code": -3
+        }
+
     try:
-        # Run in a shell suitable for the OS
-        result = subprocess.run(
-            command,
-            shell=True,
-            text=True,
-            capture_output=True,
-            timeout=15,
-            cwd=str(WORKSPACE_DIR)
-        )
+        command = command.strip()
+
+        # For PowerShell, use explicit encoding
+        if command.lower().startswith("powershell") or command.lower().startswith("pwsh"):
+            result = subprocess.run(
+                command,
+                shell=True,
+                text=True,
+                capture_output=True,
+                timeout=30,
+                cwd=str(WORKSPACE_DIR),
+                env={**os.environ, "PYTHONIOENCODING": "utf-8"}
+            )
+        else:
+            # Standard shell command
+            result = subprocess.run(
+                command,
+                shell=True,
+                text=True,
+                capture_output=True,
+                timeout=15,
+                cwd=str(WORKSPACE_DIR)
+            )
+
         return {
             "ok": result.returncode == 0,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "code": result.returncode
+            "stdout": result.stdout.strip() if result.stdout else "",
+            "stderr": result.stderr.strip() if result.stderr else "",
+            "code": result.returncode,
+            "command": command
         }
     except subprocess.TimeoutExpired:
         return {
             "ok": False,
             "stdout": "",
-            "stderr": "Command execution timed out after 15 seconds.",
-            "code": -1
+            "stderr": "Command execution timed out after 30 seconds.",
+            "code": -1,
+            "command": command
         }
     except Exception as e:
         return {
             "ok": False,
             "stdout": "",
             "stderr": str(e),
-            "code": -2
+            "code": -2,
+            "command": command
         }
 
 
@@ -87,8 +113,40 @@ def launch_app(app_name: str) -> dict:
         "explorer": "explorer.exe",
         "paint": "mspaint.exe",
         "code": "code",
+        "powershell": "powershell.exe",
+        "pwsh": "pwsh.exe",
+        "cmd": "cmd.exe",
+        "terminal": "powershell.exe",
+        "vs code": "code",
+        "vscode": "code",
+        "visual studio code": "code",
+        "chrome": "chrome.exe",
+        "firefox": "firefox.exe",
+        "edge": "msedge.exe",
     }
     
+    if app_name in ("tor_browser", "tor browser", "tor", "torbrowser"):
+        desktop_lnk = Path.home() / "Desktop" / "Tor Browser.lnk"
+        folder_lnk = Path.home() / "Desktop" / "Tor Browser" / "Tor Browser.lnk"
+        exe_path = Path.home() / "Desktop" / "Tor Browser" / "Browser" / "firefox.exe"
+        
+        target = None
+        if desktop_lnk.exists():
+            target = desktop_lnk
+        elif folder_lnk.exists():
+            target = folder_lnk
+        elif exe_path.exists():
+            target = exe_path
+            
+        if target:
+            try:
+                os.startfile(str(target))
+                return {"ok": True, "message": f"Successfully launched {app_name}."}
+            except Exception as e:
+                return {"ok": False, "message": f"Failed to launch {app_name}: {str(e)}"}
+        else:
+            return {"ok": False, "message": f"Could not find Tor Browser executable or shortcut on Desktop."}
+
     executable = apps.get(app_name, app_name)
     try:
         subprocess.Popen(executable, shell=True)
