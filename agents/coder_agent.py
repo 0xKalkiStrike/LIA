@@ -96,6 +96,49 @@ def _ollama_code(message: str, lang: str) -> str | None:
         return None
 
 
+def _gemini_code(message: str, lang: str) -> str | None:
+    """Write code using Google Gemini API as a fallback if Ollama is offline."""
+    api_key = os.environ.get("GEMINI_API_KEY") or setting("gemini_api_key")
+    if not api_key:
+        return None
+    system = (
+        f"You are an expert {lang} developer. Write COMPLETE, runnable {lang} code "
+        f"for the user's request. Output ONLY the raw code — no markdown fences, no "
+        f"explanation, no commentary. Include brief inline comments and make it "
+        f"production-quality and self-contained."
+    )
+    try:
+        payload = {
+            "contents": [
+                {"role": "user", "parts": [{"text": message}]}
+            ],
+            "systemInstruction": {
+                "parts": [{"text": system}]
+            }
+        }
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        
+        candidates = data.get("candidates", [])
+        if candidates:
+            parts = candidates[0].get("content", {}).get("parts", [])
+            if parts:
+                out = parts[0].get("text", "")
+                # strip accidental ``` fences
+                out = re.sub(r"^```[a-zA-Z]*\n?", "", out.strip())
+                out = re.sub(r"\n?```$", "", out.strip())
+                return out.strip()
+        return None
+    except Exception:
+        return None
+
+
 def _open_in_editor(path: Path) -> str:
     """Try VS Code first, then Notepad (Windows) / default editor."""
     code_bin = shutil.which("code")
@@ -127,10 +170,13 @@ def write_and_open(message: str) -> dict:
 
     code = _ollama_code(message, lang)
     if code is None:
+        code = _gemini_code(message, lang)
+
+    if code is None:
         return {
             "ok": False,
-            "spoken": ("I need Ollama running to write code. Start it with "
-                       "'ollama serve' and pull a model, then ask me again."),
+            "spoken": ("I need Ollama running or a Gemini API key configured to write code. "
+                       "Start Ollama or set GEMINI_API_KEY in settings.json, then ask me again."),
             "path": None,
         }
 
@@ -146,3 +192,6 @@ def write_and_open(message: str) -> dict:
         "editor": editor,
         "code_preview": code[:1200],
     }
+
+
+

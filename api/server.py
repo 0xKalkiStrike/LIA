@@ -195,6 +195,8 @@ def desktop_execute(body: ExecuteBody, authorization: str | None = Header(defaul
         return device_agent.launch_app(body.target)
     elif body.task_type == "execute_command":
         return device_agent.run_command(body.target)
+    elif body.task_type == "list_files":
+        return {"ok": True, "files": device_agent.list_files()}
     raise HTTPException(400, "Invalid task type.")
 
 
@@ -335,9 +337,8 @@ def static_files(path: str, request: Request):
     if not file_path.exists() or not file_path.is_file():
         raise HTTPException(404, "Not found")
     mime = mimetypes.guess_type(str(file_path))[0] or "application/octet-stream"
-    content = file_path.read_bytes()
-    return Response(
-        content=content,
+    return FileResponse(
+        path=file_path,
         media_type=mime,
         headers={
             "Cache-Control": "no-cache, no-store, must-revalidate",

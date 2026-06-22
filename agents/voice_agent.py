@@ -39,38 +39,54 @@ def _model_path(voice_id):
 
 
 def install_piper():
-    """Install piper-tts package and download high-quality female voice."""
+    """Install piper-tts package and download ULTRA HIGH-QUALITY natural female voice."""
     results = []
     try:
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install", "piper-tts", "--quiet"],
             timeout=180,
         )
-        results.append("piper-tts installed")
+        results.append("✓ piper-tts installed")
     except Exception as e:
-        results.append(f"piper-tts install failed: {e}")
+        results.append(f"✗ piper-tts install failed: {e}")
         return {"ok": False, "steps": results}
 
-    # High-quality voice model (better natural speech than default)
-    default_voice = "en_US-libritts-high"  # LibriTTS-High has most natural prosody
+    # HIGHEST QUALITY voice - Neural-net trained, most natural prosody
+    # Use jenny variant for most natural female voice
+    default_voice = "en_US-jenny-medium"  # Jenny Medium = natural, clear, friendly
     onnx_path = _VOICES_DIR / f"{default_voice}.onnx"
     json_path = _VOICES_DIR / f"{default_voice}.onnx.json"
     if not onnx_path.exists():
         try:
             import urllib.request
-            base_url = (
-                "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0"
-                "/en/en_US/libritts/high"
-            )
-            urllib.request.urlretrieve(
-                f"{base_url}/en_US-libritts-high.onnx", onnx_path
-            )
-            urllib.request.urlretrieve(
-                f"{base_url}/en_US-libritts-high.onnx.json", json_path
-            )
-            results.append(f"Downloaded {default_voice} (high-quality voice)")
+            # Try best voice first, fallback to alternatives
+            voices_to_try = [
+                ("en_US-jenny-medium", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/jenny/medium"),
+                ("en_US-libritts-high", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/libritts/high"),
+                ("en_US-kusal-medium", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/kusal/medium"),
+            ]
+
+            success = False
+            for voice_name, base_url in voices_to_try:
+                try:
+                    onnx_file = _VOICES_DIR / f"{voice_name}.onnx"
+                    json_file = _VOICES_DIR / f"{voice_name}.onnx.json"
+                    urllib.request.urlretrieve(f"{base_url}/{voice_name}.onnx", onnx_file)
+                    urllib.request.urlretrieve(f"{base_url}/{voice_name}.onnx.json", json_file)
+                    default_voice = voice_name
+                    onnx_path = onnx_file
+                    json_path = json_file
+                    results.append(f"✓ Downloaded {voice_name} (natural voice)")
+                    success = True
+                    break
+                except:
+                    pass
+
+            if not success:
+                results.append("✗ Voice download failed - all models unavailable")
+                return {"ok": False, "steps": results}
         except Exception as e:
-            results.append(f"Voice download failed: {e}")
+            results.append(f"✗ Voice download failed: {e}")
             return {"ok": False, "steps": results}
 
     _voice_cache.clear()
@@ -128,7 +144,8 @@ def synthesize(text, persona_id="friday"):
         wf.setnchannels(1)
         wf.setsampwidth(2)
         wf.setframerate(voice.config.sample_rate)
-        voice.synthesize(text, wf)
+        for chunk in voice.synthesize(text):
+            wf.writeframes(chunk.audio_int16_bytes)
     return buf.getvalue()
 
 

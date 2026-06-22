@@ -1,139 +1,127 @@
-// /* LIA AI — Complete Anime Character Engine (ES Module)
-//  *
-//  * Exports buildAnime(el, cfg) → controller {
-//  *   wake(), sleep(), wave(), rest(), setViseme(v),
-//  *   setEmotion(emotion), speakVisemes(text, durationMs),
-//  *   stopSpeaking(), lookAt(x, y), gesture(name), _cleanup()
-//  * }
-//  *
-//  * Features:
-//  *  - VRM face-FORWARD (rotation = 0, using VRMUtils for VRM0 compat)
-//  *  - Full body idle breathing, shoulder sway, hip sway
-//  *  - Complete emotion expressions: happy, sad, angry, surprised, thinking, excited
-//  *  - Smooth lerp-based morph targets — no snapping
-//  *  - Lip sync: A/E/I/O/U/M/F visemes mapped to VRM blendshapes
-//  *  - Saccade eye movement + mouse tracking
-//  *  - Auto-blink (randomised intervals)
-//  *  - Gesture system: wave, celebrate, think, listen, idle
-//  *  - Secondary motion: ear/tail/hair bouncing via VRM spring bones
-//  */
+/* LIA AI — Complete Anime Character Engine (ES Module)
+ *
+ * Exports buildAnime(el, cfg) → controller {
+ *   wake(), sleep(), wave(), rest(), setViseme(v),
+ *   setEmotion(emotion), speakVisemes(text, durationMs),
+ *   stopSpeaking(), lookAt(x, y), gesture(name), _cleanup()
+ * }
+ *
+ * Features:
+ *  - VRM face-FORWARD (rotation = 0, using VRMUtils for VRM0 compat)
+ *  - Full body idle breathing, shoulder sway, hip sway
+ *  - Complete emotion expressions: happy, sad, angry, surprised, thinking, excited
+ *  - Smooth lerp-based morph targets — no snapping
+ *  - Lip sync: A/E/I/O/U/M/F visemes mapped to VRM blendshapes
+ *  - Saccade eye movement + mouse tracking
+ *  - Auto-blink (randomised intervals)
+ *  - Gesture system: wave, celebrate, think, listen, idle
+ *  - Secondary motion: ear/tail/hair bouncing via VRM spring bones
+ */
 
-// import * as THREE from 'three';
-// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-// import * as VRM from 'three-vrm';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import * as VRM from 'three-vrm';
 
-// /* ── Colour palette per suit accent ── */
-// const ACCENT_HEX = {
-//   cyan:    0x53D7F0,
-//   gold:    0xE8B44A,
-//   crimson: 0xF2647C,
-//   violet:  0x9D7BF0,
-//   rose:    0xFF8FB1,
-// };
+/* ── Colour palette per suit accent ── */
+const ACCENT_HEX = {
+  cyan:    0x53D7F0,
+  gold:    0xE8B44A,
+  crimson: 0xF2647C,
+  violet:  0x9D7BF0,
+  rose:    0xFF8FB1,
+};
 
-// /* ── VRM Expression name aliases (VRM0 ↔ VRM1 names) ── */
-// const EXPR = {
-//   // VRM1 preset names (three-vrm v1.x resolves both)
-//   happy:     ['happy',    'joy',      'Joy'],
-//   sad:       ['sad',      'sorrow',   'Sorrow'],
-//   angry:     ['angry',    'Angry'],
-//   surprised: ['surprised','Surprised'],
-//   relaxed:   ['relaxed',  'neutral',  'Neutral'],
-//   neutral:   ['neutral',  'Neutral'],
-//   blink:     ['blink',    'Blink',    'blinkLeft', 'blinkRight'],
-//   blinkL:    ['blinkLeft', 'Blink_L', 'blink'],
-//   blinkR:    ['blinkRight','Blink_R', 'blink'],
-//   aa:        ['aa',       'A',        'vowel_A'],
-//   ee:        ['ee',       'e',        'E',  'vowel_E'],
-//   ih:        ['ih',       'i',        'I',  'vowel_I'],
-//   oh:        ['oh',       'o',        'O',  'vowel_O'],
-//   ou:        ['ou',       'u',        'U',  'vowel_U'],
-// };
+/* ── VRM Expression name aliases (VRM0 ↔ VRM1 names) ── */
+const EXPR = {
+  happy:     ['happy',    'joy',      'Joy'],
+  sad:       ['sad',      'sorrow',   'Sorrow'],
+  angry:     ['angry',    'Angry'],
+  surprised: ['surprised','Surprised'],
+  relaxed:   ['relaxed',  'neutral',  'Neutral'],
+  neutral:   ['neutral',  'Neutral'],
+  blink:     ['blink',    'Blink',    'blinkLeft', 'blinkRight'],
+  blinkL:    ['blinkLeft', 'Blink_L', 'blink'],
+  blinkR:    ['blinkRight','Blink_R', 'blink'],
+  aa:        ['aa',       'A',        'vowel_A'],
+  ee:        ['ee',       'e',        'E',  'vowel_E'],
+  ih:        ['ih',       'i',        'I',  'vowel_I'],
+  oh:        ['oh',       'o',        'O',  'vowel_O'],
+  ou:        ['ou',       'u',        'U',  'vowel_U'],
+};
 
-// /* ── Resolve expression name: try aliases until one works ── */
-// function setExpr(vrm, aliases, val) {
-//   if (!vrm) return;
-//   if (vrm.expressionManager) {
-//     for (const name of aliases) {
-//       try {
-//         vrm.expressionManager.setValue(name, val);
-//         vrm.expressionManager.setValue(name.toLowerCase(), val);
-//       } catch (_) {}
-//     }
-//   } else if (vrm.blendShapeProxy) {
-//     for (const name of aliases) {
-//       try {
-//         vrm.blendShapeProxy.setValue(name, val);
-//       } catch (_) {}
-//     }
-//   }
-// }
-// function getExpr(vrm, aliases) {
-//   if (!vrm) return 0;
-//   if (vrm.expressionManager) {
-//     for (const name of aliases) {
-//       try {
-//         const v = vrm.expressionManager.getValue(name) ?? vrm.expressionManager.getValue(name.toLowerCase());
-//         if (v !== undefined && v !== null) return v;
-//       } catch (_) {}
-//     }
-//   } else if (vrm.blendShapeProxy) {
-//     for (const name of aliases) {
-//       try {
-//         const v = vrm.blendShapeProxy.getValue(name);
-//         if (v !== undefined && v !== null) return v;
-//       } catch (_) {}
-//     }
-//   }
-//   return 0;
-// }
-// function getBoneNode(vrm, name) {
-//   if (!vrm || !vrm.humanoid) return null;
-//   if (vrm.humanoid.getNormalizedBoneNode) {
-//     return vrm.humanoid.getNormalizedBoneNode(name);
-//   }
-//   if (vrm.humanoid.getBoneNode) {
-//     return vrm.humanoid.getBoneNode(name);
-//   }
-//   return null;
-// }
-// function lerpExprFn(vrm, aliases) {
-//   return (target, speed = 0.18) => {
-//     const cur = getExpr(vrm, aliases);
-//     const next = THREE.MathUtils.lerp(cur, target, speed);
-//     setExpr(vrm, aliases, next);
-//   };
-// }
+function setExpr(vrm, aliases, val) {
+  if (!vrm) return;
+  if (vrm.expressionManager) {
+    for (const name of aliases) {
+      try {
+        vrm.expressionManager.setValue(name, val);
+        vrm.expressionManager.setValue(name.toLowerCase(), val);
+      } catch (_) {}
+    }
+  } else if (vrm.blendShapeProxy) {
+    for (const name of aliases) {
+      try {
+        vrm.blendShapeProxy.setValue(name, val);
+      } catch (_) {}
+    }
+  }
+}
+function getExpr(vrm, aliases) {
+  if (!vrm) return 0;
+  if (vrm.expressionManager) {
+    for (const name of aliases) {
+      try {
+        const v = vrm.expressionManager.getValue(name) ?? vrm.expressionManager.getValue(name.toLowerCase());
+        if (v !== undefined && v !== null) return v;
+      } catch (_) {}
+    }
+  } else if (vrm.blendShapeProxy) {
+    for (const name of aliases) {
+      try {
+        const v = vrm.blendShapeProxy.getValue(name);
+        if (v !== undefined && v !== null) return v;
+      } catch (_) {}
+    }
+  }
+  return 0;
+}
+function getBoneNode(vrm, name) {
+  if (!vrm || !vrm.humanoid) return null;
+  if (vrm.humanoid.getNormalizedBoneNode) {
+    return vrm.humanoid.getNormalizedBoneNode(name);
+  }
+  if (vrm.humanoid.getBoneNode) {
+    return vrm.humanoid.getBoneNode(name);
+  }
+  return null;
+}
 
-// /* ── Viseme target shapes ── */
-// const VISEME_TARGETS = {
-//   rest: { aa: 0,    ee: 0,    ih: 0,    oh: 0,    ou: 0    },
-//   M:    { aa: 0,    ee: 0,    ih: 0,    oh: 0,    ou: 0.1  },
-//   F:    { aa: 0,    ee: 0.2,  ih: 0,    oh: 0,    ou: 0    },
-//   A:    { aa: 1.0,  ee: 0,    ih: 0,    oh: 0,    ou: 0    },
-//   E:    { aa: 0,    ee: 0.9,  ih: 0,    oh: 0,    ou: 0    },
-//   I:    { aa: 0,    ee: 0,    ih: 0.85, oh: 0,    ou: 0    },
-//   O:    { aa: 0,    ee: 0,    ih: 0,    oh: 1.0,  ou: 0    },
-//   U:    { aa: 0,    ee: 0,    ih: 0,    oh: 0,    ou: 0.85 },
-// };
+const VISEME_TARGETS = {
+  rest: { aa: 0,    ee: 0,    ih: 0,    oh: 0,    ou: 0    },
+  M:    { aa: 0,    ee: 0,    ih: 0,    oh: 0,    ou: 0.1  },
+  F:    { aa: 0,    ee: 0.2,  ih: 0,    oh: 0,    ou: 0    },
+  A:    { aa: 1.0,  ee: 0,    ih: 0,    oh: 0,    ou: 0    },
+  E:    { aa: 0,    ee: 0.9,  ih: 0,    oh: 0,    ou: 0    },
+  I:    { aa: 0,    ee: 0,    ih: 0.85, oh: 0,    ou: 0    },
+  O:    { aa: 0,    ee: 0,    ih: 0,    oh: 1.0,  ou: 0    },
+  U:    { aa: 0,    ee: 0,    ih: 0,    oh: 0,    ou: 0.85 },
+};
 
-// /* ── Emotion expression targets ── */
-// const EMOTION_TARGETS = {
-//   happy:     { happy: 1.0, sad: 0,   angry: 0,   surprised: 0,   relaxed: 0   },
-//   excited:   { happy: 1.0, sad: 0,   angry: 0,   surprised: 0.5, relaxed: 0   },
-//   friendly:  { happy: 0.7, sad: 0,   angry: 0,   surprised: 0,   relaxed: 0.3 },
-//   sad:       { happy: 0,   sad: 1.0, angry: 0,   surprised: 0,   relaxed: 0   },
-//   concerned: { happy: 0,   sad: 0.7, angry: 0.2, surprised: 0,   relaxed: 0   },
-//   angry:     { happy: 0,   sad: 0,   angry: 1.0, surprised: 0,   relaxed: 0   },
-//   surprised: { happy: 0,   sad: 0,   angry: 0,   surprised: 1.0, relaxed: 0   },
-//   curious:   { happy: 0.2, sad: 0,   angry: 0,   surprised: 0.6, relaxed: 0   },
-//   thinking:  { happy: 0,   sad: 0.2, angry: 0.2, surprised: 0,   relaxed: 0.3 },
-//   focused:   { happy: 0,   sad: 0,   angry: 0.3, surprised: 0,   relaxed: 0.4 },
-//   neutral:   { happy: 0,   sad: 0,   angry: 0,   surprised: 0,   relaxed: 0.4 },
-// };
+const EMOTION_TARGETS = {
+  happy:     { happy: 1.0, sad: 0,   angry: 0,   surprised: 0,   relaxed: 0   },
+  excited:   { happy: 1.0, sad: 0,   angry: 0,   surprised: 0.5, relaxed: 0   },
+  friendly:  { happy: 0.7, sad: 0,   angry: 0,   surprised: 0,   relaxed: 0.3 },
+  sad:       { happy: 0,   sad: 1.0, angry: 0,   surprised: 0,   relaxed: 0   },
+  concerned: { happy: 0,   sad: 0.7, angry: 0.2, surprised: 0,   relaxed: 0   },
+  angry:     { happy: 0,   sad: 0,   angry: 1.0, surprised: 0,   relaxed: 0   },
+  surprised: { happy: 0,   sad: 0,   angry: 0,   surprised: 1.0, relaxed: 0   },
+  curious:   { happy: 0.2, sad: 0,   angry: 0,   surprised: 0.6, relaxed: 0   },
+  thinking:  { happy: 0,   sad: 0.2, angry: 0.2, surprised: 0,   relaxed: 0.3 },
+  focused:   { happy: 0,   sad: 0,   angry: 0.3, surprised: 0,   relaxed: 0.4 },
+  neutral:   { happy: 0,   sad: 0,   angry: 0,   surprised: 0,   relaxed: 0.4 },
+};
 
-// /* ── Build the anime character ── */
-// export function buildAnime(el, cfg) {
+export function buildAnime(el, cfg) {
 //   el.innerHTML = '';
 //   el.style.position = 'relative';
 //   el.style.overflow  = 'hidden';
@@ -1063,143 +1051,6 @@
 //   };
 // }
 
-
-/* LIA AI — Complete Anime Character Engine (ES Module)
- *
- * Exports buildAnime(el, cfg) → controller {
- *   wake(), sleep(), wave(), rest(), setViseme(v),
- *   setEmotion(emotion), speakVisemes(text, durationMs),
- *   stopSpeaking(), lookAt(x, y), gesture(name), _cleanup()
- * }
- *
- * Features:
- *  - VRM face-FORWARD (rotation = 0, using VRMUtils for VRM0 compat)
- *  - Full body idle breathing, shoulder sway, hip sway
- *  - Complete emotion expressions: happy, sad, angry, surprised, thinking, excited
- *  - Smooth lerp-based morph targets — no snapping
- *  - Lip sync: A/E/I/O/U/M/F visemes mapped to VRM blendshapes
- *  - Saccade eye movement + mouse tracking
- *  - Auto-blink (randomised intervals)
- *  - Gesture system: wave, celebrate, think, listen, idle
- *  - Secondary motion: ear/tail/hair bouncing via VRM spring bones
- */
-
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import * as VRM from 'three-vrm';
-
-/* ── Colour palette per suit accent ── */
-const ACCENT_HEX = {
-  cyan:    0x53D7F0,
-  gold:    0xE8B44A,
-  crimson: 0xF2647C,
-  violet:  0x9D7BF0,
-  rose:    0xFF8FB1,
-};
-
-/* ── VRM Expression name aliases (VRM0 ↔ VRM1 names) ── */
-const EXPR = {
-  // VRM1 preset names (three-vrm v1.x resolves both)
-  happy:     ['happy',    'joy',      'Joy'],
-  sad:       ['sad',      'sorrow',   'Sorrow'],
-  angry:     ['angry',    'Angry'],
-  surprised: ['surprised','Surprised'],
-  relaxed:   ['relaxed',  'neutral',  'Neutral'],
-  neutral:   ['neutral',  'Neutral'],
-  blink:     ['blink',    'Blink',    'blinkLeft', 'blinkRight'],
-  blinkL:    ['blinkLeft', 'Blink_L', 'blink'],
-  blinkR:    ['blinkRight','Blink_R', 'blink'],
-  aa:        ['aa',       'A',        'vowel_A'],
-  ee:        ['ee',       'e',        'E',  'vowel_E'],
-  ih:        ['ih',       'i',        'I',  'vowel_I'],
-  oh:        ['oh',       'o',        'O',  'vowel_O'],
-  ou:        ['ou',       'u',        'U',  'vowel_U'],
-};
-
-/* ── Resolve expression name: try aliases until one works ── */
-function setExpr(vrm, aliases, val) {
-  if (!vrm) return;
-  if (vrm.expressionManager) {
-    for (const name of aliases) {
-      try {
-        vrm.expressionManager.setValue(name, val);
-        vrm.expressionManager.setValue(name.toLowerCase(), val);
-      } catch (_) {}
-    }
-  } else if (vrm.blendShapeProxy) {
-    for (const name of aliases) {
-      try {
-        vrm.blendShapeProxy.setValue(name, val);
-      } catch (_) {}
-    }
-  }
-}
-function getExpr(vrm, aliases) {
-  if (!vrm) return 0;
-  if (vrm.expressionManager) {
-    for (const name of aliases) {
-      try {
-        const v = vrm.expressionManager.getValue(name) ?? vrm.expressionManager.getValue(name.toLowerCase());
-        if (v !== undefined && v !== null) return v;
-      } catch (_) {}
-    }
-  } else if (vrm.blendShapeProxy) {
-    for (const name of aliases) {
-      try {
-        const v = vrm.blendShapeProxy.getValue(name);
-        if (v !== undefined && v !== null) return v;
-      } catch (_) {}
-    }
-  }
-  return 0;
-}
-function getBoneNode(vrm, name) {
-  if (!vrm || !vrm.humanoid) return null;
-  if (vrm.humanoid.getNormalizedBoneNode) {
-    return vrm.humanoid.getNormalizedBoneNode(name);
-  }
-  if (vrm.humanoid.getBoneNode) {
-    return vrm.humanoid.getBoneNode(name);
-  }
-  return null;
-}
-function lerpExprFn(vrm, aliases) {
-  return (target, speed = 0.18) => {
-    const cur = getExpr(vrm, aliases);
-    const next = THREE.MathUtils.lerp(cur, target, speed);
-    setExpr(vrm, aliases, next);
-  };
-}
-
-/* ── Viseme target shapes ── */
-const VISEME_TARGETS = {
-  rest: { aa: 0,    ee: 0,    ih: 0,    oh: 0,    ou: 0    },
-  M:    { aa: 0,    ee: 0,    ih: 0,    oh: 0,    ou: 0.1  },
-  F:    { aa: 0,    ee: 0.2,  ih: 0,    oh: 0,    ou: 0    },
-  A:    { aa: 1.0,  ee: 0,    ih: 0,    oh: 0,    ou: 0    },
-  E:    { aa: 0,    ee: 0.9,  ih: 0,    oh: 0,    ou: 0    },
-  I:    { aa: 0,    ee: 0,    ih: 0.85, oh: 0,    ou: 0    },
-  O:    { aa: 0,    ee: 0,    ih: 0,    oh: 1.0,  ou: 0    },
-  U:    { aa: 0,    ee: 0,    ih: 0,    oh: 0,    ou: 0.85 },
-};
-
-/* ── Emotion expression targets ── */
-const EMOTION_TARGETS = {
-  happy:     { happy: 1.0, sad: 0,   angry: 0,   surprised: 0,   relaxed: 0   },
-  excited:   { happy: 1.0, sad: 0,   angry: 0,   surprised: 0.5, relaxed: 0   },
-  friendly:  { happy: 0.7, sad: 0,   angry: 0,   surprised: 0,   relaxed: 0.3 },
-  sad:       { happy: 0,   sad: 1.0, angry: 0,   surprised: 0,   relaxed: 0   },
-  concerned: { happy: 0,   sad: 0.7, angry: 0.2, surprised: 0,   relaxed: 0   },
-  angry:     { happy: 0,   sad: 0,   angry: 1.0, surprised: 0,   relaxed: 0   },
-  surprised: { happy: 0,   sad: 0,   angry: 0,   surprised: 1.0, relaxed: 0   },
-  curious:   { happy: 0.2, sad: 0,   angry: 0,   surprised: 0.6, relaxed: 0   },
-  thinking:  { happy: 0,   sad: 0.2, angry: 0.2, surprised: 0,   relaxed: 0.3 },
-  focused:   { happy: 0,   sad: 0,   angry: 0.3, surprised: 0,   relaxed: 0.4 },
-  neutral:   { happy: 0,   sad: 0,   angry: 0,   surprised: 0,   relaxed: 0.4 },
-};
-
-/* ── Build the anime character ── */
-export function buildAnime(el, cfg) {
   el.innerHTML = '';
   el.style.position = 'relative';
   el.style.overflow  = 'hidden';
@@ -1235,16 +1086,30 @@ export function buildAnime(el, cfg) {
   renderer.sortObjects = false;
   renderer.autoClearColor = true;
 
-  /* Scene — DARK background so character textures are visible */
+  /* Scene — GRADIENT background for beautiful framing */
   const scene = new THREE.Scene();
-  /* Set dark background to reveal character colors and textures */
-  scene.background = new THREE.Color(0x1a1a2e);  /* Dark blue-black for character visibility */
-  scene.fog = null;
-  renderer.setClearColor(scene.background, 1.0);
+  /* Create gradient background canvas */
+  const canvas_bg = document.createElement('canvas');
+  canvas_bg.width = 256;
+  canvas_bg.height = 256;
+  const ctx_bg = canvas_bg.getContext('2d');
 
-  /* Camera — tight bust/portrait framing with focus on face */
-  const camera = new THREE.PerspectiveCamera(32, W / H, 0.1, 100);
-  camera.position.set(0, 0.65, 3.2);  /* Positioned to see face clearly */
+  /* BEAUTIFUL gradient: dark top → deep blue bottom */
+  const grad = ctx_bg.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, '#0a0e27');    /* Dark top */
+  grad.addColorStop(0.5, '#1a1f3a');  /* Deep blue middle */
+  grad.addColorStop(1, '#0f1b3c');    /* Darker blue bottom */
+  ctx_bg.fillStyle = grad;
+  ctx_bg.fillRect(0, 0, 256, 256);
+
+  const bgTexture = new THREE.CanvasTexture(canvas_bg);
+  scene.background = bgTexture;
+  scene.fog = null;
+  renderer.setClearColor(0x0a0e27, 1.0);
+
+  /* Camera — IMPROVED framing for better character presentation */
+  const camera = new THREE.PerspectiveCamera(28, W / H, 0.1, 100);  /* Wider FOV for full body */
+  camera.position.set(0, 0.8, 2.8);  /* Closer for more impact */
   camera.lookAt(0, 0.65, 0);
 
   /*
@@ -1256,34 +1121,43 @@ export function buildAnime(el, cfg) {
    */
   const accentColor = ACCENT_HEX[cfg.char_outfit || cfg.outfit] || ACCENT_HEX.cyan;
 
-  /* Very bright ambient — MToon needs this to stay in lit zone */
-  const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+  /* BRIGHT ambient — Show textures clearly */
+  const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);  /* Bright enough to see colors */
   scene.add(ambientLight);
 
-  /* Strong key light from front-above — drives MToon's directional shading */
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.0);
+  /* Strong key light from front-above — shows textures naturally */
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);  /* Good balance */
   keyLight.position.set(0.5, 3.0, 4.0);
   scene.add(keyLight);
 
   /* Soft fill from left */
-  const fillLight = new THREE.DirectionalLight(0xc8d8ff, 1.2);
+  const fillLight = new THREE.DirectionalLight(0xc8d8ff, 1.3);  /* Good fill */
   fillLight.position.set(-3.0, 1.5, 2.0);
   scene.add(fillLight);
 
-  /* Front-centre fill — ensures face never dark */
-  const frontFill = new THREE.DirectionalLight(0xffffff, 1.0);
+  /* Front-centre fill — ensure colors visible */
+  const frontFill = new THREE.DirectionalLight(0xffffff, 1.5);  /* Strong */
   frontFill.position.set(0, 0.5, 5.0);
   scene.add(frontFill);
 
   /* Coloured rim accent */
-  const rimLight = new THREE.DirectionalLight(accentColor, 1.2);
+  const rimLight = new THREE.DirectionalLight(accentColor, 0.8);  /* Subtle */
   rimLight.position.set(2.5, 1.0, 2.0);
   scene.add(rimLight);
 
   /* Top hair light */
-  const topLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  const topLight = new THREE.DirectionalLight(0xffffff, 1.0);  /* Good coverage */
   topLight.position.set(0, 5, 1);
   scene.add(topLight);
+
+  /* GLOW LIGHTS: Subtle silhouette (reduced to not wash out textures) */
+  const glowLight1 = new THREE.DirectionalLight(accentColor, 0.3);  /* Subtle right glow */
+  glowLight1.position.set(3.5, 1.5, -1.5);
+  scene.add(glowLight1);
+
+  const glowLight2 = new THREE.DirectionalLight(0x6bb6ff, 0.2);  /* Subtle left glow */
+  glowLight2.position.set(-3.5, 1.5, -1.5);
+  scene.add(glowLight2);
 
   /* Holographic HUD rings */
   const hudGroup = new THREE.Group();
@@ -1388,8 +1262,8 @@ export function buildAnime(el, cfg) {
                      !!(vrm.meta && vrm.meta.exporterVersion &&
                         /UniVRM-0\./.test(vrm.meta.exporterVersion));
       vrm.scene.rotation.y = isVRM0 ? Math.PI : 0;   /* LIA.vrm → 0 (faces camera) */
-      vrm.scene.position.set(0, -0.95, 0);
-      vrm.scene.scale.setScalar(1.0);
+      vrm.scene.position.set(0, -0.80, 0);  /* Move up slightly for better framing */
+      vrm.scene.scale.setScalar(1.15);  /* Scale up 15% for more presence */
 
       /* ── DEFINITIVE MToon color fix ──────────────────────────────────
        * three-vrm v1.0.8 MToon materials have these key properties:
@@ -1422,26 +1296,65 @@ export function buildAnime(el, cfg) {
 
           if (isMToon) {
             mtoonCount++;
-            /* Push shading boundary: keeps full-lit region visible in color */
-            if ('shadingShiftFactor' in mat) mat.shadingShiftFactor = 0.5;
-            if ('shadingToonyFactor' in mat) mat.shadingToonyFactor = 0.9;
-            /* Disable matcap which can cause grayscale-like rendering */
+            /* CRITICAL FIX: Force textures to display with proper shading */
+
+            /* Ensure color map/texture is loaded and displayed */
+            if ('map' in mat && mat.map) {
+              mat.map.magFilter = THREE.LinearFilter;
+              mat.map.minFilter = THREE.LinearMipMapLinearFilter;
+              mat.map.needsUpdate = true;
+            }
+
+            /* Set neutral lighting to show texture colors properly */
+            if ('shadingShiftFactor' in mat) mat.shadingShiftFactor = 0.3;  /* Slight lift to show colors */
+            if ('shadingToonyFactor' in mat) mat.shadingToonyFactor = 0.7;  /* Normal toon effect */
+
+            /* Base color: white so textures can show through */
+            if ('color' in mat) {
+              mat.color.set(0xffffff);
+              mat.needsUpdate = true;
+            }
+
+            /* DISABLE everything that hides textures */
             if ('matcapFactor' in mat) mat.matcapFactor = new THREE.Color(0, 0, 0);
-            /* Disable rim that may compete with main color */
+            if ('matcapTexture' in mat) mat.matcapTexture = null;
             if ('rimLightingMixFactor' in mat) mat.rimLightingMixFactor = 0.0;
+
+            /* NO emissive - let textures be the source of color */
+            if ('emissive' in mat) {
+              mat.emissive.set(0x000000);
+              if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.0;
+            }
+
+            /* Standard outline (don't override) */
+            if ('outlineWidthMode' in mat) mat.outlineWidthMode = 0;
           } else {
             stdCount++;
-            /* Standard PBR: ensure roughness/metalness don't gray it out */
-            if ('roughness' in mat) mat.roughness = Math.min(mat.roughness, 0.8);
-            if ('metalness' in mat) mat.metalness = Math.min(mat.metalness, 0.2);
+            /* Standard materials: show actual textures */
+            if ('map' in mat && mat.map) {
+              mat.map.magFilter = THREE.LinearFilter;
+              mat.map.minFilter = THREE.LinearMipMapLinearFilter;
+              mat.map.needsUpdate = true;
+            }
+            if ('roughness' in mat) mat.roughness = 0.5;  /* Moderate roughness */
+            if ('metalness' in mat) mat.metalness = 0.0;  /* NO metalness - kills color */
+            if ('emissive' in mat) {
+              mat.emissive.set(0x000000);
+              if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.0;
+            }
+            /* Ensure color shows */
+            if ('color' in mat) {
+              mat.color.set(0xffffff);
+              mat.needsUpdate = true;
+            }
           }
 
           mat.needsUpdate = true;
         });
       });
 
-      /* CSS safety net — if WebGL output still looks grey, saturate via CSS */
-      canvas.style.filter = 'saturate(1.4) brightness(1.05)';
+      /* CSS safety net — Show actual texture colors with good saturation */
+      canvas.style.filter = 'saturate(1.4) brightness(1.05) contrast(1.1)';  /* Balanced to show vibrant colors */
 
       _applyIdlePose(vrm);
       console.log(`✓ VRM loaded: ${mtoonCount} MToon + ${stdCount} standard materials. Color fix applied.`);
@@ -1453,25 +1366,26 @@ export function buildAnime(el, cfg) {
     }
   );
 
-  /* ── Apply initial T-pose → comfortable idle pose ── */
+  /* ── Apply initial T-pose → APPEALING natural idle pose ── */
   function _applyIdlePose(vrm) {
     function boneRot(name, x, y, z) {
       const b = getBoneNode(vrm, name);
       if (b) { b.rotation.x = x; b.rotation.y = y; b.rotation.z = z; }
     }
-    // Relax arms down from T-pose into a natural rest pose.
-    // VRM A/T-pose has arms out along ±X; rotating ~75° about Z drops them.
-    // For a model facing +Z: left arm needs +Z rot, right arm needs -Z rot.
-    boneRot('leftUpperArm',  0,  0,  1.25);
-    boneRot('rightUpperArm', 0,  0, -1.25);
-    boneRot('leftLowerArm',  0, -0.18, 0.15);
-    boneRot('rightLowerArm', 0,  0.18, -0.15);
-    boneRot('leftHand',      0.0, 0,  0.05);
-    boneRot('rightHand',     0.0, 0, -0.05);
-    boneRot('spine',         0.02, 0, 0);
-    boneRot('chest',         0.0, 0, 0);
-    boneRot('neck',          0.0, 0, 0);
-    boneRot('head',          0.0, 0, 0);
+    // Beautiful, relaxed, engaging pose
+    // Arms in front body for welcoming appearance
+    boneRot('leftUpperArm',  -0.15, 0.2,  -0.55);   /* More relaxed & forward */
+    boneRot('rightUpperArm', -0.15, -0.2, 0.55);
+    boneRot('leftLowerArm',  0.25, -0.25, 0.05);    /* Better angle */
+    boneRot('rightLowerArm', 0.25, 0.25, -0.05);
+    boneRot('leftHand',      0.05, 0.1, -0.08);
+    boneRot('rightHand',     0.05, -0.1, 0.08);
+
+    /* Slight forward lean for engagement */
+    boneRot('spine',         0.04, 0, 0);
+    boneRot('chest',         0.02, 0, 0);
+    boneRot('neck',          0.02, 0, 0);  /* Slight head tilt */
+    boneRot('head',          0.03, 0.05, 0);  /* Look friendly */
   }
 
   /* ── Mouse look ── */
@@ -1479,8 +1393,8 @@ export function buildAnime(el, cfg) {
     if (st.isSleeping) return;
     st.lastMouseTime = Date.now();
     const rect = canvas.getBoundingClientRect();
-    const dx = ((e.clientX - rect.left) / rect.width)  * 2 - 1;
-    const dy = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
+    const dx = Math.max(-1.0, Math.min(1.0, ((e.clientX - rect.left) / rect.width)  * 2 - 1));
+    const dy = Math.max(-1.0, Math.min(1.0, -((e.clientY - rect.top)  / rect.height) * 2 + 1));
     st.lookTarget.set(dx * 0.9, dy * 0.55, 1);
   }
   window.addEventListener('mousemove', onMouseMove);
@@ -1729,21 +1643,25 @@ export function buildAnime(el, cfg) {
       lerpBone(spineBone, st.spine,   0.08);
       lerpBone(chestBone, st.chest,   0.08);
 
+      /* Clamp lookTarget to prevent unnatural 360-degree rotation of head/neck */
+      const targetX = Math.max(-1.0, Math.min(1.0, st.lookTarget.x));
+      const targetY = Math.max(-1.0, Math.min(1.0, st.lookTarget.y));
+
       /* Gaze — neck + head + eyes. Multipliers boosted so the head
        * actually turns left/right (old 0.28/0.10 were near-imperceptible). */
       if (neckBone) {
-        neckBone.rotation.y = THREE.MathUtils.lerp(neckBone.rotation.y, st.lookTarget.x * 0.42, 0.08);
-        neckBone.rotation.x = THREE.MathUtils.lerp(neckBone.rotation.x, st.neck.x - st.lookTarget.y * 0.18, 0.08);
+        neckBone.rotation.y = THREE.MathUtils.lerp(neckBone.rotation.y, targetX * 0.42, 0.08);
+        neckBone.rotation.x = THREE.MathUtils.lerp(neckBone.rotation.x, st.neck.x - targetY * 0.18, 0.08);
         neckBone.rotation.z = THREE.MathUtils.lerp(neckBone.rotation.z, st.neck.z, 0.07);
       }
       if (headBone) {
-        headBone.rotation.y = THREE.MathUtils.lerp(headBone.rotation.y, st.lookTarget.x * 0.30 + st.head.y, 0.08);
-        headBone.rotation.x = THREE.MathUtils.lerp(headBone.rotation.x, st.head.x - st.lookTarget.y * 0.10, 0.08);
+        headBone.rotation.y = THREE.MathUtils.lerp(headBone.rotation.y, targetX * 0.30 + st.head.y, 0.08);
+        headBone.rotation.x = THREE.MathUtils.lerp(headBone.rotation.x, st.head.x - targetY * 0.10, 0.08);
         headBone.rotation.z = THREE.MathUtils.lerp(headBone.rotation.z, st.head.z, 0.07);
       }
       if (lEyeBone && rEyeBone) {
-        const ey = THREE.MathUtils.lerp(lEyeBone.rotation.y, st.lookTarget.x * 0.45, 0.12);
-        const ex = THREE.MathUtils.lerp(lEyeBone.rotation.x, -st.lookTarget.y * 0.28, 0.12);
+        const ey = THREE.MathUtils.lerp(lEyeBone.rotation.y, targetX * 0.45, 0.12);
+        const ex = THREE.MathUtils.lerp(lEyeBone.rotation.x, -targetY * 0.28, 0.12);
         lEyeBone.rotation.y = ey; lEyeBone.rotation.x = ex;
         rEyeBone.rotation.y = ey; rEyeBone.rotation.x = ex;
       }
@@ -1881,7 +1799,9 @@ export function buildAnime(el, cfg) {
     lookAt(x, y) {
       if (st.isSleeping) return;
       st.lastMouseTime = Date.now();
-      st.lookTarget.set(x, y, 1);
+      const clampedX = Math.max(-1.0, Math.min(1.0, x));
+      const clampedY = Math.max(-1.0, Math.min(1.0, y));
+      st.lookTarget.set(clampedX, clampedY, 1);
     },
     gesture(name) {
       if (st.isSleeping) return;

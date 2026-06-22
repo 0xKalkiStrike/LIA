@@ -271,6 +271,7 @@
       <button class="tab" data-tab="settings">Settings</button>
       <span class="spacer"></span>
       <span class="commander-tag" id="commander-tag"></span>
+      <button class="btn ghost sm" id="btn-toggle-sensors-panel" style="margin-right: 12px; border-color: var(--arc); color: var(--arc);">👁 Vision</button>
       <button class="btn solid sm" id="btn-live-call" style="margin-right: 12px; background: linear-gradient(180deg, #10B981, #059669); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);">📞 Live Call</button>
       <button class="btn ghost sm" id="btn-logout">Log out</button>
     </nav>
@@ -380,7 +381,10 @@
   </main>
 
   <!-- RIGHT COLUMN: Webcam Stream & Telemetry Overlay -->
-  <aside class="dash-right glass">
+  <aside class="dash-right glass" id="dash-right-sidebar">
+    <div class="sidebar-header-mobile" style="display: none;">
+      <button class="btn ghost sm" id="btn-close-sensors-panel" style="width: 100%; border-color: var(--err); color: var(--err); margin-bottom: 8px;">✕ Close Sensory View</button>
+    </div>
     <div class="webcam-box">
       <h3>Sensory Stream</h3>
       <div class="video-container">

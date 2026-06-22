@@ -7,6 +7,7 @@
     {"name": "auth",         "module": "agents.auth_agent",     "role": "Accounts, sessions, RBAC"},
     {"name": "language",     "module": "agents.language_agent", "role": "Language detection + mixed modes"},
     {"name": "ocr",          "module": "agents.ocr_agent",      "role": "Tesseract text reading"},
-    {"name": "device",       "module": "agents.device_agent",   "role": "System stats, device control"}
+    {"name": "device",       "module": "agents.device_agent",   "role": "System stats, device control"},
+    {"name": "image",        "module": "agents.image_agent",    "role": "Image generation and styling"}
   ]
 }

@@ -149,8 +149,16 @@ def launch_app(app_name: str) -> dict:
 
     executable = apps.get(app_name, app_name)
     try:
-        subprocess.Popen(executable, shell=True)
+        # Use Windows native launcher for better reliability
+        if platform.system() == "Windows":
+            os.startfile(executable)
+        else:
+            # Linux/Mac fallback
+            subprocess.Popen([executable], start_new_session=True)
+
         return {"ok": True, "message": f"Successfully launched {app_name}."}
+    except FileNotFoundError:
+        return {"ok": False, "message": f"Application '{app_name}' not found. Make sure it's installed."}
     except Exception as e:
         return {"ok": False, "message": f"Failed to launch {app_name}: {str(e)}"}
 

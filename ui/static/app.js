@@ -10,6 +10,10 @@ const api = async (path, opts = {}) => {
   if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
   const res = await fetch(path, { ...opts, headers });
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401) {
+    state.token = null;
+    localStorage.removeItem('jarvis_token');
+  }
   if (!res.ok) throw new Error(data.detail || 'Request failed');
   return data;
 };
@@ -66,15 +70,17 @@ function getAudioCtx() {
  * drive lip-sync from real audio amplitude via Web Audio API AnalyserNode.
  * Otherwise fall back to browser speechSynthesis with estimated lip-sync timing.
  */
-function speak(text, { onend } = {}) {
+function speak(text, { onend, language } = {}) {
   if (!text) { onend && onend(); return; }
   const p = state.profile || state.draft;
   const persona = state.voices[p.voice_persona] || { pitch: 1, rate: 1 };
 
-  if (state.piperAvailable) {
+  const isGujarati = /[\u0A80-\u0AFF]/.test(text) || language === 'gujarati' || p.language_mode === 'english_gujarati';
+
+  if (state.piperAvailable && !isGujarati) {
     _speakPiper(text, p.voice_persona, onend);
   } else {
-    _speakBrowser(text, persona, p, onend);
+    _speakBrowser(text, persona, p, onend, isGujarati);
   }
 }
 
@@ -124,19 +130,43 @@ async function _speakPiper(text, personaId, onend) {
 
     let raf;
     let emotionCycle = 0;  /* Vary emotion during long speeches */
+    let lastViseme = 'rest';
+    let visemeSmoothing = 0;
     function driveVisemes() {
       analyser.getByteFrequencyData(dataArr);
-      // Average low-frequency amplitude → mouth openness (amplified for clear lip movement)
-      const avg = dataArr.slice(0, 8).reduce((a, b) => a + b, 0) / 8;
-      const openness = Math.min(1, (avg / 180) * 1.5);  /* More sensitive to audio */
 
-      // Drive viseme from amplitude bucket — fine-grained viseme selection
+      /* Enhanced frequency analysis for realistic lip sync */
+      const lowFreq = dataArr.slice(0, 4).reduce((a, b) => a + b, 0) / 4;     /* 0-250Hz: vowels/openness */
+      const midFreq = dataArr.slice(4, 12).reduce((a, b) => a + b, 0) / 8;   /* 250-750Hz: consonants */
+      const highFreq = dataArr.slice(12, 24).reduce((a, b) => a + b, 0) / 12; /* 750-1500Hz: fricatives */
+
+      /* Normalize frequencies with dynamic range */
+      const lowNorm = Math.min(1, lowFreq / 200);
+      const midNorm = Math.min(1, midFreq / 180);
+      const highNorm = Math.min(1, highFreq / 160);
+
+      /* Mouth openness primarily driven by low frequencies */
+      const openness = Math.min(1, (lowNorm * 0.7 + midNorm * 0.3) * 1.4);
+
+      /* Select viseme based on frequency characteristics */
       let vis = 'rest';
-      if (openness > 0.75) vis = 'A';      /* Open mouth: A */
-      else if (openness > 0.58) vis = 'O'; /* Round mouth: O */
-      else if (openness > 0.38) vis = 'E'; /* Spread mouth: E */
-      else if (openness > 0.18) vis = 'M'; /* Closed mouth: M */
-      else if (openness > 0.08) vis = 'F'; /* Fricative: F */
+      if (openness > 0.75) {
+        vis = highNorm > 0.6 ? 'A' : (midNorm > 0.6 ? 'O' : 'A');  /* Very open mouth */
+      } else if (openness > 0.55) {
+        vis = highNorm > 0.5 ? 'E' : (midNorm > 0.5 ? 'O' : 'E');  /* Medium-wide mouth */
+      } else if (openness > 0.35) {
+        vis = highNorm > 0.4 ? 'E' : (midNorm > 0.4 ? 'I' : 'E');  /* Medium mouth */
+      } else if (openness > 0.15) {
+        vis = highNorm > 0.3 ? 'M' : 'F';  /* Closed mouth */
+      } else {
+        vis = 'rest';  /* Resting mouth */
+      }
+
+      /* Smooth viseme transitions to prevent jittering */
+      if (vis !== lastViseme) {
+        visemeSmoothing = 0.2;
+        lastViseme = vis;
+      }
 
       if (state.avatar) state.avatar.setViseme(vis);
       if (state.callAvatar) state.callAvatar.setViseme(vis);
@@ -200,37 +230,45 @@ async function _speakPiper(text, personaId, onend) {
 }
 
 /** Browser speechSynthesis — smart voice selection for natural, non-robotic sound. */
-function _speakBrowser(text, persona, p, onend) {
+function _speakBrowser(text, persona, p, onend, isGujarati = false) {
   if (!('speechSynthesis' in window)) { onend && onend(); return; }
   speechSynthesis.cancel();
-  const langCode = state.ttsLang[p.language_mode] || 'en-IN';
+  const langCode = isGujarati ? 'gu-IN' : (state.ttsLang[p.language_mode] || 'en-IN');
   const u = new SpeechSynthesisUtterance(text);
 
   // Always refresh — browsers load voices async
   const vv = speechSynthesis.getVoices();
   if (vv.length) voicesReady = vv;
 
-  // Premium female voice priority list (neural/high-quality voices first, newest to oldest)
-  const PREMIUM = [
-    // Modern neural voices (Windows 11 / latest)
+  // Premium female voice priority list - PRIORITIZE NEURAL/NATURAL VOICES ONLY
+  const PREMIUM = isGujarati ? [
+    'Microsoft Dhwani Online (Natural)',
+    'Google ગુજરાતી',
+    'Microsoft Shruti',
+    'Shruti'
+  ] : [
+    // NEURAL/NATURAL VOICES ONLY for non-robotic sound
+    'Microsoft Neerja Online (Natural)',
     'Microsoft Aria Online (Natural)',
     'Microsoft Jenny Online (Natural)',
     'Microsoft Ava Online',
+    // Indian English neural voices (natural accent)
+    'Google India English Female',
+    'Google IN English Female',
+    // Premium US English neural voices
     'Microsoft Aria',
     'Microsoft Jenny',
-    'Microsoft Ava',
-    // High-quality web voices
-    'Google UK English Female',
+    'Google US English',
     'Google Wavenet-C',
     'Google Wavenet-F',
-    'Google US English',
-    // Fallback quality voices
+    // Fallback natural voices
+    'Microsoft Neerja',
+    'Microsoft Heera',
+    'Veena',
     'Microsoft Zira',
     'Microsoft Hazel',
     'Samantha',
-    'Veena',
-    'Microsoft Heera',
-    'Microsoft Neerja',
+    'Google UK English Female',
     'Google Australia',
   ];
 
@@ -248,49 +286,65 @@ function _speakBrowser(text, persona, p, onend) {
       v = voicesReady.find(x => {
         const nameLower = x.name.toLowerCase();
         return keywords.some(k => nameLower.includes(k)) &&
-               /female|woman|aria|jenny|zira|hazel|heera|neerja|veena|samantha|ava/i.test(x.name);
+               (isGujarati ? true : /female|woman|aria|jenny|zira|hazel|heera|neerja|veena|samantha|ava/i.test(x.name));
       });
       if (v) break;
     }
   }
-  // 3. Persona hints
-  if (!v) {
+  // 3. Persona hints (only if not forcing Gujarati)
+  if (!v && !isGujarati) {
     for (const h of (persona.web_voice_hint || [])) {
       v = voicesReady.find(x => x.name.toLowerCase().includes(h.toLowerCase()));
       if (v) break;
     }
   }
-  // 4. Any female English neural/high-quality voice
+  // 4. Any locale-matching voice with robust Hindi/Indian English female fallbacks
   if (!v) {
-    const enV = voicesReady.filter(x => x.lang.startsWith('en') || x.lang.startsWith('en-'));
-    // Prefer modern neural voices (contains keywords like 'natural', 'neural', 'wavenet')
-    v = enV.find(x => /natural|neural|wavenet|aria|jenny|zira|hazel|female|woman|girl|samantha|veena|heera|neerja|ava/i.test(x.name))
-      || enV.find(x => x.name.includes('Natural') || x.name.includes('Online'))
-      || enV.find(x => x.localService && /female|woman|aria|jenny|zira/i.test(x.name))
-      || enV.find(x => x.localService)
-      || enV[0]
-      || voicesReady[0]
+    const filterLang = isGujarati ? 'gu' : 'en';
+    let langV = voicesReady.filter(x => x.lang.startsWith(filterLang) || x.lang.startsWith(filterLang + '-'));
+    
+    // If Gujarati is requested but missing from system, fall back to female Hindi
+    if (isGujarati && langV.length === 0) {
+      langV = voicesReady.filter(x => x.lang.startsWith('hi') || x.lang.startsWith('hi-'));
+    }
+    
+    // If Hindi is also missing, fall back to female Indian English
+    if (langV.length === 0) {
+      langV = voicesReady.filter(x => x.lang.startsWith('en-IN') || x.name.includes('India'));
+    }
+
+    // Strictly filter out male voices (like Microsoft Niranjan, Hemant, Madhur, Mark, David, Ravi)
+    langV = langV.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur|ravi|david|mark/i.test(x.name));
+    
+    v = langV.find(x => /natural|online|neural|wavenet/i.test(x.name))
+      || langV.find(x => x.localService)
+      || langV[0]
       || null;
+  }
+  
+  // Ultimate fallback (must be female)
+  if (!v) {
+    v = voicesReady.find(x => /heera|zira|jerry|jenny|aria|samantha|veena|neerja|google/i.test(x.name.toLowerCase())) 
+        || voicesReady[0] 
+        || null;
   }
 
   if (v) u.voice = v;
 
-  /* Neural voice settings for NATURAL, EXPRESSIVE speech (not robotic) */
-  /* Neural voices benefit from: slightly raised pitch for personality, slower rate for clarity */
+  /* FORCE NATURAL SETTINGS - prevent robot voice */
   const isNeuralVoice = v && /natural|online|neural|wavenet/i.test(v.name);
-  
-  if (isNeuralVoice) {
-    /* Neural voices sound better with natural prosody */
-    u.pitch  = persona.pitch  ?? 1.08;   /* subtle pitch for warmth without artificiality */
-    u.rate   = persona.rate   ?? 0.85;   /* slightly slower for crystal clear articulation */
-  } else {
-    /* Fallback voices need more character */
-    u.pitch  = persona.pitch  ?? 1.22;   /* higher pitch for personality */
-    u.rate   = persona.rate   ?? 0.75;   /* much slower to avoid choppy robotic sound */
-  }
-  
+
+  // ALWAYS use natural settings for best quality
+  u.pitch  = persona.pitch  ?? 1.0;   /* Natural pitch - no squeaking */
+  u.rate   = persona.rate   ?? 0.95;  /* Slightly slower = clearer, more human */
   u.volume = 1.0;
   u.lang   = v ? v.lang : langCode;
+
+  // If NOT a neural voice, compensate with better rate
+  if (!isNeuralVoice && v) {
+    u.pitch = 1.05;
+    u.rate = 0.92;  /* Even slower for non-neural voices */
+  }
 
   /* Dynamic prosody: adjust pitch & rate based on emotional state for more natural expression */
   const mood = state.profile?.current_mood || 'neutral';
@@ -422,7 +476,7 @@ async function boot() {
     buildVoiceCards($('#voice-cards'));
     buildLangCards($('#lang-cards'));
     setTimeout(() => {
-      if (state.token) return enterDashboard().catch(() => showLogin(s.has_users));
+      if (s.has_users && state.token) return enterDashboard().catch(() => showLogin(s.has_users));
       showLogin(s.has_users);
     }, 900);
   } catch (e) {
@@ -904,6 +958,25 @@ async function enterDashboard(freshLogin = false) {
   loadProcesses();
   setupVoiceInterruption();
   updateAgentMonitor();
+  
+  // Wire mobile sensory sidebar drawer toggles
+  const sensorsBtn = $('#btn-toggle-sensors-panel');
+  const sensorsCloseBtn = $('#btn-close-sensors-panel');
+  const sidebar = $('#dash-right-sidebar');
+  if (sensorsBtn && sidebar) {
+    sensorsBtn.onclick = () => {
+      sidebar.classList.add('active');
+      if (!state.webcamActive) {
+        const webcamToggle = $('#btn-toggle-webcam');
+        if (webcamToggle) webcamToggle.click();
+      }
+    };
+  }
+  if (sensorsCloseBtn && sidebar) {
+    sensorsCloseBtn.onclick = () => {
+      sidebar.classList.remove('active');
+    };
+  }
 
   // HUD + agent monitor update timer
   setInterval(() => { loadDevice(); updateAgentMonitor(); }, 3000);
@@ -995,6 +1068,45 @@ async function sendMessage(text) {
       $('#chat-log').appendChild(pre);
       $('#chat-log').scrollTop = 1e9;
     }
+
+    // Display generated image preview
+    if (res.engine === 'image' && res.image_url) {
+      const imgBlock = document.createElement('div');
+      imgBlock.className = 'image-block';
+      imgBlock.innerHTML = `
+        <div class="image-head">🎨 Generated Image: ${res.filename || 'image'}</div>
+        <div class="image-body">
+          <img src="${res.image_url}" alt="Generated Image" />
+        </div>
+      `;
+      $('#chat-log').appendChild(imgBlock);
+      $('#chat-log').scrollTop = 1e9;
+    }
+
+    // Display web search results card
+    if (res.search_results && res.search_results.length) {
+      const escapeHtml = str => (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const searchBlock = document.createElement('div');
+      searchBlock.className = 'search-block';
+      
+      let itemsHtml = '';
+      res.search_results.forEach(r => {
+        itemsHtml += `
+          <div class="search-item">
+            <a href="${r.link}" target="_blank" class="search-title">${escapeHtml(r.title)}</a>
+            <div class="search-url">${escapeHtml(r.link)}</div>
+            <div class="search-snippet">${escapeHtml(r.snippet)}</div>
+          </div>
+        `;
+      });
+      
+      searchBlock.innerHTML = `
+        <div class="search-head">🔍 Google Search: "${escapeHtml(res.search_query)}"</div>
+        <div class="search-body">${itemsHtml}</div>
+      `;
+      $('#chat-log').appendChild(searchBlock);
+      $('#chat-log').scrollTop = 1e9;
+    }
     
     // Handle desktop tasks requiring security prompts
     if (res.task) {
@@ -1004,11 +1116,13 @@ async function sendMessage(text) {
     const engineLabel =
       res.engine === 'ollama' ? 'Local LLM · Ollama' :
       res.engine === 'coder'  ? 'Coder · wrote a file' :
+      res.engine === 'image'  ? 'Image Gen · Pollinations' :
       state.piperAvailable    ? 'Piper TTS · ready'    : 'Browser TTS · ready';
     $('#engine-status').textContent = engineLabel;
 
     if (res.emotion) addActivity('ai', 'EMOTION', res.emotion.toUpperCase());
-    speak(res.reply);
+    state.lastDetectedLanguage = res.language_detected;
+    speak(res.reply, { language: res.language_detected });
   } catch (e) { thinking.textContent = '⚠ ' + e.message; thinking.classList.remove('thinking'); }
 }
 $('#btn-send').onclick = () => sendMessage();
@@ -1019,15 +1133,37 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (SR) {
   const rec = new SR();
   rec.interimResults = false;
+  let isListening = false;
   $('#btn-mic').onclick = () => {
-    const p = state.profile || state.draft;
-    rec.lang = state.ttsLang[p.language_mode] || 'en-IN';
+    if (isListening) {
+      rec.stop();
+      return;
+    }
+    const p = state.profile || state.draft || {};
+    let recLang = state.ttsLang[p.language_mode] || 'en-IN';
+    if (state.lastDetectedLanguage === 'gujarati' || p.language_mode === 'english_gujarati') {
+      recLang = 'gu-IN';
+    }
+    rec.lang = recLang;
     $('#btn-mic').classList.add('listening');
-    rec.start();
+    try {
+      rec.start();
+      isListening = true;
+    } catch (err) {
+      console.warn("Failed to start speech recognition:", err);
+      $('#btn-mic').classList.remove('listening');
+      isListening = false;
+    }
   };
   rec.onresult = e => sendMessage(e.results[0][0].transcript);
-  rec.onend = () => $('#btn-mic').classList.remove('listening');
-  rec.onerror = () => $('#btn-mic').classList.remove('listening');
+  rec.onend = () => {
+    isListening = false;
+    $('#btn-mic').classList.remove('listening');
+  };
+  rec.onerror = () => {
+    isListening = false;
+    $('#btn-mic').classList.remove('listening');
+  };
 } else {
   $('#btn-mic').title = 'Voice input needs Chrome or Edge';
 }
@@ -1054,11 +1190,14 @@ function setupVoiceInterruption() {
       const average = sum / freqData.length;
 
       // If user speaks loud enough while AI is speaking, interrupt it
+      // Disabled to prevent self-interruption from speaker playback.
+      /*
       if (average > 38 && speechSynthesis.speaking) {
         speechSynthesis.cancel();
         if (state.avatar) state.avatar.stopSpeaking();
         if (state.callAvatar) state.callAvatar.stopSpeaking();
       }
+      */
     }, 80); // ~12.5 fps — sufficient for interruption detection
   }).catch(err => console.warn("Voice interruption mic connection failed:", err));
 }
@@ -1078,10 +1217,11 @@ $('#btn-approve-task').onclick = async () => {
   state.activeTaskToApprove = null;
 
   try {
-    addMsg('ai', `Approved. Executing: ${task.type === 'launch_app' ? task.app : task.command}...`);
+    const taskName = task.type === 'launch_app' ? task.app : (task.type === 'list_files' ? 'list files' : task.command);
+    addMsg('ai', `Approved. Executing: ${taskName}...`);
     const payload = {
       task_type: task.type,
-      target: task.type === 'launch_app' ? task.app : task.command
+      target: task.type === 'launch_app' ? task.app : (task.type === 'list_files' ? '' : task.command)
     };
     const res = await api('/api/desktop/execute', { method: 'POST', body: JSON.stringify(payload) });
     
@@ -1102,6 +1242,9 @@ $('#btn-approve-task').onclick = async () => {
       termOutput.scrollTop = 1e9;
       
       addMsg('ai', res.ok ? "Task executed successfully. Logs printed in shell." : "Task failed. Check shell logs.");
+    } else if (task.type === 'list_files') {
+      loadExplorer();
+      addMsg('ai', "Workspace files list refreshed successfully.");
     } else {
       addMsg('ai', res.message || "App launched successfully.");
     }
@@ -1396,7 +1539,7 @@ async function sendTelemetryEvent(evt, details) {
   } catch (err) {}
 }
 
-function stopWebcamSensor() {
+function stopWebcamSensor(errorText = "Vision Sensors Inactive") {
   state.webcamActive = false;
   if (state.cameraStream) {
     state.cameraStream.getTracks().forEach(t => t.stop());
@@ -1405,7 +1548,10 @@ function stopWebcamSensor() {
     webcamCamera.stop();
   }
   const placeholder = $('#webcam-placeholder');
-  if (placeholder) placeholder.style.opacity = '1';
+  if (placeholder) {
+    placeholder.style.opacity = '1';
+    placeholder.textContent = errorText;
+  }
   $('#btn-toggle-webcam').textContent = "Engage Vision Sensors";
   $('#tel-presence').textContent = "Offline";
   $('#tel-presence').className = "value";
@@ -1421,11 +1567,23 @@ $('#btn-toggle-webcam').onclick = async () => {
     try {
       state.webcamActive = true;
       $('#btn-toggle-webcam').textContent = "Stop Vision Sensors";
+      const placeholder = $('#webcam-placeholder');
+      if (placeholder) placeholder.textContent = "Connecting…";
       $('#webcam-placeholder').style.opacity = '0';
       await setupMediaPipeSensors();
     } catch (err) {
       console.warn("Failed to activate webcam sensor:", err);
-      stopWebcamSensor();
+      let errMsg = "Vision Sensors Inactive";
+      if (err.name === "NotReadableError") {
+        errMsg = "Error: Camera is in use by another application.";
+      } else if (err.name === "NotAllowedError") {
+        errMsg = "Error: Camera permission was denied.";
+      } else if (err.name === "NotFoundError") {
+        errMsg = "Error: No camera hardware found.";
+      } else {
+        errMsg = "Error: Could not start video source.";
+      }
+      stopWebcamSensor(errMsg);
     }
   }
 };
@@ -1533,7 +1691,12 @@ function startCallRecognition() {
   callRec = new SR();
   callRec.interimResults = false;
   callRec.continuous = true;
-  callRec.lang = state.ttsLang[(state.profile || {}).language_mode] || 'en-IN';
+  const p = state.profile || {};
+  let recLang = state.ttsLang[p.language_mode] || 'en-IN';
+  if (state.lastDetectedLanguage === 'gujarati' || p.language_mode === 'english_gujarati') {
+    recLang = 'gu-IN';
+  }
+  callRec.lang = recLang;
   callRec.onstart = () => { if (state.inCall) setCallStatus('LISTENING…', 'pulse-green'); };
   callRec.onresult = async (e) => {
     let text = '';
@@ -1551,11 +1714,13 @@ function startCallRecognition() {
     try {
       const res = await api('/api/chat', { method: 'POST', body: JSON.stringify({ message: text }) });
       addMsg('ai', res.reply);
+      state.lastDetectedLanguage = res.language_detected;
       if (res.emotion && state.callAvatar) {
         state.callAvatar.setEmotion(res.emotion);
       }
       setCallStatus('SPEAKING…', 'pulse-blue');
       speak(res.reply, {
+        language: res.language_detected,
         onend: () => {
           if (state.inCall) { autoRestartRec = true; try { callRec.start(); } catch(err){} }
         }
@@ -1606,6 +1771,13 @@ async function _startCallCam() {
     const vid2 = $('#call-webcam');
     if (vid2) vid2.style.display = 'none';
     console.warn('Call cam:', e);
+    let errorMsg = 'CAMERA ERROR';
+    if (e.name === 'NotReadableError') {
+      errorMsg = 'CAMERA IN USE';
+    } else if (e.name === 'NotAllowedError') {
+      errorMsg = 'CAMERA DENIED';
+    }
+    setCallStatus(errorMsg, 'pulse-red');
   }
 }
 function _stopCallCam() {
@@ -1616,6 +1788,19 @@ function _stopCallCam() {
 
 $('#btn-live-call').onclick = async () => {
   if (!state.profile) return;
+
+  // Clean up dashboard avatar to release WebGL context and resources
+  if (state.avatar) {
+    if (state.avatar._cleanup) state.avatar._cleanup();
+    state.avatar = null;
+  }
+
+  // Release dashboard camera first to prevent NotReadableError source lock
+  state.restoreWebcamAfterCall = state.webcamActive;
+  if (state.webcamActive) {
+    stopWebcamSensor();
+  }
+
   state.inCall = true; state.isMuted = false; state.callCamOn = false;
   $('#live-call-overlay').classList.add('active');
   $('#btn-call-mute').classList.remove('muted');
@@ -1663,6 +1848,36 @@ function hangUpCall() {
     state.callAvatar = null;
   }
   setCallStatus('CONNECTING…', null);
+
+  // Remount dashboard avatar since it was cleaned up
+  const avatarCfg = {
+    ...state.profile,
+    vrm_path: state.profile.vrm_path || (state.profile.avatar_type === 'male' ? '' : '/static/LIA.vrm'),
+  };
+  state.avatar = mountAvatar($('#dash-avatar'), avatarCfg);
+  setTimeout(async () => {
+    if (state.avatar) {
+      await state.avatar.wake();
+    }
+  }, 100);
+
+  // Restore dashboard webcam if it was active before the call
+  if (state.restoreWebcamAfterCall) {
+    state.restoreWebcamAfterCall = false;
+    setTimeout(async () => {
+      try {
+        state.webcamActive = true;
+        const btn = $('#btn-toggle-webcam');
+        if (btn) btn.textContent = "Stop Vision Sensors";
+        const placeholder = $('#webcam-placeholder');
+        if (placeholder) placeholder.style.opacity = '0';
+        await setupMediaPipeSensors();
+      } catch (err) {
+        console.warn("Failed to restore dashboard webcam:", err);
+        stopWebcamSensor();
+      }
+    }, 500);
+  }
 }
 
 $('#btn-end-call').onclick = hangUpCall;
