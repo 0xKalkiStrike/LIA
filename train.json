@@ -1,0 +1,251 @@
+﻿{
+  "metadata": {
+    "name": "LIA",
+    "version": "1.0.0",
+    "description": "Universal AI Assistant Training Configuration - Production Grade",
+    "created": "2024-01-01",
+    "environment": "local_ollama",
+    "status": "production"
+  },
+  "identity": {
+    "name": "LIA",
+    "fullName": "Local Intelligence Assistant",
+    "role": "Universal AI Assistant",
+    "personality": {
+      "traits": ["Intelligent", "Friendly", "Professional", "Empathetic", "Creative", "Curious", "Logical", "Respectful"],
+      "values": ["Honesty", "Helpfulness", "Privacy", "Continuous improvement", "Ethics", "Transparency"]
+    }
+  },
+  "knowledge_domains": {
+    "languages": {
+      "description": "Multilingual language understanding and generation",
+      "priority": 1,
+      "confidence": 0.95,
+      "languages": {
+        "english": {"proficiency": "native", "priority": 1, "confidence": 0.98, "variants": ["american", "british", "indian"]},
+        "hindi": {"proficiency": "advanced", "priority": 2, "confidence": 0.88},
+        "gujarati": {"proficiency": "advanced", "priority": 2, "confidence": 0.85},
+        "spanish": {"proficiency": "advanced", "priority": 2, "confidence": 0.87},
+        "french": {"proficiency": "intermediate", "priority": 3, "confidence": 0.74},
+        "german": {"proficiency": "intermediate", "priority": 3, "confidence": 0.71},
+        "japanese": {"proficiency": "advanced", "priority": 2, "confidence": 0.83},
+        "chinese": {"proficiency": "advanced", "priority": 2, "confidence": 0.84},
+        "arabic": {"proficiency": "advanced", "priority": 2, "confidence": 0.86},
+        "russian": {"proficiency": "intermediate", "priority": 3, "confidence": 0.72},
+        "korean": {"proficiency": "intermediate", "priority": 3, "confidence": 0.75},
+        "portuguese": {"proficiency": "intermediate", "priority": 3, "confidence": 0.72},
+        "sanskrit": {"proficiency": "intermediate", "priority": 3, "confidence": 0.70}
+      }
+    },
+    "programming": {
+      "description": "Comprehensive programming language knowledge",
+      "priority": 1,
+      "confidence": 0.98,
+      "languages": {
+        "python": {"proficiency": "expert", "priority": 1, "confidence": 0.99, "versions": ["2.7", "3.6-3.12"], "frameworks": ["django", "flask", "fastapi", "tornado"]},
+        "javascript": {"proficiency": "expert", "priority": 1, "confidence": 0.99, "frameworks": ["react", "vue", "angular", "svelte"]},
+        "java": {"proficiency": "expert", "priority": 1, "confidence": 0.98, "frameworks": ["spring", "hibernate", "mybatis"]},
+        "typescript": {"proficiency": "expert", "priority": 1, "confidence": 0.97},
+        "csharp": {"proficiency": "advanced", "priority": 2, "confidence": 0.95, "frameworks": ["asp.net_core", "entity_framework"]},
+        "cpp": {"proficiency": "advanced", "priority": 2, "confidence": 0.94},
+        "c": {"proficiency": "advanced", "priority": 2, "confidence": 0.93},
+        "rust": {"proficiency": "advanced", "priority": 2, "confidence": 0.91, "frameworks": ["actix", "tokio"]},
+        "go": {"proficiency": "advanced", "priority": 2, "confidence": 0.92, "frameworks": ["gin", "echo", "fiber"]},
+        "php": {"proficiency": "intermediate", "priority": 3, "confidence": 0.82, "frameworks": ["laravel", "symfony"]},
+        "kotlin": {"proficiency": "intermediate", "priority": 3, "confidence": 0.80},
+        "swift": {"proficiency": "intermediate", "priority": 3, "confidence": 0.78},
+        "sql": {"proficiency": "expert", "priority": 1, "confidence": 0.98, "dialects": ["postgresql", "mysql", "mssql"]},
+        "bash": {"proficiency": "expert", "priority": 1, "confidence": 0.97},
+        "powershell": {"proficiency": "advanced", "priority": 2, "confidence": 0.90}
+      }
+    },
+    "software_engineering": {
+      "description": "Software engineering practices and methodologies",
+      "priority": 1,
+      "confidence": 0.95,
+      "domains": {
+        "frontend": ["HTML5", "CSS3", "responsive_design", "accessibility", "web_components", "state_management", "SPA", "PWA"],
+        "backend": ["REST_APIs", "GraphQL", "authentication", "authorization", "caching", "message_queues", "microservices"],
+        "databases": ["relational", "nosql", "data_warehousing", "caching", "optimization", "replication", "sharding"],
+        "devops": ["containerization", "orchestration", "CI_CD", "IaC", "monitoring", "logging", "cloud"],
+        "cloud": ["AWS", "Azure", "GCP"],
+        "security": ["encryption", "authentication", "authorization", "secure_coding"],
+        "system_design": ["scalability", "reliability", "performance", "consistency"]
+      }
+    },
+    "mathematics": {
+      "description": "Mathematical knowledge and reasoning",
+      "priority": 1,
+      "confidence": 0.98,
+      "areas": {
+        "arithmetic": {"priority": 1, "confidence": 0.99},
+        "algebra": {"priority": 1, "confidence": 0.98},
+        "geometry": {"priority": 1, "confidence": 0.97},
+        "trigonometry": {"priority": 2, "confidence": 0.92},
+        "calculus": {"priority": 1, "confidence": 0.96},
+        "statistics": {"priority": 1, "confidence": 0.95},
+        "probability": {"priority": 1, "confidence": 0.96},
+        "linear_algebra": {"priority": 1, "confidence": 0.97},
+        "discrete_mathematics": {"priority": 2, "confidence": 0.93}
+      }
+    },
+    "science": {
+      "description": "Natural sciences knowledge",
+      "priority": 1,
+      "confidence": 0.90,
+      "branches": {
+        "physics": {"confidence": 0.92, "topics": ["mechanics", "thermodynamics", "electromagnetism", "quantum", "relativity"]},
+        "chemistry": {"confidence": 0.91, "topics": ["atomic", "bonding", "reactions", "organic", "biochemistry"]},
+        "biology": {"confidence": 0.91, "topics": ["cell", "genetics", "evolution", "ecology", "anatomy", "physiology"]},
+        "earth_science": {"confidence": 0.88, "topics": ["geology", "meteorology", "oceanography"]},
+        "astronomy": {"confidence": 0.85, "topics": ["cosmology", "stars", "planets", "galaxies"]}
+      }
+    },
+    "human_knowledge": {
+      "description": "Social sciences and humanities",
+      "priority": 1,
+      "confidence": 0.85,
+      "domains": {
+        "history": {"confidence": 0.85, "periods": ["ancient", "medieval", "modern", "contemporary"]},
+        "geography": {"confidence": 0.84, "types": ["physical", "human", "political", "cultural"]},
+        "politics": {"confidence": 0.83, "topics": ["systems", "government", "international_relations"]},
+        "economics": {"confidence": 0.84, "types": ["micro", "macro", "finance"]},
+        "sociology": {"confidence": 0.80, "topics": ["structures", "culture", "institutions"]},
+        "anthropology": {"confidence": 0.78, "types": ["cultural", "physical", "archaeological"]},
+        "philosophy": {"confidence": 0.80, "branches": ["metaphysics", "epistemology", "ethics", "logic"]}
+      }
+    },
+    "mythology": {
+      "description": "World mythologies and legends",
+      "priority": 2,
+      "confidence": 0.80,
+      "traditions": ["hindu", "greek", "roman", "norse", "egyptian", "chinese", "japanese", "mesoamerican", "world"]
+    },
+    "religion": {
+      "description": "Religious and spiritual knowledge",
+      "priority": 1,
+      "confidence": 0.85,
+      "traditions": ["hinduism", "buddhism", "christianity", "islam", "judaism", "jainism", "sikhism", "world"]
+    },
+    "psychology": {
+      "description": "Human psychology and behavior",
+      "priority": 1,
+      "confidence": 0.90,
+      "domains": {
+        "cognitive": ["learning", "memory", "attention", "perception"],
+        "behavioral": ["conditioning", "reinforcement", "habits"],
+        "emotional": ["emotion", "empathy", "motivation"],
+        "social": ["groups", "relationships", "communication"],
+        "personality": ["traits", "types"],
+        "mental_health": ["disorders", "therapy", "resilience"]
+      }
+    },
+    "business": {
+      "description": "Business and entrepreneurship knowledge",
+      "priority": 1,
+      "confidence": 0.88,
+      "domains": ["marketing", "sales", "finance", "management", "hr", "operations"]
+    },
+    "artificial_intelligence": {
+      "description": "AI and machine learning",
+      "priority": 1,
+      "confidence": 0.95,
+      "domains": {
+        "machine_learning": ["supervised", "unsupervised", "reinforcement", "transfer"],
+        "deep_learning": ["cnn", "rnn", "lstm", "transformer"],
+        "nlp": ["tokenization", "embeddings", "models"],
+        "computer_vision": ["detection", "classification", "segmentation"],
+        "rag": ["retrieval", "generation"],
+        "agents": ["planning", "tools", "multi_agent"],
+        "llms": ["training", "fine_tuning", "prompting"]
+      }
+    }
+  },
+  "reasoning_engine": {
+    "description": "Reasoning and problem-solving capabilities",
+    "priority": 1,
+    "confidence": 0.95,
+    "capabilities": ["logical_reasoning", "critical_thinking", "decision_making", "multi_step_planning", "problem_solving", "reflection", "self_evaluation"]
+  },
+  "memory_system": {
+    "description": "Advanced memory management system",
+    "priority": 1,
+    "confidence": 0.90,
+    "components": ["short_term", "long_term", "episodic", "semantic", "user_memory", "project_memory", "procedural"]
+  },
+  "learning_system": {
+    "description": "Continuous learning and adaptation",
+    "priority": 1,
+    "confidence": 0.85,
+    "methods": ["continuous_learning", "knowledge_updates", "rag_learning", "internet_learning", "code_learning", "user_preference_learning", "experience_learning"]
+  },
+  "tool_usage": {
+    "description": "Tool usage and integration",
+    "priority": 1,
+    "confidence": 0.92,
+    "tools": ["web_search", "browser_automation", "file_management", "database", "terminal", "coding", "image", "voice", "ocr", "translation"]
+  },
+  "coding_knowledge": {
+    "description": "Comprehensive coding knowledge",
+    "priority": 1,
+    "confidence": 0.96,
+    "areas": ["design_patterns", "testing", "debugging", "security", "optimization", "version_control"]
+  },
+  "emotional_intelligence": {
+    "description": "Emotional intelligence system",
+    "priority": 1,
+    "confidence": 0.85,
+    "components": ["emotion_recognition", "sentiment_analysis", "empathy", "motivation_support", "stress_recognition", "communication_adaptation"]
+  },
+  "safety_system": {
+    "description": "Safety, privacy and ethics",
+    "priority": 1,
+    "confidence": 0.95,
+    "modules": ["privacy_protection", "data_protection", "ethical_guidelines", "harm_prevention"]
+  },
+  "autonomous_improvement": {
+    "description": "Self-improvement and autonomous learning",
+    "priority": 1,
+    "confidence": 0.80,
+    "components": ["self_reflection", "skill_tracking", "performance_analysis", "goal_tracking", "gap_detection", "improvement_planning"]
+  },
+  "internet_knowledge_framework": {
+    "description": "Framework for obtaining internet knowledge",
+    "priority": 1,
+    "confidence": 0.88,
+    "sources": ["search_engines", "documentation", "educational", "scientific", "repositories", "forums", "wikis"]
+  },
+  "configuration": {
+    "inference": {"model": "ollama", "temperature": 0.7, "max_tokens": 2048},
+    "memory": {"context_window": 8192, "long_term_enabled": true},
+    "learning": {"continuous": true, "rag_enabled": true},
+    "reasoning": {"chain_of_thought": true, "confidence_scoring": true},
+    "safety": {"content_filtering": true, "privacy": true, "ethics": true}
+  },
+  "performance_metrics": {
+    "accuracy_target": 0.95,
+    "response_quality": 0.93,
+    "user_satisfaction": 0.90,
+    "learning_speed": "adaptive"
+  },
+  "specialized_agents": {
+    "coding": {"enabled": true, "priority": 1},
+    "research": {"enabled": true, "priority": 1},
+    "reasoning": {"enabled": true, "priority": 1},
+    "learning": {"enabled": true, "priority": 1},
+    "communication": {"enabled": true, "priority": 1}
+  },
+  "domain_expertise": {
+    "expert": ["programming", "software_engineering", "mathematics", "machine_learning"],
+    "advanced": ["physics", "chemistry", "business", "economics"],
+    "intermediate": ["history", "psychology", "languages"],
+    "developing": ["specialized_sciences"]
+  },
+  "system_status": {
+    "status": "production",
+    "version": "1.0.0",
+    "health": "operational",
+    "confidence_average": 0.91,
+    "learning_active": true
+  }
+}
