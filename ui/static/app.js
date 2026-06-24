@@ -55,6 +55,59 @@ let voicesReady = [];
 speechSynthesis.onvoiceschanged = () => { voicesReady = speechSynthesis.getVoices(); };
 voicesReady = speechSynthesis.getVoices();
 
+/** Transliterates Gujarati script to Devanagari script */
+function transliterateGujaratiToDevanagari(text) {
+  return text.replace(/[\u0A80-\u0AFF]/g, (char) => {
+    return String.fromCharCode(char.charCodeAt(0) - 0x0180);
+  });
+}
+
+/** Transliterates Gujarati and Devanagari script to Romanized text */
+function transliterateIndicToRoman(text) {
+  let normalizedText = text.replace(/[\u0900-\u097F]/g, (char) => {
+    return String.fromCharCode(char.charCodeAt(0) + 0x0180);
+  });
+
+  const mapping = {
+    '\u0A85': 'a', '\u0A86': 'aa', '\u0A87': 'i', '\u0A88': 'ee', '\u0A89': 'u', '\u0A8A': 'oo', '\u0A8B': 'ru',
+    '\u0A8F': 'e', '\u0A90': 'ai', '\u0A93': 'o', '\u0A94': 'au',
+    '\u0A95': 'k', '\u0A96': 'kh', '\u0A97': 'g', '\u0A98': 'gh', '\u0A99': 'ng',
+    '\u0A9A': 'ch', '\u0A9B': 'chh', '\u0A9C': 'j', '\u0A9D': 'jh', '\u0A9E': 'ny',
+    '\u0A9F': 't', '\u0AA0': 'th', '\u0AA1': 'd', '\u0AA2': 'dh', '\u0AA3': 'n',
+    '\u0AA4': 't', '\u0AA5': 'th', '\u0AA6': 'd', '\u0AA7': 'dh', '\u0AA8': 'n',
+    '\u0AAA': 'p', '\u0AAB': 'f', '\u0AAC': 'b', '\u0AAD': 'bh', '\u0AAE': 'm',
+    '\u0AAF': 'y', '\u0AB0': 'r', '\u0AB2': 'l', '\u0AB3': 'l', '\u0AB5': 'v',
+    '\u0AB6': 'sh', '\u0AB7': 'sh', '\u0AB8': 's', '\u0AB9': 'h',
+    '\u0ABE': 'a', '\u0ABF': 'i', '\u0AC0': 'ee', '\u0AC1': 'u', '\u0AC2': 'oo', '\u0AC3': 'ru',
+    '\u0AC7': 'e', '\u0AC8': 'ai', '\u0ACB': 'o', '\u0ACC': 'au',
+    '\u0ACD': '', '\u0A82': 'n', '\u0A83': 'h'
+  };
+  
+  let result = '';
+  for (let i = 0; i < normalizedText.length; i++) {
+    const char = normalizedText[i];
+    const code = char.charCodeAt(0);
+    
+    if (code >= 0x0A80 && code <= 0x0AFF) {
+      const isConsonant = (code >= 0x0A95 && code <= 0x0AB9) || code === 0x0AB3;
+      const nextChar = normalizedText[i + 1];
+      const nextCode = nextChar ? nextChar.charCodeAt(0) : 0;
+      
+      result += mapping[char] || '';
+      
+      if (isConsonant) {
+        const nextIsGujaratiLetter = nextCode >= 0x0A80 && nextCode <= 0x0AFF;
+        if (nextIsGujaratiLetter && !(nextCode >= 0x0ABE && nextCode <= 0x0ACD)) {
+          result += 'a';
+        }
+      }
+    } else {
+      result += char;
+    }
+  }
+  return result;
+}
+
 // Shared AudioContext for Piper playback + viseme extraction
 let _audioCtxTTS = null;
 function getAudioCtx() {
@@ -75,9 +128,11 @@ function speak(text, { onend, language } = {}) {
   const p = state.profile || state.draft;
   const persona = state.voices[p.voice_persona] || { pitch: 1, rate: 1 };
 
+  const hasIndicScript = /[\u0900-\u0D7F]/.test(text);
   const isGujarati = /[\u0A80-\u0AFF]/.test(text) || language === 'gujarati' || p.language_mode === 'english_gujarati';
+  const isNonEnglish = isGujarati || hasIndicScript || (language && language !== 'english') || (p.language_mode && p.language_mode !== 'english' && p.language_mode !== 'auto');
 
-  if (state.piperAvailable && !isGujarati) {
+  if (state.piperAvailable && !isNonEnglish) {
     _speakPiper(text, p.voice_persona, onend);
   } else {
     _speakBrowser(text, persona, p, onend, isGujarati);
@@ -274,65 +329,93 @@ function _speakBrowser(text, persona, p, onend, isGujarati = false) {
 
   let v = null;
 
-  // 1. Exact premium match
-  for (const name of PREMIUM) {
-    v = voicesReady.find(x => x.name === name);
-    if (v) break;
-  }
-  // 2. Partial premium match (more flexible, check word presence)
-  if (!v) {
-    for (const name of PREMIUM) {
-      const keywords = name.split(' ').filter(x => x.length > 3).map(x => x.toLowerCase());
-      v = voicesReady.find(x => {
-        const nameLower = x.name.toLowerCase();
-        return keywords.some(k => nameLower.includes(k)) &&
-               (isGujarati ? true : /female|woman|aria|jenny|zira|hazel|heera|neerja|veena|samantha|ava/i.test(x.name));
-      });
-      if (v) break;
-    }
-  }
-  // 3. Persona hints (only if not forcing Gujarati)
-  if (!v && !isGujarati) {
-    for (const h of (persona.web_voice_hint || [])) {
-      v = voicesReady.find(x => x.name.toLowerCase().includes(h.toLowerCase()));
-      if (v) break;
-    }
-  }
-  // 4. Any locale-matching voice with robust Hindi/Indian English female fallbacks
-  if (!v) {
-    const filterLang = isGujarati ? 'gu' : 'en';
-    let langV = voicesReady.filter(x => x.lang.startsWith(filterLang) || x.lang.startsWith(filterLang + '-'));
-    
-    // If Gujarati is requested but missing from system, fall back to female Hindi
-    if (isGujarati && langV.length === 0) {
-      langV = voicesReady.filter(x => x.lang.startsWith('hi') || x.lang.startsWith('hi-'));
-    }
-    
-    // If Hindi is also missing, fall back to female Indian English
-    if (langV.length === 0) {
-      langV = voicesReady.filter(x => x.lang.startsWith('en-IN') || x.name.includes('India'));
+  if (isGujarati) {
+    // 1. Try native Gujarati voices (female preferred)
+    let guVoices = voicesReady.filter(x => x.lang.startsWith('gu') || x.lang.startsWith('gu-') || x.name.includes('Dhwani') || x.name.includes('Shruti') || x.name.includes('ગુજરાતી'));
+    guVoices = guVoices.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur|ravi|david|mark/i.test(x.name));
+    v = guVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) || guVoices[0] || null;
+
+    // 2. Try Hindi voices (female preferred)
+    if (!v) {
+      let hiVoices = voicesReady.filter(x => x.lang.startsWith('hi') || x.lang.startsWith('hi-') || x.name.includes('हिन्दी') || x.name.includes('Hindi'));
+      hiVoices = hiVoices.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur|ravi|david|mark/i.test(x.name));
+      v = hiVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) || hiVoices[0] || null;
     }
 
-    // Strictly filter out male voices (like Microsoft Niranjan, Hemant, Madhur, Mark, David, Ravi)
-    langV = langV.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur|ravi|david|mark/i.test(x.name));
-    
-    v = langV.find(x => /natural|online|neural|wavenet/i.test(x.name))
-      || langV.find(x => x.localService)
-      || langV[0]
-      || null;
+    // 3. Try Indian English voices (female preferred, but allow male to preserve Indian accent)
+    if (!v) {
+      let inVoices = voicesReady.filter(x => x.lang.startsWith('en-IN') || x.name.includes('India') || x.name.includes('Ravi') || x.name.includes('Heera'));
+      let inFemale = inVoices.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur|ravi|david|mark/i.test(x.name));
+      v = inFemale.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) 
+          || inFemale[0] 
+          || inVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) 
+          || inVoices[0] 
+          || null;
+    }
+  }
+
+  if (!v) {
+    // 1. Exact premium match
+    for (const name of PREMIUM) {
+      v = voicesReady.find(x => x.name === name);
+      if (v) break;
+    }
+    // 2. Partial premium match (more flexible, check word presence)
+    if (!v) {
+      for (const name of PREMIUM) {
+        const keywords = name.split(' ').filter(x => x.length > 3).map(x => x.toLowerCase());
+        v = voicesReady.find(x => {
+          const nameLower = x.name.toLowerCase();
+          return keywords.some(k => nameLower.includes(k)) &&
+                 /female|woman|aria|jenny|zira|hazel|heera|neerja|veena|samantha|ava/i.test(x.name);
+        });
+        if (v) break;
+      }
+    }
+    // 3. Persona hints (only if not forcing Gujarati)
+    if (!v && !isGujarati) {
+      for (const h of (persona.web_voice_hint || [])) {
+        v = voicesReady.find(x => x.name.toLowerCase().includes(h.toLowerCase()));
+        if (v) break;
+      }
+    }
+    // 4. Any locale-matching voice
+    if (!v) {
+      const filterLang = 'en';
+      let langV = voicesReady.filter(x => x.lang.startsWith(filterLang) || x.lang.startsWith(filterLang + '-'));
+      langV = langV.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur|ravi|david|mark/i.test(x.name));
+      v = langV.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name))
+        || langV.find(x => x.localService)
+        || langV[0]
+        || null;
+    }
   }
   
   // Ultimate fallback (must be female)
   if (!v) {
-    v = voicesReady.find(x => /heera|zira|jerry|jenny|aria|samantha|veena|neerja|google/i.test(x.name.toLowerCase())) 
+    v = voicesReady.find(x => /heera|zira|jerry|jenny|aria|samantha|veena|neerja/i.test(x.name.toLowerCase())) 
         || voicesReady[0] 
         || null;
   }
 
   if (v) u.voice = v;
 
+  // Transliterate if using fallback/different script voices
+  const hasGujarati = /[\u0A80-\u0AFF]/.test(text);
+  const hasDevanagari = /[\u0900-\u097F]/.test(text);
+  if (hasGujarati || hasDevanagari) {
+    const voiceLang = (v && v.lang) ? v.lang : 'en';
+    if (voiceLang.startsWith('hi')) {
+      if (hasGujarati) {
+        u.text = transliterateGujaratiToDevanagari(text);
+      }
+    } else if (!voiceLang.startsWith('gu') && !voiceLang.startsWith('hi')) {
+      u.text = transliterateIndicToRoman(text);
+    }
+  }
+
   /* FORCE NATURAL SETTINGS - prevent robot voice */
-  const isNeuralVoice = v && /natural|online|neural|wavenet/i.test(v.name);
+  const isNeuralVoice = v && /natural|online|neural|wavenet|google|microsoft.*online/i.test(v.name);
 
   // ALWAYS use natural settings for best quality
   u.pitch  = persona.pitch  ?? 1.0;   /* Natural pitch - no squeaking */
@@ -340,25 +423,25 @@ function _speakBrowser(text, persona, p, onend, isGujarati = false) {
   u.volume = 1.0;
   u.lang   = v ? v.lang : langCode;
 
-  // If NOT a neural voice, compensate with better rate
+  // If NOT a neural voice, avoid pitch-shifting to prevent robotic metallic distortion
   if (!isNeuralVoice && v) {
-    u.pitch = 1.05;
-    u.rate = 0.92;  /* Even slower for non-neural voices */
+    u.pitch = 1.0;
+    u.rate = 0.90;  /* Even slower for non-neural voices to maximize clarity */
   }
 
   /* Dynamic prosody: adjust pitch & rate based on emotional state for more natural expression */
   const mood = state.profile?.current_mood || 'neutral';
   if (mood === 'excited' || mood === 'happy') { 
-    u.pitch = Math.min(2.0, u.pitch * 1.18);  /* energetic: higher pitch */
-    u.rate  = Math.min(2.0, u.rate * 1.10);   /* slightly faster energy */
+    u.pitch = Math.min(1.15, u.pitch * 1.06);  /* natural slight elevation */
+    u.rate  = Math.min(1.15, u.rate * 1.05);   /* slightly faster */
   }
   else if (mood === 'sad') { 
-    u.pitch = Math.max(0.5, u.pitch * 0.88);  /* down-pitch sadness */
-    u.rate  = Math.max(0.1, u.rate * 0.80);   /* slower, more contemplative */
+    u.pitch = Math.max(0.85, u.pitch * 0.94);  /* subtle down-pitch */
+    u.rate  = Math.max(0.75, u.rate * 0.85);   /* slower, more natural pause */
   }
   else if (mood === 'angry') { 
-    u.pitch = Math.min(2.0, u.pitch * 1.12);  /* sharp pitch */
-    u.rate  = Math.min(2.0, u.rate * 1.20);   /* crisp delivery */
+    u.pitch = Math.min(1.15, u.pitch * 1.03);  /* crisp, slightly higher tension */
+    u.rate  = Math.min(1.20, u.rate * 1.08);   /* faster delivery */
   }
 
   const words = Math.max(1, text.trim().split(/\s+/).length);
@@ -382,7 +465,8 @@ function _speakBrowser(text, persona, p, onend, isGujarati = false) {
   u.onboundary = (event) => {
     if (event.name === 'word') {
       const charIndex = event.charIndex;
-      const remainingText = text.slice(charIndex);
+      const spokenText = u.text || text;
+      const remainingText = spokenText.slice(charIndex);
       const nextSpace = remainingText.search(/\s/);
       const word = nextSpace === -1 ? remainingText : remainingText.slice(0, nextSpace);
       
@@ -426,6 +510,7 @@ function _speakBrowser(text, persona, p, onend, isGujarati = false) {
 }
 
 function _wordToViseme(word) {
+  word = transliterateIndicToRoman(word);
   word = word.toLowerCase().replace(/[^a-z]/g, '');
   if (!word) return 'rest';
   

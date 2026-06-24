@@ -55,6 +55,44 @@ def run_command(command: str) -> dict:
 
     try:
         command = command.strip()
+        cmd_lower = command.lower()
+
+        # Handle persistent/server/interactive commands on Windows to prevent blocking
+        if platform.system() == "Windows":
+            # n8n elevation request or general n8n run
+            if "n8n" in cmd_lower:
+                if any(x in cmd_lower for x in ["admin", "elevated", "powershell"]):
+                    # Start n8n in a new elevated PowerShell window
+                    powershell_cmd = "powershell -Command \"Start-Process powershell -Verb RunAs -ArgumentList '-NoExit', '-Command', 'n8n'\""
+                    subprocess.Popen(powershell_cmd, shell=True)
+                    return {
+                        "ok": True,
+                        "stdout": "Requested administrator privileges to run n8n in a new PowerShell window.",
+                        "stderr": "",
+                        "code": 0,
+                        "command": command
+                    }
+                else:
+                    # Start n8n in a new CMD window
+                    subprocess.Popen("cmd.exe /c start cmd.exe /k n8n", shell=True)
+                    return {
+                        "ok": True,
+                        "stdout": "n8n started in a new terminal window.",
+                        "stderr": "",
+                        "code": 0,
+                        "command": command
+                    }
+            
+            # General long-running web servers / CLI tools
+            if any(x in cmd_lower for x in ["npm start", "npm run", "node ", "nodemon", "uvicorn", "python run.py", "python -m http.server"]):
+                subprocess.Popen(f"cmd.exe /c start cmd.exe /k {command}", shell=True)
+                return {
+                    "ok": True,
+                    "stdout": f"Started '{command}' in a new terminal window.",
+                    "stderr": "",
+                    "code": 0,
+                    "command": command
+                }
 
         # For PowerShell, use explicit encoding
         if command.lower().startswith("powershell") or command.lower().startswith("pwsh"):
@@ -121,6 +159,7 @@ def launch_app(app_name: str) -> dict:
         "vscode": "code",
         "visual studio code": "code",
         "chrome": "chrome.exe",
+        "google chrome": "chrome.exe",
         "firefox": "firefox.exe",
         "edge": "msedge.exe",
     }
@@ -140,7 +179,11 @@ def launch_app(app_name: str) -> dict:
             
         if target:
             try:
-                os.startfile(str(target))
+                # Open Tor Browser interactively on Windows
+                if platform.system() == "Windows":
+                    subprocess.Popen(f"cmd.exe /c start \"\" \"{target}\"", shell=True)
+                else:
+                    subprocess.Popen([str(target)], start_new_session=True)
                 return {"ok": True, "message": f"Successfully launched {app_name}."}
             except Exception as e:
                 return {"ok": False, "message": f"Failed to launch {app_name}: {str(e)}"}
@@ -149,9 +192,12 @@ def launch_app(app_name: str) -> dict:
 
     executable = apps.get(app_name, app_name)
     try:
-        # Use Windows native launcher for better reliability
+        # Use Windows native shell execution via start to bring GUI to foreground
         if platform.system() == "Windows":
-            os.startfile(executable)
+            # For powershell, cmd, terminal, etc., we can launch them using startfile.
+            # For GUI applications (like Chrome, VS Code, Notepad) we want to guarantee they pop up in the foreground.
+            # Using cmd.exe /c start "" "app" does exactly this on Windows.
+            subprocess.Popen(f"cmd.exe /c start \"\" \"{executable}\"", shell=True)
         else:
             # Linux/Mac fallback
             subprocess.Popen([executable], start_new_session=True)
@@ -161,6 +207,7 @@ def launch_app(app_name: str) -> dict:
         return {"ok": False, "message": f"Application '{app_name}' not found. Make sure it's installed."}
     except Exception as e:
         return {"ok": False, "message": f"Failed to launch {app_name}: {str(e)}"}
+
 
 
 def list_files(dir_path: str = None) -> list:

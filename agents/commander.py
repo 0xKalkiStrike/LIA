@@ -246,6 +246,139 @@ def _execute_task(task: dict) -> dict:
         return {"ok": False, "message": f"Unknown task type: {task_type}"}
 
 
+def _detect_browser_url_search_task(message: str) -> dict | None:
+    """Detect browser launch, web search, or URL request directly from the message."""
+    import urllib.parse
+    low = message.lower().strip()
+
+    # Extract browser preference if explicitly requested
+    browser = None
+    if "edge" in low:
+        browser = "msedge"
+    elif "chrome" in low:
+        browser = "chrome"
+
+    # Extract search engine preference and query
+    engine = None
+    query = ""
+
+    # YouTube search pattern matching (case preserved)
+    yt_patterns = [
+        r"search\s+youtube\s+for\s+(.+)",
+        r"search\s+youtube\s+(.+)",
+        r"youtube\s+search\s+(.+)",
+        r"search\s+on\s+youtube\s+for\s+(.+)",
+        r"search\s+on\s+youtube\s+(.+)"
+    ]
+    for pattern in yt_patterns:
+        match = re.search(pattern, message, re.IGNORECASE)
+        if match:
+            engine = "youtube"
+            query = match.group(1).strip()
+            break
+
+    # Google / Web search pattern matching (case preserved)
+    if not engine:
+        google_patterns = [
+            r"search\s+google\s+for\s+(.+)",
+            r"search\s+google\s+(.+)",
+            r"google\s+search\s+(.+)",
+            r"search\s+on\s+google\s+for\s+(.+)",
+            r"search\s+on\s+google\s+(.+)",
+            r"search\s+the\s+web\s+for\s+(.+)",
+            r"search\s+web\s+for\s+(.+)",
+            r"search\s+for\s+(.+)"
+        ]
+        for pattern in google_patterns:
+            match = re.search(pattern, message, re.IGNORECASE)
+            if match:
+                engine = "google"
+                query = match.group(1).strip()
+                break
+
+    # Fallback to simple presence checks if no specific query matched
+    if not engine:
+        if "youtube" in low:
+            engine = "youtube"
+            query = ""
+        elif "google" in low:
+            engine = "google"
+            query = ""
+
+    # Resolve URL or search page
+    url = None
+    if engine == "youtube":
+        if query:
+            url = f"https://www.youtube.com/results?search_query={urllib.parse.quote(query)}"
+        else:
+            url = "https://www.youtube.com"
+    elif engine == "google" and query:
+        url = f"https://www.google.com/search?q={urllib.parse.quote(query)}"
+    else:
+        # Check if the message contains a URL or domain first
+        url_match = re.search(r"(https?://\S+|www\.\S+|\w+\.(?:com|org|net|io|edu|gov|co|info|me)\S*)", message, re.IGNORECASE)
+        if url_match:
+            url = url_match.group(1).strip()
+            # Clean trailing brackets/punctuation
+            url = url.rstrip(").,?!")
+            if not url.startswith("http://") and not url.startswith("https://"):
+                url = "https://" + url
+        elif engine == "google":
+            url = "https://www.google.com"
+        elif "youtube" in low:
+            url = "https://www.youtube.com"
+
+    if url:
+        # Build Windows start command depending on browser
+        if browser == "msedge":
+            command = f"start msedge \"{url}\""
+        elif browser == "chrome":
+            command = f"start chrome \"{url}\""
+        else:
+            command = f"start {url}"
+        return {"type": "execute_command", "command": command}
+
+    return None
+
+
+def _handle_greetings(message: str, mode: str, name: str, detected_lang: str) -> str | None:
+    low = message.lower().strip()
+    # Normalize punctuation and extra spaces
+    clean = re.sub(r"[^\w\s]", "", low)
+    clean = re.sub(r"\s+", " ", clean).strip()
+
+    has_krishna = any(w in clean for w in ("krishna", "krishnaa", "krisna"))
+    has_kem_cho = any(w in clean for w in ("kem cho", "kem chho", "kemcho", "kemchho"))
+    has_jai_shree = any(w in clean for w in ("jai shree", "jay shree", "jai shri", "jay shri", "pranam", "jai shree krishna", "jay shree krishna"))
+
+    # Case 1: Kem cho, Jai Shree Krishna!
+    if has_kem_cho and (has_krishna or has_jai_shree):
+        if mode == "english_gujarati" or (mode == "auto" and detected_lang == "gujarati"):
+            return f"જય શ્રી કૃષ્ણ, {name}! હું મજામાં છું. તમે કેમ છો?"
+        elif mode == "english_hindi" or (mode == "auto" and detected_lang == "hindi"):
+            return f"जय श्री कृष्ण, {name}! मैं ठीक हूँ। आप कैसे हैं?"
+        else:
+            return f"Jai Shree Krishna, {name}! I am doing great. How are you?"
+
+    # Case 2: Jai Shree Krishna! / Pranam / Hare Krishna
+    if has_krishna or has_jai_shree:
+        if mode == "english_gujarati" or (mode == "auto" and detected_lang == "gujarati"):
+            return f"જય શ્રી કૃષ્ણ, {name}! હું તમારી શું મદદ કરી શકું?"
+        elif mode == "english_hindi" or (mode == "auto" and detected_lang == "hindi"):
+            return f"जय श्री कृष्ण, {name}! मैं आपकी क्या मदद कर सकता हूँ?"
+        else:
+            return f"Jai Shree Krishna, {name}! How can I help you today?"
+
+    # Case 3: Standalone Kem cho?
+    if has_kem_cho:
+        if mode == "english_gujarati" or (mode == "auto" and detected_lang == "gujarati"):
+            return f"જય શ્રી કૃષ્ણ, {name}! હું મજામાં છું. તમે કેમ છો?"
+        else:
+            return f"Kem cho, {name}! I am doing well, how about you?"
+
+    return None
+
+
 # ----------------------------------------------------------------- public ---
 def handle_message(user_id: str, message: str) -> dict:
     profile = get_profile(user_id)
@@ -255,14 +388,20 @@ def handle_message(user_id: str, message: str) -> dict:
     memory_agent.save_turn(user_id, "user", message, detected)
     memory_agent.auto_extract(user_id, message)
 
+
+
     low_msg = message.lower().strip()
     task = None
 
     search_query = None
     search_results = []
 
-    # Check direct search heuristics
-    search_match = re.match(r"^(?:search\s+for|google|web\s*search)\s+(.+)$", low_msg)
+    # Check direct browser / url / search heuristics first
+    task = _detect_browser_url_search_task(message)
+
+    # Check direct search heuristics if no browser task detected
+    if not task:
+        search_match = re.match(r"^(?:search\s+for|google|web\s*search)\s+(.+)$", low_msg)
     if search_match:
         search_query = search_match.group(1).strip()
         try:
@@ -315,6 +454,22 @@ def handle_message(user_id: str, message: str) -> dict:
             "task": task
         }
 
+    # ── route: is this a greeting? ──
+    greeting_reply = _handle_greetings(message, mode, profile.get("display_name", "Commander"), detected)
+    if greeting_reply:
+        memory_agent.save_turn(user_id, "assistant", greeting_reply, detected)
+        emotion = detect_emotion(greeting_reply)
+        return {
+            "reply": greeting_reply,
+            "language_detected": detected,
+            "engine": "predefined",
+            "emotion": emotion,
+            "task": None,
+            "task_result": None,
+            "search_query": None,
+            "search_results": []
+        }
+
     memories = memory_agent.recall(user_id)
     system = language_agent.system_prompt_for(
         mode, profile.get("char_name", "JARVIS"), profile.get("display_name", "Commander"), detected_lang=detected
@@ -334,6 +489,7 @@ def handle_message(user_id: str, message: str) -> dict:
         "You can launch apps or run terminal commands. To request a task, embed one of these tags in your response:\n"
         "- [COMMAND: launch_app notepad]\n"
         "- [COMMAND: run_command dir]\n"
+        "- [COMMAND: run_command start https://www.google.com] (to open websites/searches in the browser)\n"
         "- [COMMAND: list_files]\n"
         "Remember, all commands require user approval on their UI before executing."
     )
