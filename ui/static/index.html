@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%23060A13' stroke='%2353D7F0' stroke-width='2'/><text x='16' y='22' text-anchor='middle' font-size='16' font-family='sans-serif' fill='%2353D7F0'>⚡</text></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/static/style.css?v=2.2.0"/>
+<link rel="stylesheet" href="/static/style.css?v=2.2.2"/>
 
 <!-- CDN imports for WebGL and MediaPipe Computer Vision -->
 <script type="importmap">
@@ -326,6 +326,22 @@
         </div>
       </div>
       <ul class="memory-list" id="memory-list"></ul>
+
+      <!-- VAULT SECTION -->
+      <div class="vault-section">
+        <div class="vault-header">
+          <span class="vault-icon">🔮</span>
+          <div>
+            <h4 class="vault-title">Heart Vault</h4>
+            <p class="vault-sub">Personal moments, feelings &amp; memories you've shared — kept safe, always.</p>
+          </div>
+        </div>
+        <div class="row vault-add-row">
+          <input id="vault-input" class="text-input grow" placeholder="Something you want to always remember…"/>
+          <button id="btn-add-vault" class="btn vault-btn">Save to Vault</button>
+        </div>
+        <ul class="vault-list" id="vault-list"></ul>
+      </div>
     </div>
 
     <!-- ACTIVITY FEED PANEL -->
@@ -375,8 +391,18 @@
       <h3>Language mode</h3>
       <div class="pick-row wrap lang-row" data-key="language_mode" id="settings-langs"></div>
       <h3>Character Customization</h3>
-      <p class="hint">Gender / skin / hair / suit — changes apply instantly.</p>
-      <div class="settings-char" id="settings-char"></div>
+      <p class="hint">Change your AI's appearance, then press Update to save.</p>
+      <button class="btn solid" id="btn-edit-char">✏️ Edit Character</button>
+      <div class="char-editor" id="char-editor" style="display:none;">
+        <div id="char-editor-body">
+          <div class="settings-char" id="settings-char"></div>
+        </div>
+        <div class="char-editor-actions">
+          <button class="btn solid" id="btn-update-char">✓ Update Character</button>
+          <button class="btn ghost" id="btn-cancel-char">Cancel</button>
+          <span class="char-editor-status" id="char-editor-status"></span>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -501,6 +527,6 @@
 <!-- NOTE: dash-right closing and telemetry grid are in the main section above -->
 
 <!-- ════════════════ SCRIPTS ════════════════ -->
-<script type="module" src="/static/app.js?v=4.0.0"></script>
+<script type="module" src="/static/app.js?v=4.3.7"></script>
 </body>
 </html>

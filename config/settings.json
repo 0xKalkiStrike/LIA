@@ -1,5 +1,5 @@
 {
-  "app_name": "JARVIS AI",
+  "app_name": "LIA",
   "version": "1.0.0",
   "host": "127.0.0.1",
   "port": 8001,
@@ -7,6 +7,7 @@
   "ollama_model": "llama3.2",
   "ollama_vision_model": "llava",
   "wake_words": [
+    "lia",
     "jarvis"
   ],
   "session_hours": 12

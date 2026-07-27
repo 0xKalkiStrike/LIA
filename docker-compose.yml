@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lia-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: lia
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: lia
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lia -d lia"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: lia-backend
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://lia:password123@postgres:5432/lia
+      - PORT=8001
+      - HOST=0.0.0.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/.venv # don't overwrite container's venv
+
+  frontend:
+    build: ./frontend
+    container_name: lia-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # don't overwrite container's node_modules
+
+volumes:
+  pgdata:

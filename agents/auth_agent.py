@@ -10,7 +10,8 @@ Login: name + secret word  ->  session token  ->  character wakes up + greets.
 from core.database import db, new_id, now, log_event
 from core.security import hash_secret, verify_secret, create_session
 
-ALLOWED = {
+# Allowed sets for Enum fields
+ENUMS = {
     "char_gender": {"male", "female"},
     "char_skin": {"porcelain", "fair", "tan", "brown", "deep"},
     "char_hair_style": {"short", "spiky", "long", "bun", "curly", "wave"},
@@ -18,7 +19,8 @@ ALLOWED = {
     "char_eyes": {"amber", "emerald", "sapphire", "violet", "rose", "crimson"},
     "char_outfit": {"cyan", "gold", "crimson", "violet", "rose"},
     "char_style": {"anime", "holo"},
-    "voice_persona": {"jarvis_classic", "friday", "nova", "sage"},
+    "voice_persona": {"jarvis_classic", "friday", "nova", "sage", "custom"},
+    "voice_accent": {"us", "gb", "in", "au"},
     "language_mode": {"auto", "english", "english_gujarati", "english_hindi",
                       "english_marathi", "english_tamil", "english_bengali"},
 }
@@ -31,12 +33,32 @@ def has_users() -> bool:
 
 def _validate(profile: dict) -> dict:
     clean = {}
-    for key, allowed in ALLOWED.items():
+    
+    # 1. Enums
+    for key, allowed in ENUMS.items():
         val = profile.get(key)
         if val in allowed:
             clean[key] = val
-    name = str(profile.get("char_name", "JARVIS")).strip()[:24]
-    clean["char_name"] = name or "JARVIS"
+
+    # 2. Free Text / Arbitrary Strings
+    str_fields = ["avatar_type", "vrm_path", "char_accessories", "char_clothing_style", "greeting_style"]
+    for key in str_fields:
+        if key in profile:
+            clean[key] = str(profile[key]).strip()
+
+    # 3. Numeric parameters
+    num_fields = ["char_height", "speech_rate", "pitch", "volume_level", "char_freckles"]
+    for key in num_fields:
+        if key in profile:
+            try:
+                clean[key] = float(profile[key])
+            except (ValueError, TypeError):
+                pass
+
+    # 4. Special cases
+    name = str(profile.get("char_name", "LIA")).strip()[:24]
+    clean["char_name"] = name or "LIA"
+    
     return clean
 
 
@@ -60,15 +82,20 @@ def create_account(username: str, display_name: str, secret_word: str, profile: 
             """INSERT INTO Profiles
                (user_id, char_gender, char_skin, char_hair_style, char_hair_color,
                 char_eyes, char_outfit, char_style, char_name,
-                voice_persona, language_mode)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                voice_persona, voice_accent, language_mode, avatar_type, vrm_path,
+                char_height, char_accessories, char_clothing_style, speech_rate, pitch)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (uid,
              p.get("char_gender", "female"), p.get("char_skin", "fair"),
              p.get("char_hair_style", "long"), p.get("char_hair_color", "black"),
              p.get("char_eyes", "sapphire"), p.get("char_outfit", "cyan"),
              p.get("char_style", "anime"), p["char_name"],
-             p.get("voice_persona", "friday"),
-             p.get("language_mode", "auto")),
+             p.get("voice_persona", "friday"), p.get("voice_accent", "us"),
+             p.get("language_mode", "auto"),
+             p.get("avatar_type", "lia"), p.get("vrm_path", ""),
+             p.get("char_height", 1.0), p.get("char_accessories", "[]"),
+             p.get("char_clothing_style", "casual"), p.get("speech_rate", 1.0),
+             p.get("pitch", 1.0)),
         )
     log_event(uid, "account_created", username)
     return uid, create_session(uid)

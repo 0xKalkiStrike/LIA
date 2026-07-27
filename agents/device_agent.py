@@ -23,14 +23,17 @@ def status() -> dict:
         "python": platform.python_version(),
     }
     if _PS:
-        info.update({
-            "cpu_percent": psutil.cpu_percent(interval=0.1),
-            "ram_percent": psutil.virtual_memory().percent,
-            "disk_percent": psutil.disk_usage("/").percent,
-        })
-        batt = getattr(psutil, "sensors_battery", lambda: None)()
-        if batt:
-            info["battery_percent"] = batt.percent
+        try:
+            info.update({
+                "cpu_percent": psutil.cpu_percent(interval=0.1),
+                "ram_percent": psutil.virtual_memory().percent,
+                "disk_percent": psutil.disk_usage(os.path.splitdrive(os.getcwd())[0] or "/").percent,
+            })
+            batt = getattr(psutil, "sensors_battery", lambda: None)()
+            if batt:
+                info["battery_percent"] = batt.percent
+        except Exception as e:
+            print(f"[DeviceAgent] Error reading system stats: {e}")
     return info
 
 

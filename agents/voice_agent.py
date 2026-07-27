@@ -39,7 +39,7 @@ def _model_path(voice_id):
 
 
 def install_piper():
-    """Install piper-tts package and download ULTRA HIGH-QUALITY natural female voice."""
+    """Install piper-tts package and download voices for English and Indian languages."""
     results = []
     try:
         subprocess.check_call(
@@ -51,45 +51,45 @@ def install_piper():
         results.append(f"✗ piper-tts install failed: {e}")
         return {"ok": False, "steps": results}
 
-    # HIGHEST QUALITY voice - Neural-net trained, most natural prosody
-    # Use jenny variant for most natural female voice
-    default_voice = "en_US-jenny-medium"  # Jenny Medium = natural, clear, friendly
-    onnx_path = _VOICES_DIR / f"{default_voice}.onnx"
-    json_path = _VOICES_DIR / f"{default_voice}.onnx.json"
-    if not onnx_path.exists():
+    # Download voices - English + Indian languages
+    voices_to_download = [
+        # English voices
+        ("en_US-jenny-medium", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/jenny/medium"),
+        ("en_US-libritts-high", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/libritts/high"),
+        # Indian language voices
+        ("gu_IN-aditi-medium", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/gu/gu_IN/aditi/medium"),
+        ("hi_IN-gpt4-x4-medium", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/hi/hi_IN/gpt4-x4/medium"),
+        ("ta_IN-kart-medium", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ta/ta_IN/kart/medium"),
+        ("mr_IN-aniruddha-medium", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/mr/mr_IN/aniruddha/medium"),
+        ("bn_IN-banani-medium", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/bn/bn_IN/banani/medium"),
+    ]
+
+    import urllib.request
+    downloaded_count = 0
+    for voice_name, base_url in voices_to_download:
+        onnx_file = _VOICES_DIR / f"{voice_name}.onnx"
+        json_file = _VOICES_DIR / f"{voice_name}.onnx.json"
+
+        # Skip if already downloaded
+        if onnx_file.exists() and json_file.exists():
+            results.append(f"✓ {voice_name} already installed")
+            downloaded_count += 1
+            continue
+
         try:
-            import urllib.request
-            # Try best voice first, fallback to alternatives
-            voices_to_try = [
-                ("en_US-jenny-medium", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/jenny/medium"),
-                ("en_US-libritts-high", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/libritts/high"),
-                ("en_US-kusal-medium", "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/kusal/medium"),
-            ]
-
-            success = False
-            for voice_name, base_url in voices_to_try:
-                try:
-                    onnx_file = _VOICES_DIR / f"{voice_name}.onnx"
-                    json_file = _VOICES_DIR / f"{voice_name}.onnx.json"
-                    urllib.request.urlretrieve(f"{base_url}/{voice_name}.onnx", onnx_file)
-                    urllib.request.urlretrieve(f"{base_url}/{voice_name}.onnx.json", json_file)
-                    default_voice = voice_name
-                    onnx_path = onnx_file
-                    json_path = json_file
-                    results.append(f"✓ Downloaded {voice_name} (natural voice)")
-                    success = True
-                    break
-                except:
-                    pass
-
-            if not success:
-                results.append("✗ Voice download failed - all models unavailable")
-                return {"ok": False, "steps": results}
+            urllib.request.urlretrieve(f"{base_url}/{voice_name}.onnx", onnx_file)
+            urllib.request.urlretrieve(f"{base_url}/{voice_name}.onnx.json", json_file)
+            results.append(f"✓ Downloaded {voice_name}")
+            downloaded_count += 1
         except Exception as e:
-            results.append(f"✗ Voice download failed: {e}")
-            return {"ok": False, "steps": results}
+            results.append(f"⚠ Failed to download {voice_name}: {str(e)[:50]}")
 
     _voice_cache.clear()
+
+    if downloaded_count == 0:
+        results.append("✗ No voices could be downloaded")
+        return {"ok": False, "steps": results}
+
     return {"ok": True, "steps": results}
 
 
@@ -131,9 +131,43 @@ def _piper_model_for_persona(persona_id):
     return p.get("piper_model", "en_US-amy-medium")
 
 
-def synthesize(text, persona_id="friday"):
-    """Synthesize speech and return WAV bytes. Raises RuntimeError if Piper unavailable."""
-    model_name = _piper_model_for_persona(persona_id)
+def _resolve_model(persona_id, accent="us", language=None):
+    """Pick the Piper model for a persona + accent/language.
+
+    If language is specified (e.g., 'gujarati', 'hindi'), use that language's model.
+    Otherwise, accent selects the locale (en_US/en_GB/...) while the persona's gender
+    decides male vs female voice within that accent.
+    """
+    cfg = load("voices")
+    personas = cfg.get("personas", {})
+    accents = cfg.get("accents", {})
+    languages = cfg.get("languages", {})
+    persona = personas.get(persona_id, {})
+
+    # If a specific language is requested, use its model
+    if language and language in languages:
+        return languages[language].get("piper_model", "en_US-amy-medium")
+
+    # Otherwise, fall back to accent-based selection
+    acc = accents.get(accent)
+    if acc:
+        gender = persona.get("gender", "female")
+        model = acc.get("piper_male" if gender == "male" else "piper_female")
+        if model:
+            return model
+    return persona.get("piper_model", "en_US-amy-medium")
+
+
+def synthesize(text, persona_id="friday", accent="us", language=None):
+    """Synthesize speech and return WAV bytes. Raises RuntimeError if Piper unavailable.
+
+    Args:
+        text: Text to synthesize
+        persona_id: Voice persona (friday, nova, etc)
+        accent: English accent variant (us, gb, in, au) - ignored if language is set
+        language: Language mode (gujarati, hindi, tamil, etc) - overrides accent if set
+    """
+    model_name = _resolve_model(persona_id, accent, language)
     voice = _get_voice(model_name)
     if voice is None:
         raise RuntimeError(
@@ -163,7 +197,7 @@ def tts_status():
 # ---- STT (Whisper) -----------------------------------------------------------
 
 try:
-    from faster_whisper import WhisperModel
+    from faster_whisper import WhisperModel  # type: ignore
     _whisper = WhisperModel("small", device="cpu", compute_type="int8")
 except Exception:
     _whisper = None
@@ -181,7 +215,7 @@ def transcribe(wav_path):
 # ---- Voiceprint (resemblyzer) ------------------------------------------------
 
 try:
-    from resemblyzer import VoiceEncoder
+    from resemblyzer import VoiceEncoder  # type: ignore
     _encoder = VoiceEncoder()
 except Exception:
     _encoder = None
@@ -192,7 +226,7 @@ def voiceprint(wav_path):
         raise RuntimeError(
             "Install resemblyzer for voice auth: pip install resemblyzer"
         )
-    from resemblyzer import preprocess_wav
+    from resemblyzer import preprocess_wav  # type: ignore
     return _encoder.embed_utterance(preprocess_wav(wav_path))
 
 

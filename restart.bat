@@ -15,4 +15,6 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8000 ^| findstr LISTENING 2^
 :: Wait 2 seconds using ping (works in non-interactive shells)
 ping -n 3 127.0.0.1 >nul
 
-python C:\hacker\LIA\run.py
+start "LIA Backend" cmd /c "python C:\hacker\LIA\run.py"
+start "LIA Frontend" cmd /c "cd frontend && npm run dev"
+

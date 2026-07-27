@@ -87,8 +87,12 @@ function getExpr(vrm, aliases) {
 }
 function getBoneNode(vrm, name) {
   if (!vrm || !vrm.humanoid) return null;
+  /* MUST use normalized bones: vrm.humanoid.update() reads normalized rotations
+   * and writes them to raw bones every frame. Setting raw bones directly is
+   * immediately overwritten. The normalized bone is the correct write target. */
   if (vrm.humanoid.getNormalizedBoneNode) {
-    return vrm.humanoid.getNormalizedBoneNode(name);
+    const norm = vrm.humanoid.getNormalizedBoneNode(name);
+    if (norm) return norm;
   }
   if (vrm.humanoid.getBoneNode) {
     return vrm.humanoid.getBoneNode(name);
@@ -1080,7 +1084,7 @@ export function buildAnime(el, cfg) {
    * - exposure 1.0: neutral, no color shift
    */
   renderer.outputEncoding      = THREE.sRGBEncoding;
-  renderer.toneMapping         = THREE.LinearToneMapping;
+  renderer.toneMapping         = THREE.NoToneMapping;
   renderer.toneMappingExposure = 1.0;
   renderer.physicallyCorrectLights = false;
   renderer.sortObjects = false;
@@ -1107,10 +1111,10 @@ export function buildAnime(el, cfg) {
   scene.fog = null;
   renderer.setClearColor(0x0a0e27, 1.0);
 
-  /* Camera — IMPROVED framing for better character presentation */
-  const camera = new THREE.PerspectiveCamera(28, W / H, 0.1, 100);  /* Wider FOV for full body */
-  camera.position.set(0, 0.8, 2.8);  /* Closer for more impact */
-  camera.lookAt(0, 0.65, 0);
+  /* Camera — face-centred portrait: head + shoulders + upper body framing */
+  const camera = new THREE.PerspectiveCamera(26, W / H, 0.1, 100);
+  camera.position.set(0, 0.9, 2.2);
+  camera.lookAt(0, 0.82, 0);
 
   /*
    * LIGHTING for MToon:
@@ -1121,43 +1125,31 @@ export function buildAnime(el, cfg) {
    */
   const accentColor = ACCENT_HEX[cfg.char_outfit || cfg.outfit] || ACCENT_HEX.cyan;
 
-  /* BRIGHT ambient — Show textures clearly */
-  const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);  /* Bright enough to see colors */
+  /* MToon lighting — warm amber tones give Asian golden skin undertone.
+   * Pure white light (0xffffff) renders pale/white skin; warm amber pushes
+   * it toward the golden-olive tone of East/South-East Asian complexions. */
+  const ambientLight = new THREE.AmbientLight(0xFFDFA0, 0.55);
   scene.add(ambientLight);
 
-  /* Strong key light from front-above — shows textures naturally */
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);  /* Good balance */
+  /* Key light: warm golden from front-above */
+  const keyLight = new THREE.DirectionalLight(0xFFEAC8, 1.0);
   keyLight.position.set(0.5, 3.0, 4.0);
   scene.add(keyLight);
 
-  /* Soft fill from left */
-  const fillLight = new THREE.DirectionalLight(0xc8d8ff, 1.3);  /* Good fill */
+  /* Soft cool fill from left — contrast against the warm key */
+  const fillLight = new THREE.DirectionalLight(0xC8D8FF, 0.4);
   fillLight.position.set(-3.0, 1.5, 2.0);
   scene.add(fillLight);
 
-  /* Front-centre fill — ensure colors visible */
-  const frontFill = new THREE.DirectionalLight(0xffffff, 1.5);  /* Strong */
-  frontFill.position.set(0, 0.5, 5.0);
-  scene.add(frontFill);
-
-  /* Coloured rim accent */
-  const rimLight = new THREE.DirectionalLight(accentColor, 0.8);  /* Subtle */
+  /* Coloured rim accent from side */
+  const rimLight = new THREE.DirectionalLight(accentColor, 0.5);
   rimLight.position.set(2.5, 1.0, 2.0);
   scene.add(rimLight);
 
-  /* Top hair light */
-  const topLight = new THREE.DirectionalLight(0xffffff, 1.0);  /* Good coverage */
-  topLight.position.set(0, 5, 1);
+  /* Subtle back-top hair light */
+  const topLight = new THREE.DirectionalLight(0xffffff, 0.3);
+  topLight.position.set(0, 5, -1);
   scene.add(topLight);
-
-  /* GLOW LIGHTS: Subtle silhouette (reduced to not wash out textures) */
-  const glowLight1 = new THREE.DirectionalLight(accentColor, 0.3);  /* Subtle right glow */
-  glowLight1.position.set(3.5, 1.5, -1.5);
-  scene.add(glowLight1);
-
-  const glowLight2 = new THREE.DirectionalLight(0x6bb6ff, 0.2);  /* Subtle left glow */
-  glowLight2.position.set(-3.5, 1.5, -1.5);
-  scene.add(glowLight2);
 
   /* Holographic HUD rings */
   const hudGroup = new THREE.Group();
@@ -1197,11 +1189,11 @@ export function buildAnime(el, cfg) {
     idleGazeT: 0,
     idleGestureT: 0,
     vrm: null,
-    // Arm pose targets (lerped each frame)
-    lArm: { x: 0, y: 0, z: -0.15 },
-    rArm: { x: 0, y: 0, z: 0.15 },
-    lForearm: { x: 0, y: 0, z: 0 },
-    rForearm: { x: 0, y: 0, z: 0 },
+    // Arm pose targets — confirmed: left -z=down (side), right +z=down (side)
+    lArm: { x: 0, y: 0, z: -1.57 },
+    rArm: { x: 0, y: 0, z:  1.57 },
+    lForearm: { x: 0.08, y: 0, z: 0 },
+    rForearm: { x: 0.08, y: 0, z: 0 },
     lHand: { x: 0, y: 0, z: 0 },
     rHand: { x: 0, y: 0, z: 0 },
     neck: { x: 0, y: 0, z: 0 },
@@ -1252,18 +1244,12 @@ export function buildAnime(el, cfg) {
       modelGroup.add(vrm.scene);
 
       /* ── ORIENTATION ──────────────────────────────────────────────────
-       * LIA.vrm is a VRM 1.0 model (VRMC_vrm). VRM 1.0 models already face
-       * +Z (toward a camera placed on +Z), so NO 180° flip is needed.
-       * Detect the spec version and only rotate legacy VRM 0.x models.
-       *   - VRM 1.0  → meta.metaVersion === '1' (or vrm.meta with no exporterVersion)
-       *   - VRM 0.x  → faces -Z, needs Math.PI flip
+       * LIA.vrm (VRM0 loaded via VRMLoaderPlugin) naturally faces +Z — no flip.
+       * VRMUtils.rotateVRM0 is intentionally NOT called (corrupts MToon state).
        * ──────────────────────────────────────────────────────────────── */
-      const isVRM0 = !!(vrm.meta && vrm.meta.metaVersion === '0') ||
-                     !!(vrm.meta && vrm.meta.exporterVersion &&
-                        /UniVRM-0\./.test(vrm.meta.exporterVersion));
-      vrm.scene.rotation.y = isVRM0 ? Math.PI : 0;   /* LIA.vrm → 0 (faces camera) */
-      vrm.scene.position.set(0, -0.80, 0);  /* Move up slightly for better framing */
-      vrm.scene.scale.setScalar(1.15);  /* Scale up 15% for more presence */
+      vrm.scene.rotation.y = 0;
+      vrm.scene.position.set(0, -0.85, 0);
+      vrm.scene.scale.setScalar(1.15);
 
       /* ── DEFINITIVE MToon color fix ──────────────────────────────────
        * three-vrm v1.0.8 MToon materials have these key properties:
@@ -1296,38 +1282,32 @@ export function buildAnime(el, cfg) {
 
           if (isMToon) {
             mtoonCount++;
-            /* CRITICAL FIX: Force textures to display with proper shading */
 
-            /* Ensure color map/texture is loaded and displayed */
+            /* Fix texture filters for crisp render */
             if ('map' in mat && mat.map) {
               mat.map.magFilter = THREE.LinearFilter;
               mat.map.minFilter = THREE.LinearMipMapLinearFilter;
               mat.map.needsUpdate = true;
             }
 
-            /* Set neutral lighting to show texture colors properly */
-            if ('shadingShiftFactor' in mat) mat.shadingShiftFactor = 0.3;  /* Slight lift to show colors */
-            if ('shadingToonyFactor' in mat) mat.shadingToonyFactor = 0.7;  /* Normal toon effect */
+            /* shadingShiftFactor 0.55: ~55% of surface in lit zone, leaving visible
+             * shadow gradients on skin — prevents uniformly flat white appearance.
+             * (Was 0.7 which over-lit everything → white skin.) */
+            if ('shadingShiftFactor' in mat) mat.shadingShiftFactor = 0.55;
+            if ('shadingToonyFactor' in mat) mat.shadingToonyFactor = 0.92;
 
-            /* Base color: white so textures can show through */
-            if ('color' in mat) {
-              mat.color.set(0xffffff);
-              mat.needsUpdate = true;
-            }
-
-            /* DISABLE everything that hides textures */
+            /* Disable matcap — it overrides albedo with grey-ish tones */
             if ('matcapFactor' in mat) mat.matcapFactor = new THREE.Color(0, 0, 0);
             if ('matcapTexture' in mat) mat.matcapTexture = null;
+
+            /* Disable rim lighting — it adds grey/white wash on edges */
             if ('rimLightingMixFactor' in mat) mat.rimLightingMixFactor = 0.0;
 
-            /* NO emissive - let textures be the source of color */
-            if ('emissive' in mat) {
-              mat.emissive.set(0x000000);
-              if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.0;
-            }
-
-            /* Standard outline (don't override) */
+            /* Disable outline — outline pass can darken and muddy the look */
             if ('outlineWidthMode' in mat) mat.outlineWidthMode = 0;
+
+            /* NOTE: do NOT override mat.color — let the VRM's baked tints show.
+             * NOTE: do NOT override emissive — eye glow, highlight dots need it. */
           } else {
             stdCount++;
             /* Standard materials: show actual textures */
@@ -1353,10 +1333,14 @@ export function buildAnime(el, cfg) {
         });
       });
 
-      /* CSS safety net — Show actual texture colors with good saturation */
-      canvas.style.filter = 'saturate(1.4) brightness(1.05) contrast(1.1)';  /* Balanced to show vibrant colors */
+      /* brightness(0.82): pulls skin away from blown-out white.
+       * saturate(1.6): boosts the warm amber undertone from the lights
+       * so skin reads golden/Asian rather than washed. */
+      canvas.style.filter = 'saturate(1.6) brightness(0.82)';
 
       _applyIdlePose(vrm);
+
+      window.__vrm = vrm;
       console.log(`✓ VRM loaded: ${mtoonCount} MToon + ${stdCount} standard materials. Color fix applied.`);
     },
     () => {},
@@ -1366,26 +1350,23 @@ export function buildAnime(el, cfg) {
     }
   );
 
-  /* ── Apply initial T-pose → APPEALING natural idle pose ── */
+  /* ── Apply initial idle pose directly so there is zero T-pose flash on load ── */
   function _applyIdlePose(vrm) {
     function boneRot(name, x, y, z) {
       const b = getBoneNode(vrm, name);
       if (b) { b.rotation.x = x; b.rotation.y = y; b.rotation.z = z; }
     }
-    // Beautiful, relaxed, engaging pose
-    // Arms in front body for welcoming appearance
-    boneRot('leftUpperArm',  -0.15, 0.2,  -0.55);   /* More relaxed & forward */
-    boneRot('rightUpperArm', -0.15, -0.2, 0.55);
-    boneRot('leftLowerArm',  0.25, -0.25, 0.05);    /* Better angle */
-    boneRot('rightLowerArm', 0.25, 0.25, -0.05);
-    boneRot('leftHand',      0.05, 0.1, -0.08);
-    boneRot('rightHand',     0.05, -0.1, 0.08);
-
-    /* Slight forward lean for engagement */
-    boneRot('spine',         0.04, 0, 0);
+    /* Confirmed: left -z=down (side), right +z=down (side) */
+    boneRot('leftUpperArm',  0, 0, -1.57);
+    boneRot('rightUpperArm', 0, 0,  1.57);
+    boneRot('leftLowerArm',  0.08, 0, 0);
+    boneRot('rightLowerArm', 0.08, 0, 0);
+    boneRot('leftHand',      0, 0, 0);
+    boneRot('rightHand',     0, 0, 0);
+    boneRot('spine',         0.03, 0, 0);
     boneRot('chest',         0.02, 0, 0);
-    boneRot('neck',          0.02, 0, 0);  /* Slight head tilt */
-    boneRot('head',          0.03, 0.05, 0);  /* Look friendly */
+    boneRot('neck',          0.02, 0, 0);
+    boneRot('head',          0.02, 0.05, 0);
   }
 
   /* ── Mouse look ── */
@@ -1411,31 +1392,31 @@ export function buildAnime(el, cfg) {
       /* ── IDLE: gentle sway, arms at side ── */
       case 'idle':
       default:
-        /* Arms lowered to sides: VRM T-pose needs ~1.3 rad on Z to hang down */
-        st.lArm = { x: 0,    y: 0,  z: -1.30 + sin(t * 0.6) * 0.03 };
-        st.rArm = { x: 0,    y: 0,  z:  1.30 + sin(t * 0.6 + 1) * 0.03 };
-        st.lForearm = { x: 0.08, y: 0, z: -0.18 };
-        st.rForearm = { x: 0.08, y: 0, z:  0.18 };
+        /* Arms hanging at side: left -z=down, right +z=down */
+        st.lArm = { x: 0, y: 0, z: -1.57 + sin(t * 0.6) * 0.025 };
+        st.rArm = { x: 0, y: 0, z:  1.57 + sin(t * 0.6 + 1) * 0.025 };
+        st.lForearm = { x: 0.08, y: 0, z: 0 };
+        st.rForearm = { x: 0.08, y: 0, z: 0 };
         st.lHand = { x: 0, y: 0, z: 0 };
         st.rHand = { x: 0, y: 0, z: 0 };
-        st.spine = { x: 0.02, y: sin(t * 0.4) * 0.015, z: 0 };
-        st.chest = { x: 0,    y: 0, z: sin(t * 0.4) * 0.01 };
+        st.spine = { x: 0.03, y: sin(t * 0.4) * 0.012, z: 0 };
+        st.chest = { x: 0.02, y: 0, z: sin(t * 0.4) * 0.008 };
         break;
 
       /* ── WAVE: right arm waving hello ── */
       case 'wave':
-        st.rArm = { x: -0.3, y: -0.3, z: 0.9 + sin(t * 6) * 0.25 };
+        st.rArm = { x: -0.3, y: -0.3, z: -0.9 + sin(t * 6) * 0.25 };
         st.rForearm = { x: 0.6 + sin(t * 6) * 0.3, y: 0, z: 0 };
         st.rHand = { x: 0, y: sin(t * 6) * 0.2, z: 0 };
-        st.lArm = { x: 0, y: 0, z: -1.30 };
-        st.lForearm = { x: 0.05, y: 0, z: 0 };
-        st.spine = { x: 0.02, y: 0, z: 0 };
+        st.lArm = { x: 0, y: 0, z: -1.57 };  /* left arm at side */
+        st.lForearm = { x: 0.08, y: 0, z: 0 };
+        st.spine = { x: 0.03, y: 0, z: 0 };
         break;
 
       /* ── CELEBRATE: both arms raised, victory ── */
       case 'celebrate':
-        st.lArm = { x: -0.2, y: 0.2,  z: -(0.9 + sin(t * 8) * 0.15) };
-        st.rArm = { x: -0.2, y: -0.2, z:   0.9 + sin(t * 8 + 0.5) * 0.15 };
+        st.lArm = { x: -0.2, y: 0.2,  z:   0.9 + sin(t * 8) * 0.15 };
+        st.rArm = { x: -0.2, y: -0.2, z: -(0.9 + sin(t * 8 + 0.5) * 0.15) };
         st.lForearm = { x: 0.4 + sin(t * 8) * 0.2, y: 0, z: 0 };
         st.rForearm = { x: 0.4 + sin(t * 8) * 0.2, y: 0, z: 0 };
         st.lHand = { x: sin(t * 8) * 0.3, y: 0, z: 0 };
@@ -1445,11 +1426,11 @@ export function buildAnime(el, cfg) {
 
       /* ── THINKING: one hand near chin, slight tilt ── */
       case 'thinking':
-        st.lArm = { x: 0.25, y: 0.1,  z: -0.25 };
+        st.lArm = { x: 0.25, y: 0.1, z: 0.25 };  /* left arm raised for chin gesture */
         st.lForearm = { x: 1.2, y: -0.1, z: 0 };
         st.lHand = { x: -0.4, y: 0, z: -0.2 };
-        st.rArm = { x: 0,    y: 0,   z: 1.30 };
-        st.rForearm = { x: 0.1, y: 0, z: 0 };
+        st.rArm = { x: 0, y: 0, z:  1.57 };  /* right arm at side */
+        st.rForearm = { x: 0.08, y: 0, z: 0 };
         st.rHand = { x: 0, y: 0, z: 0 };
         st.neck = { x: sin(t * 1.2) * 0.04, y: 0.07, z: 0.08 };
         st.spine = { x: 0.05, y: 0.04, z: 0 };
@@ -1457,50 +1438,104 @@ export function buildAnime(el, cfg) {
 
       /* ── LISTENING: slight forward lean, attentive ── */
       case 'listening':
-        st.lArm = { x: 0.1, y: 0, z: -0.5 };
-        st.rArm = { x: 0.1, y: 0, z:  0.5 };
+        st.lArm = { x: 0.1, y: 0, z: -1.1 };
+        st.rArm = { x: 0.1, y: 0, z:  1.1 };
         st.lForearm = { x: 0.3, y: 0, z: 0 };
         st.rForearm = { x: 0.3, y: 0, z: 0 };
         st.spine = { x: 0.07 + sin(t * 1.5) * 0.015, y: 0, z: 0 };
         st.neck = { x: -0.06, y: sin(t * 1.5) * 0.06, z: 0.05 };
         break;
 
-      /* ── FRIENDLY: open arms, relaxed, welcoming ── */
+      /* ── FRIENDLY: relaxed open stance, arms comfortably at sides ── */
       case 'friendly':
-        st.lArm = { x: 0, y: 0.15,  z: -(0.45 + sin(t * 2.5) * 0.08) };
-        st.rArm = { x: 0, y: -0.15, z:   0.45 + sin(t * 2.5 + 1.2) * 0.08 };
-        st.lForearm = { x: 0.15, y: 0.1,  z: 0 };
-        st.rForearm = { x: 0.15, y: -0.1, z: 0 };
-        st.lHand = { x: 0, y: 0, z: 0.1 };
-        st.rHand = { x: 0, y: 0, z: -0.1 };
-        st.spine = { x: 0, y: sin(t * 1.5) * 0.02, z: 0 };
+        st.lArm = { x: 0.04, y: 0.08, z: -0.95 + sin(t * 2.0) * 0.05 };
+        st.rArm = { x: 0.04, y: -0.08, z:  0.95 + sin(t * 2.0 + 1.2) * 0.05 };
+        st.lForearm = { x: 0.14, y: 0.06, z: 0 };
+        st.rForearm = { x: 0.14, y: -0.06, z: 0 };
+        st.lHand = { x: 0, y: 0.04, z: 0.04 };
+        st.rHand = { x: 0, y: -0.04, z: -0.04 };
+        st.spine = { x: 0.02, y: sin(t * 1.5) * 0.018, z: 0 };
+        break;
+
+      /* ── GRACE: elegant feminine stance — arms naturally low, slight hand curl ── */
+      case 'grace':
+        st.lArm = { x: 0.06, y: 0.06, z: -1.15 + sin(t * 0.7) * 0.04 };
+        st.rArm = { x: 0.06, y: -0.06, z:  1.15 + sin(t * 0.7 + 1.0) * 0.04 };
+        st.lForearm = { x: 0.18, y: 0.06, z: 0 };
+        st.rForearm = { x: 0.18, y: -0.06, z: 0 };
+        st.lHand = { x: 0, y: 0.06, z: 0.04 };
+        st.rHand = { x: 0, y: -0.06, z: -0.04 };
+        st.spine = { x: 0.03, y: sin(t * 0.5) * 0.018, z: 0 };
+        st.chest = { x: 0.02, y: 0, z: sin(t * 0.5) * 0.012 };
+        break;
+
+      /* ── POSE: confident stance — right arm slightly angled, body gentle turn ── */
+      case 'pose':
+        st.rArm = { x: 0.10, y: -0.14, z:  0.88 + sin(t * 0.6) * 0.03 };
+        st.lArm = { x: 0.02, y: 0.10, z: -1.28 + sin(t * 0.6 + 0.9) * 0.03 };
+        st.rForearm = { x: 0.22, y: -0.12, z: 0 };
+        st.lForearm = { x: 0.10, y: 0.06, z: 0 };
+        st.rHand = { x: 0.04, y: 0, z: -0.08 };
+        st.lHand = { x: 0.04, y: 0, z: 0.06 };
+        st.spine = { x: 0.03, y: sin(t * 0.6) * 0.022, z: 0.015 };
+        st.chest = { x: 0.02, y: 0, z: sin(t * 0.5) * 0.012 };
+        break;
+
+      /* ── SWAY: gentle natural walking sway, arms at sides ── */
+      case 'sway':
+        st.lArm = { x: 0, y: 0, z: -1.44 + sin(t * 0.55) * 0.07 };
+        st.rArm = { x: 0, y: 0, z:  1.44 + sin(t * 0.55 + Math.PI) * 0.07 };
+        st.lForearm = { x: 0.07, y: 0, z: 0 };
+        st.rForearm = { x: 0.07, y: 0, z: 0 };
+        st.lHand = { x: 0, y: 0, z: 0 };
+        st.rHand = { x: 0, y: 0, z: 0 };
+        st.spine = { x: 0.02, y: sin(t * 0.55) * 0.022, z: sin(t * 0.35) * 0.012 };
+        st.chest = { x: 0.02, y: 0, z: sin(t * 0.55) * 0.014 };
         break;
 
       /* ── SURPRISED: hands up, startle ── */
       case 'surprised':
-        st.lArm = { x: -0.3, y: 0.1,  z: -0.85 + sin(t * 7) * 0.1 };
-        st.rArm = { x: -0.3, y: -0.1, z:  0.85 + sin(t * 7) * 0.1 };
+        st.lArm = { x: -0.3, y: 0.1,  z:  0.85 + sin(t * 7) * 0.1 };
+        st.rArm = { x: -0.3, y: -0.1, z: -0.85 + sin(t * 7) * 0.1 };
         st.lForearm = { x: 0.8, y: 0, z: 0 };
         st.rForearm = { x: 0.8, y: 0, z: 0 };
         st.neck = { x: -0.1, y: 0, z: 0 };
         st.spine = { x: -0.04, y: 0, z: 0 };
         break;
 
-      /* ── TALKING: light hand gestures while speaking ── */
-      case 'talking':
-        const swing = sin(t * 4.5) * 0.12;
-        st.rArm = { x: 0.1,   y: 0,   z: 0.5 + swing };
-        st.rForearm = { x: 0.35 + sin(t * 4.5 + 1) * 0.15, y: 0, z: 0 };
-        st.rHand = { x: sin(t * 4.5) * 0.15, y: 0, z: 0 };
-        st.lArm = { x: 0,     y: 0.05, z: -1.25 };
-        st.lForearm = { x: 0.1, y: 0, z: 0 };
-        st.spine = { x: 0, y: sin(t * 2) * 0.02, z: 0 };
+      /* ── TALKING: expressive bilateral gestures + head nod while speaking ── */
+      case 'talking': {
+        const swing = sin(t * 4.5) * 0.14;
+        const swing2 = sin(t * 3.6 + 1.1) * 0.10;
+        st.rArm = { x: 0.12, y: -0.05, z: -0.48 + swing };   /* right arm gesturing */
+        st.rForearm = { x: 0.42 + sin(t * 4.5 + 1) * 0.18, y: 0.05, z: 0 };
+        st.rHand = { x: sin(t * 4.5) * 0.18, y: sin(t * 3.0) * 0.12, z: 0 };
+        st.lArm = { x: 0.08, y: 0.08, z: 0.62 + swing2 };    /* left arm gesturing */
+        st.lForearm = { x: 0.28 + sin(t * 3.6) * 0.14, y: 0.08, z: 0 };
+        st.lHand = { x: sin(t * 3.6) * 0.14, y: 0, z: 0 };
+        st.spine = { x: 0.02, y: sin(t * 2.2) * 0.025, z: 0 };
+        st.neck = { x: sin(t * 2.8) * 0.045, y: sin(t * 1.6) * 0.04, z: 0 };
+        st.head = { x: sin(t * 2.2) * 0.04, y: 0, z: 0 };
+        break;
+      }
+
+      /* ── REACTING: alert forward posture when user sends a message ── */
+      case 'reacting':
+        st.lArm = { x: 0.06, y: 0, z:  0.58 };   /* slightly raised, attentive */
+        st.rArm = { x: 0.06, y: 0, z: -0.58 };
+        st.lForearm = { x: 0.22, y: 0.06, z: 0 };
+        st.rForearm = { x: 0.22, y: -0.06, z: 0 };
+        st.lHand = { x: 0.05, y: 0, z: 0.05 };
+        st.rHand = { x: 0.05, y: 0, z: -0.05 };
+        st.spine = { x: 0.10 + sin(t * 2) * 0.008, y: 0, z: 0 };
+        st.neck = { x: -0.09, y: 0, z: 0.03 };
+        st.head = { x: 0.02, y: 0, z: 0 };
         break;
 
       /* ── ANGRY: tense arms, leaning forward ── */
       case 'angry':
-        st.lArm = { x: 0.1, y: 0, z: -0.5 };
-        st.rArm = { x: 0.1, y: 0, z:  0.5 };
+        st.lArm = { x: 0.1, y: 0, z: -1.0 };
+        st.rArm = { x: 0.1, y: 0, z:  1.0 };
         st.lForearm = { x: 0.6 + sin(t * 5) * 0.05, y: 0, z: 0 };
         st.rForearm = { x: 0.6 + sin(t * 5) * 0.05, y: 0, z: 0 };
         st.spine = { x: 0.06, y: sin(t * 4) * 0.02, z: 0 };
@@ -1512,7 +1547,7 @@ export function buildAnime(el, cfg) {
         st.rArm = { x: -0.2, y: -0.4, z: 0.3 };
         st.rForearm = { x: 0, y: -0.3, z: 0 };
         st.rHand = { x: 0, y: 0, z: 0.1 };
-        st.lArm = { x: 0, y: 0, z: -1.30 };
+        st.lArm = { x: 0, y: 0, z: -1.57 };  /* left arm at side */
         break;
     }
   }
@@ -1545,7 +1580,16 @@ export function buildAnime(el, cfg) {
     if (st.isSleeping) {
       /* Gentle bob while asleep */
       if (st.vrm) {
-        st.vrm.scene.position.y = -0.95 + Math.sin(st.time * 0.5) * 0.008;
+        st.vrm.scene.position.y = -0.85 + Math.sin(st.time * 0.5) * 0.008;
+        /* Must re-apply arm pose every frame — vrm.update() resets normalized
+         * bones to T-pose rest state before writing to raw bones each tick. */
+        const _G = n => getBoneNode(st.vrm, n);
+        const _lA = _G('leftUpperArm'),  _rA = _G('rightUpperArm');
+        const _lF = _G('leftLowerArm'),  _rF = _G('rightLowerArm');
+        if (_lA) { _lA.rotation.z = -1.57; }
+        if (_rA) { _rA.rotation.z =  1.57; }
+        if (_lF) { _lF.rotation.x = 0.08; }
+        if (_rF) { _rF.rotation.x = 0.08; }
         st.vrm.update(delta);
       }
       renderer.render(scene, camera);
@@ -1570,14 +1614,14 @@ export function buildAnime(el, cfg) {
 
     /* ── Random idle gesture cycling ── */
     st.idleGestureT += delta;
-    if (st.idleGestureT > 15 + Math.random() * 5) {
+    if (st.idleGestureT > 7 + Math.random() * 5) {
       st.idleGestureT = 0;
       if (st.currentGesture === 'idle') {
-        const picks = ['listening', 'friendly', 'thinking', 'talking'];
+        const picks = ['grace', 'pose', 'sway', 'thinking', 'grace'];
         const g = picks[Math.floor(Math.random() * picks.length)];
         controller.gesture(g);
         setTimeout(() => { if (st.currentGesture === g) controller.gesture('idle'); },
-          2500 + Math.random() * 3000);
+          2000 + Math.random() * 2500);
       }
     }
 
@@ -1626,42 +1670,41 @@ export function buildAnime(el, cfg) {
       /* Breathing — chest and spine sway */
       const breathe = Math.sin(st.time * 1.35) * 0.012;
       if (st.vrm.scene) {
-        st.vrm.scene.position.y = -0.95 + breathe;
+        st.vrm.scene.position.y = -0.85 + breathe;
       }
 
       /* Gesture bone targets */
       st.gestureTime += delta;
       _setGestureTargets(st.currentGesture, st.gestureTime);
 
-      /* Apply with lerp */
-      lerpBone(lArmBone,  st.lArm,    0.10);
-      lerpBone(rArmBone,  st.rArm,    0.10);
-      lerpBone(lForeArm,  st.lForearm, 0.12);
-      lerpBone(rForeArm,  st.rForearm, 0.12);
-      lerpBone(lHandBone, st.lHand,   0.14);
-      lerpBone(rHandBone, st.rHand,   0.14);
-      lerpBone(spineBone, st.spine,   0.08);
-      lerpBone(chestBone, st.chest,   0.08);
+      /* Apply with lerp — increased speeds for snappier, more realistic movement */
+      lerpBone(lArmBone,  st.lArm,    0.20);
+      lerpBone(rArmBone,  st.rArm,    0.20);
+      lerpBone(lForeArm,  st.lForearm, 0.22);
+      lerpBone(rForeArm,  st.rForearm, 0.22);
+      lerpBone(lHandBone, st.lHand,   0.26);
+      lerpBone(rHandBone, st.rHand,   0.26);
+      lerpBone(spineBone, st.spine,   0.16);
+      lerpBone(chestBone, st.chest,   0.16);
 
       /* Clamp lookTarget to prevent unnatural 360-degree rotation of head/neck */
       const targetX = Math.max(-1.0, Math.min(1.0, st.lookTarget.x));
       const targetY = Math.max(-1.0, Math.min(1.0, st.lookTarget.y));
 
-      /* Gaze — neck + head + eyes. Multipliers boosted so the head
-       * actually turns left/right (old 0.28/0.10 were near-imperceptible). */
+      /* Gaze — neck + head + eyes. Fast lerp so the head responds snappily. */
       if (neckBone) {
-        neckBone.rotation.y = THREE.MathUtils.lerp(neckBone.rotation.y, targetX * 0.42, 0.08);
-        neckBone.rotation.x = THREE.MathUtils.lerp(neckBone.rotation.x, st.neck.x - targetY * 0.18, 0.08);
-        neckBone.rotation.z = THREE.MathUtils.lerp(neckBone.rotation.z, st.neck.z, 0.07);
+        neckBone.rotation.y = THREE.MathUtils.lerp(neckBone.rotation.y, targetX * 0.42 + (st.neck.y || 0), 0.14);
+        neckBone.rotation.x = THREE.MathUtils.lerp(neckBone.rotation.x, st.neck.x - targetY * 0.18, 0.14);
+        neckBone.rotation.z = THREE.MathUtils.lerp(neckBone.rotation.z, st.neck.z, 0.12);
       }
       if (headBone) {
-        headBone.rotation.y = THREE.MathUtils.lerp(headBone.rotation.y, targetX * 0.30 + st.head.y, 0.08);
-        headBone.rotation.x = THREE.MathUtils.lerp(headBone.rotation.x, st.head.x - targetY * 0.10, 0.08);
-        headBone.rotation.z = THREE.MathUtils.lerp(headBone.rotation.z, st.head.z, 0.07);
+        headBone.rotation.y = THREE.MathUtils.lerp(headBone.rotation.y, targetX * 0.30 + st.head.y, 0.14);
+        headBone.rotation.x = THREE.MathUtils.lerp(headBone.rotation.x, st.head.x - targetY * 0.10, 0.14);
+        headBone.rotation.z = THREE.MathUtils.lerp(headBone.rotation.z, st.head.z, 0.12);
       }
       if (lEyeBone && rEyeBone) {
-        const ey = THREE.MathUtils.lerp(lEyeBone.rotation.y, targetX * 0.45, 0.12);
-        const ex = THREE.MathUtils.lerp(lEyeBone.rotation.x, -targetY * 0.28, 0.12);
+        const ey = THREE.MathUtils.lerp(lEyeBone.rotation.y, targetX * 0.45, 0.22);
+        const ex = THREE.MathUtils.lerp(lEyeBone.rotation.x, -targetY * 0.28, 0.22);
         lEyeBone.rotation.y = ey; lEyeBone.rotation.x = ex;
         rEyeBone.rotation.y = ey; rEyeBone.rotation.x = ex;
       }
@@ -1673,22 +1716,22 @@ export function buildAnime(el, cfg) {
 
         /* Emotion */
         const emo = EMOTION_TARGETS[st.emotion] || EMOTION_TARGETS.neutral;
-        st.emotionAge = Math.min(1, st.emotionAge + delta * 1.8);
+        st.emotionAge = Math.min(1, st.emotionAge + delta * 4.0);
         const blend = st.emotionAge;
 
-        setExpr(st.vrm, EXPR.happy,     THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.happy),     emo.happy     * blend, 0.10));
-        setExpr(st.vrm, EXPR.sad,       THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.sad),       emo.sad       * blend, 0.10));
-        setExpr(st.vrm, EXPR.angry,     THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.angry),     emo.angry     * blend, 0.10));
-        setExpr(st.vrm, EXPR.surprised, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.surprised), emo.surprised * blend, 0.10));
-        setExpr(st.vrm, EXPR.relaxed,   THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.relaxed),   emo.relaxed   * blend, 0.10));
+        setExpr(st.vrm, EXPR.happy,     THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.happy),     emo.happy     * blend, 0.18));
+        setExpr(st.vrm, EXPR.sad,       THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.sad),       emo.sad       * blend, 0.18));
+        setExpr(st.vrm, EXPR.angry,     THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.angry),     emo.angry     * blend, 0.18));
+        setExpr(st.vrm, EXPR.surprised, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.surprised), emo.surprised * blend, 0.18));
+        setExpr(st.vrm, EXPR.relaxed,   THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.relaxed),   emo.relaxed   * blend, 0.18));
 
-        /* Viseme — morph lips */
+        /* Viseme — morph lips. Faster lerp = crisper lip sync */
         const vt = VISEME_TARGETS[st.viseme] || VISEME_TARGETS.rest;
-        setExpr(st.vrm, EXPR.aa, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.aa), vt.aa, 0.28));
-        setExpr(st.vrm, EXPR.ee, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ee), vt.ee, 0.28));
-        setExpr(st.vrm, EXPR.ih, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ih), vt.ih, 0.28));
-        setExpr(st.vrm, EXPR.oh, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.oh), vt.oh, 0.28));
-        setExpr(st.vrm, EXPR.ou, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ou), vt.ou, 0.28));
+        setExpr(st.vrm, EXPR.aa, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.aa), vt.aa, 0.42));
+        setExpr(st.vrm, EXPR.ee, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ee), vt.ee, 0.42));
+        setExpr(st.vrm, EXPR.ih, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ih), vt.ih, 0.42));
+        setExpr(st.vrm, EXPR.oh, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.oh), vt.oh, 0.42));
+        setExpr(st.vrm, EXPR.ou, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ou), vt.ou, 0.42));
 
         if (st.vrm.blendShapeProxy) {
           st.vrm.blendShapeProxy.update();
@@ -1753,9 +1796,10 @@ export function buildAnime(el, cfg) {
         concerned: 'thinking',
         angry:     'angry',
         thinking:  'thinking',
-        focused:   'listening',
+        focused:   'reacting',
         surprised: 'surprised',
-        curious:   'listening',
+        curious:   'reacting',
+        neutral:   'idle',
       };
       controller.gesture(gestureMap[emotion] || 'idle');
 
@@ -1796,6 +1840,13 @@ export function buildAnime(el, cfg) {
       clearInterval(st.visemeTimer);
       controller.rest();
     },
+    /* Update face expression WITHOUT changing the current gesture (for use during speech) */
+    setExpression(emotion) {
+      if (st.isSleeping) return;
+      st.emotion = emotion;
+      st.emotionAge = 0;
+    },
+    get _isSpeaking() { return st.currentGesture === 'talking'; },
     lookAt(x, y) {
       if (st.isSleeping) return;
       st.lastMouseTime = Date.now();

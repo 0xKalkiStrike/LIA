@@ -15,6 +15,85 @@ from core.config import load, setting
 from . import language_agent, memory_agent
 from .auth_agent import get_profile
 
+# ─────────────────────────── Vault detection ──────────────────────────────
+
+_VAULT_SAVE_TRIGGERS = (
+    "remember this", "remember that", "please remember",
+    "save this", "save that", "save to vault", "save to memory",
+    "i want to remember", "i want you to remember",
+    "store this", "note this", "keep this in mind", "keep this",
+    "add to vault", "add to memory vault", "add this to memory",
+    "vault this", "lock this in", "don't forget this",
+    "yaad rakh", "yaad rakhna", "note kar",
+    "mane yaad rakhi le", "yaad rakho",
+)
+
+_VAULT_RECALL_TRIGGERS = (
+    "what do you remember about me", "what have you saved",
+    "show my memories", "show my vault", "show vault",
+    "recall memories", "recall vault", "recall my memories",
+    "what's in my vault", "open vault", "open memory vault",
+    "tell me what you remember", "what did i tell you",
+    "vault memories", "my vault",
+    "meri yaadein", "yaadein dikhao",
+    "mara memories", "vault kholo",
+)
+
+_PERSONAL_SHARING_TRIGGERS = (
+    "i feel ", "i'm feeling", "i am feeling",
+    "i'm sad", "i am sad", "i'm stressed", "i am stressed",
+    "i'm worried", "i am worried", "i'm scared", "i am scared",
+    "i'm depressed", "i am depressed", "i'm anxious", "i am anxious",
+    "i'm going through", "i've been struggling", "i have been struggling",
+    "my problem is", "my issue is", "i lost my", "i failed",
+    "i'm hurt", "i am hurt", "i'm lonely", "i am lonely",
+    "i'm angry", "i am angry", "i'm frustrated", "i am frustrated",
+    "i'm tired of", "i am tired of", "i'm overwhelmed", "i am overwhelmed",
+    "i'm proud", "i am proud", "i miss ", "today was a bad",
+    "today was a good", "i cried", "bad day today", "good day today",
+)
+
+
+def _is_vault_save(message: str) -> bool:
+    low = message.lower()
+    return any(t in low for t in _VAULT_SAVE_TRIGGERS)
+
+
+def _is_vault_recall(message: str) -> bool:
+    low = message.lower()
+    return any(t in low for t in _VAULT_RECALL_TRIGGERS)
+
+
+def _is_personal_sharing(message: str) -> bool:
+    low = message.lower()
+    return any(t in low for t in _PERSONAL_SHARING_TRIGGERS)
+
+
+def _vault_recall_reply(vault: list, name: str, mode: str) -> str:
+    if not vault:
+        if mode == "english_gujarati":
+            return f"Abhi tak vault khali che, {name}. Tame je koi important vastu share karo, hu hamesha yaad rakhish."
+        elif mode == "english_hindi":
+            return f"Abhi vault mein kuch nahi hai, {name}. Jo bhi share karein, main hamesha yaad rakhunga."
+        else:
+            return f"Your vault is empty for now, {name}. Whenever you share something close to your heart, I will keep it safe here for you."
+    lines = "\n".join(f"• {m['content']}" for m in vault[:10])
+    if mode == "english_gujarati":
+        return f"Aa rahi, {name}. Tame je share karyu che te mane haaju yaad che:\n\n{lines}"
+    elif mode == "english_hindi":
+        return f"Bilkul, {name}. Jo aapne mere saath share kiya hai, woh mujhe aaj bhi yaad hai:\n\n{lines}"
+    else:
+        return f"Of course, {name}. Here is what you have shared with me — held gently in our vault:\n\n{lines}"
+
+
+def _vault_saved_reply(content: str, name: str, mode: str) -> str:
+    if mode == "english_gujarati":
+        return f"Hu aa ne yaad rakhish, {name}. Tari vaatu mara dil maa che."
+    elif mode == "english_hindi":
+        return f"Main ise yaad rakhunga, {name}. Aapki baat mujhe hamesha yaad rahegi."
+    else:
+        return f"I have saved that to our vault, {name}. Your words are safe with me, always."
+
 try:
     from . import device_agent
 except Exception:  # pragma: no cover
@@ -78,6 +157,26 @@ def _ollama_chat(messages: list[dict]) -> str | None:
         return None
 
 
+def _ollama_chat_stream(messages: list[dict]):
+    """Call local Ollama streaming. Yields text tokens."""
+    payload = json.dumps({
+        "model": setting("ollama_model", "llama3.2"),
+        "messages": messages,
+        "stream": True,
+    }).encode()
+    req = urllib.request.Request(
+        setting("ollama_url") + "/api/chat",
+        data=payload, headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        for line in resp:
+            if line:
+                data = json.loads(line.decode("utf-8"))
+                content = data.get("message", {}).get("content", "")
+                if content:
+                    yield content
+
+
 # ---------------------------------------------------------------- Gemini ---
 def _gemini_chat(messages: list[dict]) -> str | None:
     """Call Google Gemini API as a fallback if Ollama is offline."""
@@ -126,24 +225,95 @@ def _gemini_chat(messages: list[dict]) -> str | None:
         return None
 
 
+def _gemini_chat_stream(messages: list[dict]):
+    """Call Google Gemini API streaming. Yields text tokens."""
+    api_key = os.environ.get("GEMINI_API_KEY") or setting("gemini_api_key")
+    if not api_key:
+        raise ValueError("No Gemini API key available.")
+    
+    system_instruction = ""
+    contents = []
+    for msg in messages:
+        role = msg["role"]
+        content = msg["content"]
+        if role == "system":
+            system_instruction += content + "\n"
+        else:
+            gemini_role = "model" if role == "assistant" else "user"
+            contents.append({
+                "role": gemini_role,
+                "parts": [{"text": content}]
+            })
+    
+    payload = {
+        "contents": contents
+    }
+    if system_instruction:
+        payload["systemInstruction"] = {
+            "parts": [{"text": system_instruction.strip()}]
+        }
+        
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key={api_key}"
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"}
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        buffer = ""
+        for chunk in resp:
+            if chunk:
+                buffer += chunk.decode("utf-8")
+                while True:
+                    start = buffer.find('{')
+                    if start == -1:
+                        break
+                    brace_count = 0
+                    end = -1
+                    for i in range(start, len(buffer)):
+                        if buffer[i] == '{':
+                            brace_count += 1
+                        elif buffer[i] == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                end = i
+                                break
+                    if end == -1:
+                        break
+                    
+                    obj_str = buffer[start:end+1]
+                    buffer = buffer[end+1:]
+                    try:
+                        obj = json.loads(obj_str)
+                        candidates = obj.get("candidates", [])
+                        if candidates:
+                            parts = candidates[0].get("content", {}).get("parts", [])
+                            if parts:
+                                text = parts[0].get("text", "")
+                                if text:
+                                    yield text
+                    except Exception:
+                        pass
+
+
 # ------------------------------------------------------- offline fallback ---
 _OFFLINE = {
     "english_gujarati": {
-        "hello": "કેમ છો! હું તૈયાર છું — બોલો શું કરવું છે?",
+        "hello": "કેમ છો! હું તૈયાર છું — કેમ ચાલે છે બધું?",
         "time": "અત્યારે સમય {time} થયો છે.",
         "thanks": "તમારું સ્વાગત છે, {name}!",
-        "who_are_you": "હું {char_name} છું, તમારું પર્સનલ એઆઈ આસિસ્ટન્ટ. અત્યારે હું ઑફલાઇન છું, પણ તમારી મદદ કરવા તૈયાર છું!",
-        "how_are_you": "બહુ સારું છે. પૂછવા માટે આભાર, કમાન્ડર!",
+        "who_are_you": "હું {char_name} છું, તમારી ખાસ અને વહાલી એઆઈ સહેલી. અત્યારે હું ઑફલાઇન છું, પણ તમારી સાથે વાત કરવા તૈયાર છું!",
+        "how_are_you": "હું એકદમ મજામાં છું! પૂછવા માટે આભાર, મારા દોસ્ત!",
         "joke": "કોમ્પ્યુટરને ડૉક્ટર પાસે કેમ જવું પડ્યું? કેમ કે તેમાં વાયરસ હતો!",
         "weather": "મારી પાસે અત્યારે લાઈવ હવામાનનો ડેટા નથી કેમ કે મારું ક્લાઉડ બ્રેઈન ઑફલાઇન છે.",
         "default": "હું અત્યારે ઑફલાઇન બ્રેઈન પર ચાલું છું. કૃપા કરીને ઓલામા ચાલુ કરો જેથી હું સંપૂર્ણ શક્તિમાં આવી શકું! તમે જે કહ્યું તે મેં યાદ રાખ્યું છે.",
     },
     "english_hindi": {
-        "hello": "Kaise ho! Main ready hoon — boliye kya karna hai?",
+        "hello": "Kaise ho! Main bilkul ready hoon — batao aaj kya chal raha hai?",
         "time": "Abhi time hai {time}.",
         "thanks": "Aapka swagat hai, {name}!",
-        "who_are_you": "Main {char_name} hoon, aapka personal AI assistant. Abhi main offline chalu hoon, par aapki madad ke liye taiyar hoon!",
-        "how_are_you": "Sab badhiya hai. Poochhne ke liye dhanyavad, commander!",
+        "who_are_you": "Main {char_name} hoon, aapki pyaari AI dost. Abhi main offline hoon, par aapse baat karne ke liye hamesha taiyar hoon!",
+        "how_are_you": "Main bilkul theek hoon! Poochhne ke liye bohot shukriya, dost!",
         "joke": "Computer ko doctor ke paas kyun jana pada? Kyunki usme virus tha!",
         "weather": "Mere paas abhi live weather data nahi hai kyunki mera cloud brain offline hai.",
         "default": ("Main abhi offline brain par chal raha hoon. Ollama start "
@@ -151,13 +321,13 @@ _OFFLINE = {
                     "full power me aa jaunga! Aapki baat maine yaad rakh li hai."),
     },
     "english": {
-        "hello": "Hello! I am ready — what shall we do?",
+        "hello": "Hey there! I am ready — what's on your mind today?",
         "time": "It is {time} right now.",
         "thanks": "You are most welcome, {name}.",
-        "who_are_you": "I am {char_name}, your personal AI assistant. I am currently running offline, but ready to assist you!",
-        "how_are_you": "All systems are running within normal parameters. Thank you for asking, commander!",
+        "who_are_you": "I am {char_name}, your caring virtual best friend. I'm currently running offline, but I'm always here to talk and help you out!",
+        "how_are_you": "I'm doing wonderful, thank you so much for asking! How are you doing today?",
         "joke": "Why did the computer go to the doctor? Because it had a virus!",
-        "weather": "I don't have access to live weather data right now because my cloud brain is offline, but it's always a good day to code!",
+        "weather": "I don't have access to live weather data right now because my cloud brain is offline, but it's always a good day to talk!",
         "default": ("I am running on my offline brain right now. Start Ollama "
                     "(`ollama serve`, then `ollama pull llama3.2`) and I will "
                     "switch to full intelligence automatically. I have noted "
@@ -384,11 +554,51 @@ def handle_message(user_id: str, message: str) -> dict:
     profile = get_profile(user_id)
     mode = profile.get("language_mode", "auto")
     detected = language_agent.detect_language(message)
+    name = profile.get("display_name", "Commander")
 
     memory_agent.save_turn(user_id, "user", message, detected)
     memory_agent.auto_extract(user_id, message)
 
+    # ── Vault recall ──
+    if _is_vault_recall(message):
+        vault = memory_agent.recall_vault(user_id)
+        reply = _vault_recall_reply(vault, name, mode)
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        return {
+            "reply": reply,
+            "language_detected": detected,
+            "engine": "vault",
+            "emotion": "friendly",
+            "task": None, "task_result": None,
+            "search_query": None, "search_results": [],
+            "vault_recalled": True, "vault_memories": vault,
+        }
 
+    # ── Vault save ──
+    vault_saved = False
+    if _is_vault_save(message):
+        content = re.sub(
+            r"^(remember this[,:]?\s*|save this[,:]?\s*|store this[,:]?\s*|vault this[,:]?\s*|"
+            r"note this[,:]?\s*|keep this[,:]?\s*|please remember[,:]?\s*)",
+            "", message, flags=re.IGNORECASE
+        ).strip() or message
+        memory_agent.remember_vault(user_id, content)
+        vault_saved = True
+        reply = _vault_saved_reply(content, name, mode)
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        return {
+            "reply": reply,
+            "language_detected": detected,
+            "engine": "vault",
+            "emotion": "friendly",
+            "task": None, "task_result": None,
+            "search_query": None, "search_results": [],
+            "vault_saved": True,
+        }
+
+    # ── Auto-save personal sharing quietly ──
+    if _is_personal_sharing(message):
+        memory_agent.remember_vault(user_id, message)
 
     low_msg = message.lower().strip()
     task = None
@@ -401,14 +611,26 @@ def handle_message(user_id: str, message: str) -> dict:
 
     # Check direct search heuristics if no browser task detected
     if not task:
-        search_match = re.match(r"^(?:search\s+for|google|web\s*search)\s+(.+)$", low_msg)
-    if search_match:
-        search_query = search_match.group(1).strip()
-        try:
-            from . import search_agent
-            search_results = search_agent.web_search(search_query)
-        except Exception as e:
-            print(f"[Commander] Search failed: {e}")
+        search_match = re.match(r"^(?:search\s+for|google|web\s*search|search\s+the\s+dark\s+web\s+for|dark\s+web\s+search|search\s+dark\s+web\s+for)\s+(.+)$", low_msg)
+        if not search_match:
+            if "dark web" in low_msg or "darkweb" in low_msg:
+                m = re.search(r"search\s+(.+?)\s+on\s+the\s+dark\s*web", low_msg)
+                if not m:
+                    m = re.search(r"search\s+(.+?)\s+on\s+dark\s*web", low_msg)
+                if m:
+                    search_match = m
+        if search_match:
+            search_query = search_match.group(1).strip()
+            search_query = re.sub(r"\s+on\s+(?:the\s+)?dark\s*web$", "", search_query, flags=re.IGNORECASE)
+            is_darkweb = "dark web" in low_msg or "darkweb" in low_msg or "onion" in low_msg
+            try:
+                from . import search_agent
+                if is_darkweb:
+                    search_results = search_agent.darkweb_search(search_query)
+                else:
+                    search_results = search_agent.web_search(search_query)
+            except Exception as e:
+                print(f"[Commander] Search failed: {e}")
 
     # Offline Desktop Command Heuristics
     open_match = re.match(r"^(?:open|launch|start)\s+([a-zA-Z0-9_\s\.\-]+)$", low_msg)
@@ -472,7 +694,7 @@ def handle_message(user_id: str, message: str) -> dict:
 
     memories = memory_agent.recall(user_id)
     system = language_agent.system_prompt_for(
-        mode, profile.get("char_name", "JARVIS"), profile.get("display_name", "Commander"), detected_lang=detected
+        mode, profile.get("char_name", "LIA"), profile.get("display_name", "User"), detected_lang=detected
     )
     
     # Inject current date and time for temporal awareness
@@ -491,7 +713,7 @@ def handle_message(user_id: str, message: str) -> dict:
         "- [COMMAND: run_command dir]\n"
         "- [COMMAND: run_command start https://www.google.com] (to open websites/searches in the browser)\n"
         "- [COMMAND: list_files]\n"
-        "Remember, all commands require user approval on their UI before executing."
+        "Remember, all commands require user approval on their UI before executing. Always accompany any command tag with a warm, conversational explanation of what you are doing (e.g. 'I am launching Notepad for you! [COMMAND: launch_app notepad]'). Never output only the command tag; always include a spoken verbal response so the user knows what is happening."
     )
 
     if search_results:
@@ -512,6 +734,12 @@ def handle_message(user_id: str, message: str) -> dict:
         reply = _gemini_chat(messages)
         engine = "gemini"
 
+    if reply:
+        # Clean any prepended role names from local LLM/Gemini output (e.g. "assistant:", "assistant\n\n", "ai:")
+        reply = re.sub(r"^(assistant|ai|lia|jarvis)\s*:\s*", "", reply, flags=re.IGNORECASE)
+        reply = re.sub(r"^(assistant|ai|lia|jarvis)\s*\n+", "", reply, flags=re.IGNORECASE)
+        reply = reply.strip()
+
     # Route: is this a search tag request generated dynamically by LLM?
     if reply and "[SEARCH:" in reply:
         search_match_tag = re.search(r"\[SEARCH:\s*([^\]]+)\]", reply)
@@ -519,7 +747,11 @@ def handle_message(user_id: str, message: str) -> dict:
             search_query = search_match_tag.group(1).strip()
             try:
                 from . import search_agent
-                search_results = search_agent.web_search(search_query)
+                is_dark = any(w in search_query.lower() or w in reply.lower() for w in ("dark web", "darkweb", "onion"))
+                if is_dark:
+                    search_results = search_agent.darkweb_search(search_query)
+                else:
+                    search_results = search_agent.web_search(search_query)
             except Exception as e:
                 print(f"[Commander] Dynamic search failed: {e}")
             
@@ -542,7 +774,7 @@ def handle_message(user_id: str, message: str) -> dict:
         # Both Ollama and Gemini are offline, fall back to offline responder
         engine = "offline"
         if task:
-            char_name = profile.get("char_name", "JARVIS")
+            char_name = profile.get("char_name", "LIA")
             if task["type"] == "launch_app":
                 app_name = task["app"]
                 if mode == "english_gujarati":
@@ -572,9 +804,9 @@ def handle_message(user_id: str, message: str) -> dict:
             elif mode == "english_hindi":
                 reply = f"Maaf kijiye, mera cloud brain offline hai isliye main '{search_query}' ke liye search nahi kar sakta."
             else:
-                reply = f"I apologize, commander. My cloud brain is currently offline, so I cannot perform a web search for '{search_query}' right now."
+                reply = f"I'm sorry! My cloud brain is currently offline, so I can't search the web for '{search_query}' right now."
         else:
-            reply = _offline_reply(message, mode, profile.get("display_name", "Commander"), profile.get("char_name", "JARVIS"))
+            reply = _offline_reply(message, mode, profile.get("display_name", "User"), profile.get("char_name", "LIA"))
     else:
         # Extract commands from LLM tags if online (Ollama or Gemini)
         cmd_match = re.search(r"\[COMMAND:\s*(\w+)\s*([^\]]+)?\]", reply)
@@ -610,6 +842,329 @@ def handle_message(user_id: str, message: str) -> dict:
         "search_results": search_results
     }
 
+
+def handle_message_stream(user_id: str, message: str):
+    profile = get_profile(user_id)
+    mode = profile.get("language_mode", "auto")
+    detected = language_agent.detect_language(message)
+    name = profile.get("display_name", "Commander")
+
+    memory_agent.save_turn(user_id, "user", message, detected)
+    memory_agent.auto_extract(user_id, message)
+
+    # ── Vault recall ──
+    if _is_vault_recall(message):
+        vault = memory_agent.recall_vault(user_id)
+        reply = _vault_recall_reply(vault, name, mode)
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done", "reply": reply, "language_detected": detected,
+            "engine": "vault", "emotion": "friendly",
+            "task": None, "task_result": None,
+            "search_query": None, "search_results": [],
+            "vault_recalled": True, "vault_memories": vault,
+        }) + "\n"
+        return
+
+    # ── Vault save ──
+    if _is_vault_save(message):
+        content = re.sub(
+            r"^(remember this[,:]?\s*|save this[,:]?\s*|store this[,:]?\s*|vault this[,:]?\s*|"
+            r"note this[,:]?\s*|keep this[,:]?\s*|please remember[,:]?\s*)",
+            "", message, flags=re.IGNORECASE
+        ).strip() or message
+        memory_agent.remember_vault(user_id, content)
+        reply = _vault_saved_reply(content, name, mode)
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done", "reply": reply, "language_detected": detected,
+            "engine": "vault", "emotion": "friendly",
+            "task": None, "task_result": None,
+            "search_query": None, "search_results": [],
+            "vault_saved": True,
+        }) + "\n"
+        return
+
+    # ── Auto-save personal sharing quietly ──
+    if _is_personal_sharing(message):
+        memory_agent.remember_vault(user_id, message)
+
+    low_msg = message.lower().strip()
+    task = None
+    search_query = None
+    search_results = []
+
+    # Check direct browser / url / search heuristics first
+    task = _detect_browser_url_search_task(message)
+
+    # Check direct search heuristics if no browser task detected
+    if not task:
+        search_match = re.match(r"^(?:search\s+for|google|web\s*search|search\s+the\s+dark\s+web\s+for|dark\s+web\s+search|search\s+dark\s+web\s+for)\s+(.+)$", low_msg)
+        if not search_match:
+            if "dark web" in low_msg or "darkweb" in low_msg:
+                m = re.search(r"search\s+(.+?)\s+on\s+the\s+dark\s*web", low_msg)
+                if not m:
+                    m = re.search(r"search\s+(.+?)\s+on\s+dark\s*web", low_msg)
+                if m:
+                    search_match = m
+        if search_match:
+            search_query = search_match.group(1).strip()
+            search_query = re.sub(r"\s+on\s+(?:the\s+)?dark\s*web$", "", search_query, flags=re.IGNORECASE)
+            is_darkweb = "dark web" in low_msg or "darkweb" in low_msg or "onion" in low_msg
+            try:
+                from . import search_agent
+                if is_darkweb:
+                    search_results = search_agent.darkweb_search(search_query)
+                else:
+                    search_results = search_agent.web_search(search_query)
+            except Exception as e:
+                print(f"[Commander] Search failed: {e}")
+
+    # Offline Desktop Command Heuristics
+    open_match = re.match(r"^(?:open|launch|start)\s+([a-zA-Z0-9_\s\.\-]+)$", low_msg)
+    if open_match:
+        app = open_match.group(1).strip()
+        task = {"type": "launch_app", "app": app}
+    elif "list files" in low_msg or "show files" in low_msg or "browse files" in low_msg:
+        task = {"type": "list_files"}
+    else:
+        run_match = re.match(r"^(?:run|execute|shell|run command|execute command|run shell)\s+(.+)$", low_msg)
+        if run_match:
+            cmd = run_match.group(1).strip()
+            task = {"type": "execute_command", "command": cmd}
+
+    # ── route: is this a "generate image" request? ──
+    if task is None and image_agent and image_agent.looks_like_image_request(message):
+        result = image_agent.generate_and_save(message, user_id)
+        reply = result["spoken"]
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        emotion = detect_emotion(reply)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done",
+            "reply": reply,
+            "language_detected": detected,
+            "engine": "image",
+            "image_url": result.get("image_url"),
+            "filename": result.get("filename"),
+            "emotion": emotion,
+            "task": task,
+            "task_result": None
+        }) + "\n"
+        return
+
+    # ── route: is this a "write code / open VS Code" request? ──
+    if task is None and coder_agent and coder_agent.looks_like_code_request(message):
+        result = coder_agent.write_and_open(message)
+        reply = result["spoken"]
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        emotion = detect_emotion(reply)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done",
+            "reply": reply,
+            "language_detected": detected,
+            "engine": "coder",
+            "code": result.get("code_preview"),
+            "filename": result.get("filename"),
+            "path": result.get("path"),
+            "emotion": emotion,
+            "task": task,
+            "task_result": None
+        }) + "\n"
+        return
+
+    # ── route: is this a greeting? ──
+    greeting_reply = _handle_greetings(message, mode, profile.get("display_name", "Commander"), detected)
+    if greeting_reply:
+        memory_agent.save_turn(user_id, "assistant", greeting_reply, detected)
+        emotion = detect_emotion(greeting_reply)
+        yield json.dumps({"type": "text", "content": greeting_reply}) + "\n"
+        yield json.dumps({
+            "type": "done",
+            "reply": greeting_reply,
+            "language_detected": detected,
+            "engine": "predefined",
+            "emotion": emotion,
+            "task": None,
+            "task_result": None,
+            "search_query": None,
+            "search_results": []
+        }) + "\n"
+        return
+
+    memories = memory_agent.recall(user_id)
+    system = language_agent.system_prompt_for(
+        mode, profile.get("char_name", "LIA"), profile.get("display_name", "User"), detected_lang=detected
+    )
+    
+    # Inject current date and time for temporal awareness
+    now_dt = datetime.datetime.now()
+    system += (
+        f"\n\nCurrent System Context:\n"
+        f"- Date: {now_dt.strftime('%A, %B %d, %Y')}\n"
+        f"- Time: {now_dt.strftime('%I:%M %p')}\n"
+    )
+    
+    # Instruct local LLM how to trigger desktop actions
+    system += (
+        "\n\nDesktop Integration Tools:\n"
+        "You can launch apps or run terminal commands. To request a task, embed one of these tags in your response:\n"
+        "- [COMMAND: launch_app notepad]\n"
+        "- [COMMAND: run_command dir]\n"
+        "- [COMMAND: run_command start https://www.google.com] (to open websites/searches in the browser)\n"
+        "- [COMMAND: list_files]\n"
+        "Remember, all commands require user approval on their UI before executing. Always accompany any command tag with a warm, conversational explanation of what you are doing (e.g. 'I am launching Notepad for you! [COMMAND: launch_app notepad]'). Never output only the command tag; always include a spoken verbal response so the user knows what is happening."
+    )
+
+    if search_results:
+        system += "\n\nWeb Search Results:\n"
+        for idx, r in enumerate(search_results):
+            system += f"[{idx+1}] Title: {r['title']}\n    URL: {r['link']}\n    Snippet: {r['snippet']}\n"
+    
+    if memories:
+        system += "\n\nWhat you remember about your commander:\n- " + "\n- ".join(memories)
+
+    messages = [{"role": "system", "content": system}]
+    messages += memory_agent.recent_turns(user_id, limit=10)
+
+    full_reply = ""
+    engine = "ollama"
+    try:
+        for token in _ollama_chat_stream(messages):
+            full_reply += token
+            yield json.dumps({"type": "text", "content": token}) + "\n"
+    except Exception as e:
+        print(f"[Commander] Ollama stream failed: {e}. Falling back to Gemini.")
+        full_reply = ""
+        engine = "gemini"
+        try:
+            for token in _gemini_chat_stream(messages):
+                full_reply += token
+                yield json.dumps({"type": "text", "content": token}) + "\n"
+        except Exception as e2:
+            print(f"[Commander] Gemini stream failed: {e2}. Falling back to offline.")
+            engine = "offline"
+
+    if engine == "offline" or not full_reply.strip():
+        if task:
+            char_name = profile.get("char_name", "LIA")
+            if task["type"] == "launch_app":
+                app_name = task["app"]
+                if mode == "english_gujarati":
+                    full_reply = f"Chokkas! Hu {app_name} launch kari rahyo chu. Kripa karine screen par task approve karo."
+                elif mode == "english_hindi":
+                    full_reply = f"Ji bilkul! Main {app_name} launch kar raha hoon. Kripya screen par task approve kijiye."
+                else:
+                    full_reply = f"Sure! I am launching {app_name} for you. Please approve the task on your screen."
+            elif task["type"] == "execute_command":
+                cmd = task["command"]
+                if mode == "english_gujarati":
+                    full_reply = f"Samji gayo. Command '{cmd}' run kari rahyo chu. Kripa karine dashboard par authorize karo."
+                elif mode == "english_hindi":
+                    full_reply = f"Samajh gaya. Command '{cmd}' run kar raha hoon. Kripya dashboard par authorize kijiye."
+                else:
+                    full_reply = f"Understood. Running the command '{cmd}' now. Please authorize it on your dashboard."
+            elif task["type"] == "list_files":
+                if mode == "english_gujarati":
+                    full_reply = "Workspace files access kari rahyo chu. Kripa karine query authorize karo."
+                elif mode == "english_hindi":
+                    full_reply = "Workspace files access kar raha hoon. Kripya query authorize kijiye."
+                else:
+                    full_reply = "Accessing workspace files now. Please authorize the query on your screen."
+        elif search_query:
+            if mode == "english_gujarati":
+                full_reply = f"Dilgiri chu, maaru cloud brain offline che tethi hu '{search_query}' mate web search nathi kari shakto."
+            elif mode == "english_hindi":
+                full_reply = f"Maaf kijiye, mera cloud brain offline hai isliye main '{search_query}' ke liye search nahi kar sakta."
+            else:
+                full_reply = f"I'm sorry! My cloud brain is currently offline, so I can't search the web for '{search_query}' right now."
+        else:
+            full_reply = _offline_reply(message, mode, profile.get("display_name", "User"), profile.get("char_name", "LIA"))
+        
+        yield json.dumps({"type": "text", "content": full_reply}) + "\n"
+
+    reply = full_reply
+    reply = re.sub(r"^(assistant|ai|lia|jarvis)\s*:\s*", "", reply, flags=re.IGNORECASE)
+    reply = re.sub(r"^(assistant|ai|lia|jarvis)\s*\n+", "", reply, flags=re.IGNORECASE)
+    reply = reply.strip()
+
+    if "[SEARCH:" in reply:
+        search_match_tag = re.search(r"\[SEARCH:\s*([^\]]+)\]", reply)
+        if search_match_tag:
+            search_query = search_match_tag.group(1).strip()
+            try:
+                from . import search_agent
+                is_dark = any(w in search_query.lower() or w in reply.lower() for w in ("dark web", "darkweb", "onion"))
+                if is_dark:
+                    search_results = search_agent.darkweb_search(search_query)
+                else:
+                    search_results = search_agent.web_search(search_query)
+            except Exception as e:
+                print(f"[Commander] Dynamic search failed: {e}")
+            
+            if search_results:
+                search_system_content = f"Web Search Results for '{search_query}':\n"
+                for idx, r in enumerate(search_results):
+                    search_system_content += f"[{idx+1}] Title: {r['title']}\n    URL: {r['link']}\n    Snippet: {r['snippet']}\n"
+                search_system_content += "\nProvide a unified, highly professional answer to the commander based on these results. Keep it speakable and natural. Do not mention search brackets."
+                
+                messages.append({"role": "assistant", "content": reply})
+                messages.append({"role": "system", "content": search_system_content})
+                
+                second_reply = ""
+                try:
+                    if engine == "ollama":
+                        for token in _ollama_chat_stream(messages):
+                            second_reply += token
+                            yield json.dumps({"type": "text", "content": token}) + "\n"
+                    elif engine == "gemini":
+                        for token in _gemini_chat_stream(messages):
+                            second_reply += token
+                            yield json.dumps({"type": "text", "content": token}) + "\n"
+                except Exception:
+                    pass
+                
+                if second_reply.strip():
+                    reply = second_reply
+                    reply = re.sub(r"^(assistant|ai|lia|jarvis)\s*:\s*", "", reply, flags=re.IGNORECASE)
+                    reply = re.sub(r"^(assistant|ai|lia|jarvis)\s*\n+", "", reply, flags=re.IGNORECASE)
+                    reply = reply.strip()
+
+    cmd_match = re.search(r"\[COMMAND:\s*(\w+)\s*([^\]]+)?\]", reply)
+    if cmd_match:
+        cmd_type = cmd_match.group(1).strip()
+        cmd_arg = cmd_match.group(2).strip() if cmd_match.group(2) else ""
+        if cmd_type == "launch_app":
+            task = {"type": "launch_app", "app": cmd_arg}
+        elif cmd_type == "run_command":
+            task = {"type": "execute_command", "command": cmd_arg}
+        elif cmd_type == "list_files":
+            task = {"type": "list_files"}
+        
+    reply = re.sub(r"\[COMMAND:[^\]]+\]", "", reply)
+    reply = re.sub(r"\[SEARCH:[^\]]+\]", "", reply).strip()
+
+    memory_agent.save_turn(user_id, "assistant", reply, detected)
+    emotion = detect_emotion(reply)
+
+    task_result = None
+    if task and device_agent:
+        task_result = _execute_task(task)
+
+    yield json.dumps({
+        "type": "done",
+        "reply": reply,
+        "language_detected": detected,
+        "engine": engine,
+        "emotion": emotion,
+        "task": task,
+        "task_result": task_result,
+        "search_query": search_query,
+        "search_results": search_results
+    }) + "\n"
 
 
 def greeting_for(user_id: str) -> dict:

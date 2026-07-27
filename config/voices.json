@@ -3,30 +3,91 @@
     "jarvis_classic": {
       "label": "JARVIS",
       "style": "Male · deep · calm · formal",
+      "gender": "male",
       "pitch": 0.88, "rate": 0.90,
-      "web_voice_hint": ["Microsoft David Online (Natural)", "Daniel", "Microsoft George", "Google UK English Male"],
+      "web_voice_hint": ["Microsoft David Online (Natural)", "Daniel", "Microsoft George", "Google UK English Male", "Microsoft Ravi Online (Natural)"],
       "piper_model": "en_GB-alan-medium"
     },
     "friday": {
       "label": "FRIDAY",
       "style": "Female · warm · professional",
+      "gender": "female",
       "pitch": 1.12, "rate": 0.85,
-      "web_voice_hint": ["Microsoft Aria Online (Natural)", "Microsoft Hazel", "Samantha", "Google UK English Female"],
+      "web_voice_hint": ["Microsoft Aria Online (Natural)", "Microsoft Hazel", "Samantha", "Google UK English Female", "Microsoft Neerja Online (Natural)"],
       "piper_model": "en_US-amy-medium"
     },
     "nova": {
       "label": "NOVA",
       "style": "Female · energetic · casual",
+      "gender": "female",
       "pitch": 1.22, "rate": 0.95,
-      "web_voice_hint": ["Microsoft Zira", "Microsoft Jenny Online (Natural)", "Victoria", "Google US English"],
+      "web_voice_hint": ["Microsoft Zira", "Microsoft Jenny Online (Natural)", "Victoria", "Google US English", "Microsoft Ana Online (Natural)"],
       "piper_model": "en_US-libritts-high"
     },
     "sage": {
       "label": "SAGE",
       "style": "Male · soft · slow · gentle",
+      "gender": "male",
       "pitch": 0.92, "rate": 0.78,
-      "web_voice_hint": ["Alex", "Microsoft David", "Google US English Male"],
+      "web_voice_hint": ["Alex", "Microsoft David", "Google US English Male", "Microsoft Prabhat Online (Natural)"],
       "piper_model": "en_GB-cori-medium"
+    }
+  },
+  "accents": {
+    "us": {
+      "label": "American (US)",
+      "lang": "en-US",
+      "web_voice_hint": ["Microsoft Aria Online (Natural)", "Microsoft Jenny Online (Natural)", "Google US English", "Samantha", "Microsoft Zira"],
+      "piper_female": "en_US-amy-medium",
+      "piper_male": "en_US-ryan-high"
+    },
+    "gb": {
+      "label": "British (UK)",
+      "lang": "en-GB",
+      "web_voice_hint": ["Microsoft Libby Online (Natural)", "Microsoft Sonia Online (Natural)", "Google UK English Female", "Google UK English Male", "Daniel"],
+      "piper_female": "en_GB-jenny_dioco-medium",
+      "piper_male": "en_GB-alan-medium"
+    },
+    "in": {
+      "label": "Indian (IN)",
+      "lang": "en-IN",
+      "web_voice_hint": ["Microsoft Neerja Online (Natural)", "Microsoft Prabhat Online (Natural)", "Google हिन्दी", "Rishi"],
+      "piper_female": "en_US-amy-medium",
+      "piper_male": "en_GB-alan-medium"
+    },
+    "au": {
+      "label": "Australian (AU)",
+      "lang": "en-AU",
+      "web_voice_hint": ["Microsoft Natasha Online (Natural)", "Microsoft William Online (Natural)", "Google English (Australia)", "Karen"],
+      "piper_female": "en_US-amy-medium",
+      "piper_male": "en_GB-alan-medium"
+    }
+  },
+  "languages": {
+    "gujarati": {
+      "label": "Gujarati (gu-IN)",
+      "lang": "gu-IN",
+      "piper_model": "gu_IN-aditi-medium"
+    },
+    "hindi": {
+      "label": "Hindi (hi-IN)",
+      "lang": "hi-IN",
+      "piper_model": "hi_IN-gpt4-x4-medium"
+    },
+    "marathi": {
+      "label": "Marathi (mr-IN)",
+      "lang": "mr-IN",
+      "piper_model": "mr_IN-aniruddha-medium"
+    },
+    "tamil": {
+      "label": "Tamil (ta-IN)",
+      "lang": "ta-IN",
+      "piper_model": "ta_IN-kart-medium"
+    },
+    "bengali": {
+      "label": "Bengali (bn-IN)",
+      "lang": "bn-IN",
+      "piper_model": "bn_IN-banani-medium"
     }
   }
 }

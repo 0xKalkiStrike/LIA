@@ -28,6 +28,11 @@ chromadb>=0.4.24
 cryptography>=42.0
 psutil>=5.9
 
+# ── Database & Realtime (Upgrade v2.0) ────────────────────────────────
+psycopg2-binary>=2.9
+supabase>=2.4
+websockets>=12.0
+
 # ── Vision + OCR (optional) ──────────────────────────────────────────
 # ultralytics>=8.1               # YOLOv8 object detection
 # opencv-python>=4.9

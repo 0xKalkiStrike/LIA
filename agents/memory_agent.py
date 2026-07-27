@@ -39,7 +39,7 @@ def remember(user_id: str, content: str, category: str = "fact", importance: int
 def recall(user_id: str, limit: int = 12) -> list[str]:
     with db() as conn:
         rows = conn.execute(
-            "SELECT content, category FROM Memories WHERE user_id=? "
+            "SELECT content, category FROM Memories WHERE user_id=? AND category != 'vault' "
             "ORDER BY importance DESC, created_at DESC LIMIT ?",
             (user_id, limit),
         ).fetchall()
@@ -107,15 +107,36 @@ def get_cached_knowledge(key: str) -> str | None:
     return None
 
 
+def remember_vault(user_id: str, content: str):
+    """Save a personal/emotional memory to the vault (high importance, never auto-pruned)."""
+    remember(user_id, content.strip(), category="vault", importance=5)
+
+
+def recall_vault(user_id: str, limit: int = 20) -> list[dict]:
+    """Return vault memories ordered newest first."""
+    import datetime
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT content, created_at FROM Memories WHERE user_id=? AND category='vault' "
+            "ORDER BY created_at DESC LIMIT ?",
+            (user_id, limit),
+        ).fetchall()
+    result = []
+    for r in rows:
+        ts = datetime.datetime.fromtimestamp(r["created_at"]).strftime("%d %b %Y, %I:%M %p")
+        result.append({"content": r["content"], "saved_at": ts})
+    return result
+
+
 def auto_extract(user_id: str, user_message: str):
     """Heuristic memory extraction and profile learning from user interaction."""
     low = user_message.lower().strip()
-    
+
     # 1. Learn commander's name
     name_match = re.search(r"\bmy name is\s+([a-z0-9 ]{2,30})", low)
     if not name_match:
         name_match = re.search(r"\bcall me\s+([a-z0-9 ]{2,30})", low)
-        
+
     if name_match:
         new_name = name_match.group(1).strip().title()
         if new_name:

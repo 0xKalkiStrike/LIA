@@ -1,7 +1,7 @@
 /* JARVIS AI — front-end app
  * Flow: boot → (no users? onboarding : login) → wake-up sequence → dashboard
  */
-import { buildAnime } from './anime.js?v=4.0.0';
+import { buildAnime } from './anime.js?v=4.3.7';
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -38,6 +38,8 @@ const state = {
     avatar_type: 'lia',   // lia | male | custom
     vrm_path: '',
   },
+  charEditing: false,   // settings "Edit Character" flow active
+  charDraft: null,      // staged appearance changes, applied on "Update"
 };
 
 function show(id) {
@@ -117,42 +119,155 @@ function getAudioCtx() {
   return _audioCtxTTS;
 }
 
-/**
- * speak() — primary TTS entry point.
- * If Piper is available (state.piperAvailable), fetch audio from /api/tts and
- * drive lip-sync from real audio amplitude via Web Audio API AnalyserNode.
- * Otherwise fall back to browser speechSynthesis with estimated lip-sync timing.
- */
-function speak(text, { onend, language } = {}) {
-  if (!text) { onend && onend(); return; }
-  const p = state.profile || state.draft;
-  const persona = state.voices[p.voice_persona] || { pitch: 1, rate: 1 };
+let speechQueue = [];
+let currentlySpeakingItem = null;
+let streamOnEndCallback = null;
+let streamSpeechDone = false;
 
-  const hasIndicScript = /[\u0900-\u0D7F]/.test(text);
-  const isGujarati = /[\u0A80-\u0AFF]/.test(text) || language === 'gujarati' || p.language_mode === 'english_gujarati';
-  const isNonEnglish = isGujarati || hasIndicScript || (language && language !== 'english') || (p.language_mode && p.language_mode !== 'english' && p.language_mode !== 'auto');
-
-  if (state.piperAvailable && !isNonEnglish) {
-    _speakPiper(text, p.voice_persona, onend);
-  } else {
-    _speakBrowser(text, persona, p, onend, isGujarati);
+function stopSpeaking() {
+  speechQueue.forEach(item => {
+    item.state = 'played';
+  });
+  speechQueue = [];
+  currentlySpeakingItem = null;
+  speechSynthesis.cancel();
+  if (state.activeAudioSource) {
+    try { state.activeAudioSource.stop(); } catch(e){}
+    state.activeAudioSource = null;
+  }
+  if (state.avatar) {
+    state.avatar.setViseme('rest');
+    state.avatar.stopSpeaking();
+    state.avatar.setEmotion('neutral');
+  }
+  if (state.callAvatar) {
+    state.callAvatar.setViseme('rest');
+    state.callAvatar.stopSpeaking();
+    state.callAvatar.setEmotion('neutral');
   }
 }
 
-/** Piper TTS path — fetches WAV from /api/tts, decodes, plays, and drives visemes. */
-async function _speakPiper(text, personaId, onend) {
-  try {
-    const res = await fetch(
-      `/api/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(personaId)}`,
-      { headers: { Authorization: 'Bearer ' + state.token } }
-    );
-    if (!res.ok) throw new Error('TTS server error');
+function speak(text, { onend, language } = {}) {
+  if (!text) { onend && onend(); return; }
+  stopSpeaking();
+  
+  streamOnEndCallback = onend || null;
+  streamSpeechDone = true;
+  
+  const p = state.profile || state.draft || {};
+  const isGujarati = /[\u0A80-\u0AFF]/.test(text) || language === 'gujarati' || p.language_mode === 'english_gujarati';
+  
+  const sentences = text.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g) || [text];
+  sentences.forEach(sentence => {
+    const clean = sentence.trim();
+    if (clean) {
+      enqueueSpeech(clean, isGujarati);
+    }
+  });
+}
 
+function enqueueSpeech(sentence, isGujarati) {
+  const p = state.profile || state.draft || {};
+  const hasIndicScript = /[\u0900-\u0D7F]/.test(sentence);
+  const isLanguageGujarati = isGujarati || /[\u0A80-\u0AFF]/.test(sentence) || p.language_mode === 'english_gujarati';
+
+  // Determine if this is Indian language/accent that needs browser voice
+  const isIndianLanguage = p.language_mode && (
+    p.language_mode.includes('gujarati') ||
+    p.language_mode.includes('hindi') ||
+    p.language_mode.includes('tamil') ||
+    p.language_mode.includes('marathi') ||
+    p.language_mode.includes('bengali')
+  );
+
+  // Use browser Speech API for Indian languages (better accent support)
+  // Use Piper only for standard English
+  const usePiper = state.piperAvailable && !isIndianLanguage;
+
+  const item = {
+    text: sentence,
+    state: usePiper ? 'loading' : 'loaded',
+    audioBuffer: null,
+    usePiper: usePiper,
+    isGujarati: isLanguageGujarati,
+    languageMode: p.language_mode
+  };
+
+  speechQueue.push(item);
+
+  if (usePiper) {
+    fetchAudio(item);
+  } else {
+    processSpeechQueue();
+  }
+}
+
+async function fetchAudio(item) {
+  try {
+    const p = state.profile || state.draft || {};
+    const personaId = p.voice_persona || 'friday';
+    let url = `/api/tts?text=${encodeURIComponent(item.text)}&voice=${encodeURIComponent(personaId)}`;
+
+    // Pass language to TTS endpoint if set
+    if (item.ttsLanguage) {
+      url += `&language=${encodeURIComponent(item.ttsLanguage)}`;
+    }
+
+    const res = await fetch(url, { headers: { Authorization: 'Bearer ' + state.token } });
+    if (!res.ok) throw new Error('TTS server error');
     const arrayBuf = await res.arrayBuffer();
     const ctx = getAudioCtx();
-    const audioBuf = await ctx.decodeAudioData(arrayBuf);
+    item.audioBuffer = await ctx.decodeAudioData(arrayBuf);
+    item.state = 'loaded';
+    processSpeechQueue();
+  } catch (err) {
+    console.warn('Failed to prefetch audio:', err);
+    item.state = 'fallback';
+    processSpeechQueue();
+  }
+}
 
-    // Analyser for real-time viseme driving
+function processSpeechQueue() {
+  if (currentlySpeakingItem) {
+    return;
+  }
+  
+  const nextItem = speechQueue.find(i => i.state !== 'played');
+  if (!nextItem) {
+    if (streamSpeechDone && streamOnEndCallback) {
+      const cb = streamOnEndCallback;
+      streamOnEndCallback = null;
+      streamSpeechDone = false;
+      cb();
+    }
+    return;
+  }
+  
+  if (nextItem.state === 'loading') {
+    return;
+  }
+  
+  currentlySpeakingItem = nextItem;
+  
+  const onEnd = () => {
+    nextItem.state = 'played';
+    currentlySpeakingItem = null;
+    processSpeechQueue();
+  };
+  
+  if (nextItem.state === 'loaded' && nextItem.audioBuffer) {
+    playAudioBuffer(nextItem.audioBuffer, onEnd);
+  } else {
+    const p = state.profile || state.draft || {};
+    const persona = state.voices[p.voice_persona] || { pitch: 1, rate: 1 };
+    nextItem.state = 'playing';
+    _speakBrowser(nextItem.text, persona, p, onEnd, nextItem.languageMode);
+  }
+}
+
+function playAudioBuffer(audioBuf, onend) {
+  try {
+    const ctx = getAudioCtx();
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 256;
     const dataArr = new Uint8Array(analyser.frequencyBinCount);
@@ -162,12 +277,9 @@ async function _speakPiper(text, personaId, onend) {
     source.connect(analyser);
     analyser.connect(ctx.destination);
 
-    // Store analyser on context so _driveLiaCallWave can access it
     ctx._analyserNode = analyser;
+    state.activeAudioSource = source;
 
-    const durationMs = audioBuf.duration * 1000;
-
-    // Initialize avatar state for talking
     if (state.avatar) { 
       state.avatar.stopSpeaking(); 
       state.avatar.setEmotion('excited'); 
@@ -179,45 +291,42 @@ async function _speakPiper(text, personaId, onend) {
       state.callAvatar.gesture('talking'); 
     }
 
-    // Update voice visualizer bars while speaking
     const visualizerBars = document.querySelectorAll('#voice-visualizer .vv-bar');
     const callBars = document.querySelectorAll('.call-lia-wave .cw-bar');
 
     let raf;
-    let emotionCycle = 0;  /* Vary emotion during long speeches */
+    let emotionCycle = 0;
     let lastViseme = 'rest';
     let visemeSmoothing = 0;
+
     function driveVisemes() {
       analyser.getByteFrequencyData(dataArr);
 
-      /* Enhanced frequency analysis for realistic lip sync */
-      const lowFreq = dataArr.slice(0, 4).reduce((a, b) => a + b, 0) / 4;     /* 0-250Hz: vowels/openness */
-      const midFreq = dataArr.slice(4, 12).reduce((a, b) => a + b, 0) / 8;   /* 250-750Hz: consonants */
-      const highFreq = dataArr.slice(12, 24).reduce((a, b) => a + b, 0) / 12; /* 750-1500Hz: fricatives */
+      const lowFreq  = dataArr.slice(0, 4).reduce((a, b) => a + b, 0) / 4;
+      const midFreq  = dataArr.slice(4, 14).reduce((a, b) => a + b, 0) / 10;
+      const highFreq = dataArr.slice(14, 28).reduce((a, b) => a + b, 0) / 14;
+      const presFreq = dataArr.slice(28, 48).reduce((a, b) => a + b, 0) / 20;
 
-      /* Normalize frequencies with dynamic range */
-      const lowNorm = Math.min(1, lowFreq / 200);
-      const midNorm = Math.min(1, midFreq / 180);
-      const highNorm = Math.min(1, highFreq / 160);
+      const lowNorm  = Math.min(1, lowFreq  / 180);
+      const midNorm  = Math.min(1, midFreq  / 160);
+      const highNorm = Math.min(1, highFreq / 140);
+      const presNorm = Math.min(1, presFreq / 120);
 
-      /* Mouth openness primarily driven by low frequencies */
-      const openness = Math.min(1, (lowNorm * 0.7 + midNorm * 0.3) * 1.4);
+      const openness = Math.min(1, (lowNorm * 0.65 + midNorm * 0.35) * 1.5);
 
-      /* Select viseme based on frequency characteristics */
       let vis = 'rest';
-      if (openness > 0.75) {
-        vis = highNorm > 0.6 ? 'A' : (midNorm > 0.6 ? 'O' : 'A');  /* Very open mouth */
-      } else if (openness > 0.55) {
-        vis = highNorm > 0.5 ? 'E' : (midNorm > 0.5 ? 'O' : 'E');  /* Medium-wide mouth */
-      } else if (openness > 0.35) {
-        vis = highNorm > 0.4 ? 'E' : (midNorm > 0.4 ? 'I' : 'E');  /* Medium mouth */
-      } else if (openness > 0.15) {
-        vis = highNorm > 0.3 ? 'M' : 'F';  /* Closed mouth */
+      if (openness > 0.70) {
+        vis = presNorm > 0.55 ? 'A' : (highNorm > 0.55 ? 'O' : 'A');
+      } else if (openness > 0.50) {
+        vis = highNorm > 0.45 ? 'E' : (midNorm > 0.50 ? 'O' : 'E');
+      } else if (openness > 0.28) {
+        vis = presNorm > 0.35 ? 'I' : (highNorm > 0.35 ? 'E' : 'I');
+      } else if (openness > 0.12) {
+        vis = midNorm > 0.25 ? 'M' : 'F';
       } else {
-        vis = 'rest';  /* Resting mouth */
+        vis = 'rest';
       }
 
-      /* Smooth viseme transitions to prevent jittering */
       if (vis !== lastViseme) {
         visemeSmoothing = 0.2;
         lastViseme = vis;
@@ -226,8 +335,7 @@ async function _speakPiper(text, personaId, onend) {
       if (state.avatar) state.avatar.setViseme(vis);
       if (state.callAvatar) state.callAvatar.setViseme(vis);
 
-      /* Vary emotion during long speeches for more dynamic feel */
-      emotionCycle += 0.016;  /* ~60fps delta */
+      emotionCycle += 0.016;
       if (emotionCycle > 3) {
         emotionCycle = 0;
         const emotions = ['excited', 'friendly', 'happy'];
@@ -236,7 +344,6 @@ async function _speakPiper(text, personaId, onend) {
         if (state.callAvatar) state.callAvatar.setEmotion(nextEmotion);
       }
 
-      // Update voice visualizer
       if (visualizerBars.length) {
         for (let i = 0; i < visualizerBars.length; i++) {
           const val = dataArr[i] || 0;
@@ -245,7 +352,6 @@ async function _speakPiper(text, personaId, onend) {
         }
       }
 
-      // Update call wave
       if (callBars.length) {
         for (let i = 0; i < callBars.length; i++) {
           const val = dataArr[i + 8] || 0;
@@ -261,6 +367,7 @@ async function _speakPiper(text, personaId, onend) {
     source.onended = () => {
       cancelAnimationFrame(raf);
       ctx._analyserNode = null;
+      state.activeAudioSource = null;
       if (state.avatar) { 
         state.avatar.setViseme('rest'); 
         state.avatar.stopSpeaking();
@@ -278,78 +385,118 @@ async function _speakPiper(text, personaId, onend) {
 
     source.start(0);
   } catch (err) {
-    console.warn('Piper TTS failed, falling back to browser:', err);
-    state.piperAvailable = false;
-    _speakBrowser(text, state.voices[(state.profile || state.draft).voice_persona] || { pitch: 1, rate: 1 }, state.profile || state.draft, onend);
+    console.warn('Audio playback error:', err);
+    onend && onend();
   }
 }
 
 /** Browser speechSynthesis — smart voice selection for natural, non-robotic sound. */
-function _speakBrowser(text, persona, p, onend, isGujarati = false) {
+function _speakBrowser(text, persona, p, onend, languageMode = null) {
   if (!('speechSynthesis' in window)) { onend && onend(); return; }
   speechSynthesis.cancel();
-  const langCode = isGujarati ? 'gu-IN' : (state.ttsLang[p.language_mode] || 'en-IN');
+
+  // Determine which language mode we're using
+  const mode = languageMode || p.language_mode || 'auto';
+  const langCode = state.ttsLang && state.ttsLang[mode] ? state.ttsLang[mode] : 'en-IN';
+
   const u = new SpeechSynthesisUtterance(text);
 
   // Always refresh — browsers load voices async
   const vv = speechSynthesis.getVoices();
   if (vv.length) voicesReady = vv;
 
+  // Determine which language voices to prioritize
+  let isIndianLanguage = mode && (mode.includes('gujarati') || mode.includes('hindi') || mode.includes('tamil') || mode.includes('marathi') || mode.includes('bengali'));
+
   // Premium female voice priority list - PRIORITIZE NEURAL/NATURAL VOICES ONLY
-  const PREMIUM = isGujarati ? [
-    'Microsoft Dhwani Online (Natural)',
-    'Google ગુજરાતી',
-    'Microsoft Shruti',
-    'Shruti'
-  ] : [
-    // NEURAL/NATURAL VOICES ONLY for non-robotic sound
-    'Microsoft Neerja Online (Natural)',
-    'Microsoft Aria Online (Natural)',
-    'Microsoft Jenny Online (Natural)',
-    'Microsoft Ava Online',
-    // Indian English neural voices (natural accent)
-    'Google India English Female',
-    'Google IN English Female',
-    // Premium US English neural voices
-    'Microsoft Aria',
-    'Microsoft Jenny',
-    'Google US English',
-    'Google Wavenet-C',
-    'Google Wavenet-F',
-    // Fallback natural voices
-    'Microsoft Neerja',
-    'Microsoft Heera',
-    'Veena',
-    'Microsoft Zira',
-    'Microsoft Hazel',
-    'Samantha',
-    'Google UK English Female',
-    'Google Australia',
-  ];
+  let PREMIUM = [];
+
+  if (mode.includes('gujarati')) {
+    PREMIUM = [
+      'Microsoft Dhwani Online (Natural)',
+      'Google ગુજરાતી',
+      'Microsoft Shruti',
+      'Shruti'
+    ];
+  } else if (mode.includes('hindi')) {
+    PREMIUM = [
+      'Microsoft Swara Online (Natural)',
+      'Google हिन्दी',
+      'Microsoft Heera Online (Natural)',
+      'Heera'
+    ];
+  } else if (mode.includes('tamil')) {
+    PREMIUM = [
+      'Google தமிழ்',
+      'Microsoft Pallavi Online (Natural)',
+      'Pallavi'
+    ];
+  } else if (mode.includes('marathi')) {
+    PREMIUM = [
+      'Google मराठी',
+      'Microsoft Marathi Female'
+    ];
+  } else if (mode.includes('bengali')) {
+    PREMIUM = [
+      'Google বাংলা',
+      'Microsoft Bengali Female'
+    ];
+  } else {
+    // English or mixed mode - use Indian English voice
+    PREMIUM = [
+      'Microsoft Neerja Online (Natural)',
+      'Microsoft Prabhat Online (Natural)',
+      'Microsoft Aria Online (Natural)',
+      'Microsoft Jenny Online (Natural)',
+      'Google India English Female',
+      'Google IN English Female',
+      'Microsoft Neerja',
+      'Microsoft Prabhat',
+      'Veena',
+      'Rishi',
+      'Microsoft Zira',
+      'Microsoft Hazel',
+      'Samantha',
+    ];
+  }
 
   let v = null;
 
-  if (isGujarati) {
-    // 1. Try native Gujarati voices (female preferred)
-    let guVoices = voicesReady.filter(x => x.lang.startsWith('gu') || x.lang.startsWith('gu-') || x.name.includes('Dhwani') || x.name.includes('Shruti') || x.name.includes('ગુજરાતી'));
-    guVoices = guVoices.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur|ravi|david|mark/i.test(x.name));
-    v = guVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) || guVoices[0] || null;
-
-    // 2. Try Hindi voices (female preferred)
-    if (!v) {
-      let hiVoices = voicesReady.filter(x => x.lang.startsWith('hi') || x.lang.startsWith('hi-') || x.name.includes('हिन्दी') || x.name.includes('Hindi'));
-      hiVoices = hiVoices.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur|ravi|david|mark/i.test(x.name));
-      v = hiVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) || hiVoices[0] || null;
+  // Language-specific voice selection for Indian languages
+  if (isIndianLanguage) {
+    if (mode.includes('gujarati')) {
+      // 1. Try native Gujarati voices
+      let langVoices = voicesReady.filter(x => x.lang.startsWith('gu') || x.lang.startsWith('gu-') || x.name.includes('Dhwani') || x.name.includes('Shruti') || x.name.includes('ગુજરાતી'));
+      langVoices = langVoices.filter(x => !/male|boy|man/i.test(x.name));
+      v = langVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) || langVoices[0] || null;
+    } else if (mode.includes('hindi')) {
+      // 1. Try native Hindi voices
+      let langVoices = voicesReady.filter(x => x.lang.startsWith('hi') || x.lang.startsWith('hi-') || x.name.includes('हिन्दी'));
+      langVoices = langVoices.filter(x => !/male|boy|man/i.test(x.name));
+      v = langVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) || langVoices[0] || null;
+    } else if (mode.includes('tamil')) {
+      // 1. Try native Tamil voices
+      let langVoices = voicesReady.filter(x => x.lang.startsWith('ta') || x.lang.startsWith('ta-') || x.name.includes('தமிழ்'));
+      langVoices = langVoices.filter(x => !/male|boy|man/i.test(x.name));
+      v = langVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) || langVoices[0] || null;
+    } else if (mode.includes('marathi')) {
+      // 1. Try native Marathi voices
+      let langVoices = voicesReady.filter(x => x.lang.startsWith('mr') || x.lang.startsWith('mr-') || x.name.includes('मराठी'));
+      langVoices = langVoices.filter(x => !/male|boy|man/i.test(x.name));
+      v = langVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) || langVoices[0] || null;
+    } else if (mode.includes('bengali')) {
+      // 1. Try native Bengali voices
+      let langVoices = voicesReady.filter(x => x.lang.startsWith('bn') || x.lang.startsWith('bn-') || x.name.includes('বাংলা'));
+      langVoices = langVoices.filter(x => !/male|boy|man/i.test(x.name));
+      v = langVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) || langVoices[0] || null;
     }
 
-    // 3. Try Indian English voices (female preferred, but allow male to preserve Indian accent)
+    // 2. Try other Indian language voices as fallback
     if (!v) {
-      let inVoices = voicesReady.filter(x => x.lang.startsWith('en-IN') || x.name.includes('India') || x.name.includes('Ravi') || x.name.includes('Heera'));
-      let inFemale = inVoices.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur|ravi|david|mark/i.test(x.name));
-      v = inFemale.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) 
-          || inFemale[0] 
-          || inVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name)) 
-          || inVoices[0] 
+      let indianVoices = voicesReady.filter(x => x.lang.startsWith('en-IN') || x.name.includes('Neerja') || x.name.includes('Prabhat') || x.name.includes('Heera'));
+      indianVoices = indianVoices.filter(x => !/male|boy|man/i.test(x.name));
+      v = indianVoices.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name))
+          || indianVoices[0]
           || null;
     }
   }
@@ -367,34 +514,33 @@ function _speakBrowser(text, persona, p, onend, isGujarati = false) {
         v = voicesReady.find(x => {
           const nameLower = x.name.toLowerCase();
           return keywords.some(k => nameLower.includes(k)) &&
-                 /female|woman|aria|jenny|zira|hazel|heera|neerja|veena|samantha|ava/i.test(x.name);
+                 /female|woman|aria|jenny|zira|hazel|heera|neerja|veena|samantha|ava|pallavi|swara/i.test(x.name);
         });
         if (v) break;
       }
     }
-    // 3. Persona hints (only if not forcing Gujarati)
-    if (!v && !isGujarati) {
+    // 3. Persona hints (only if not forcing Indian language)
+    if (!v && !isIndianLanguage) {
       for (const h of (persona.web_voice_hint || [])) {
         v = voicesReady.find(x => x.name.toLowerCase().includes(h.toLowerCase()));
         if (v) break;
       }
     }
-    // 4. Any locale-matching voice
+    // 4. Any locale-matching voice (prefer Indian English)
     if (!v) {
-      const filterLang = 'en';
-      let langV = voicesReady.filter(x => x.lang.startsWith(filterLang) || x.lang.startsWith(filterLang + '-'));
-      langV = langV.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur|ravi|david|mark/i.test(x.name));
+      let langV = voicesReady.filter(x => x.lang.startsWith('en-IN') || x.lang.startsWith('en'));
+      langV = langV.filter(x => !/male|boy|man|niranjan|karan|harsh|malhar|hemant|madhur/i.test(x.name));
       v = langV.find(x => /natural|online|neural|wavenet|google|microsoft.*online/i.test(x.name))
         || langV.find(x => x.localService)
         || langV[0]
         || null;
     }
   }
-  
-  // Ultimate fallback (must be female)
+
+  // Ultimate fallback (must be female, preferring Indian voices)
   if (!v) {
-    v = voicesReady.find(x => /heera|zira|jerry|jenny|aria|samantha|veena|neerja/i.test(x.name.toLowerCase())) 
-        || voicesReady[0] 
+    v = voicesReady.find(x => /neerja|prabhat|heera|veena|pallavi|swara|zira|jenny|aria|samantha/i.test(x.name.toLowerCase()))
+        || voicesReady[0]
         || null;
   }
 
@@ -403,13 +549,21 @@ function _speakBrowser(text, persona, p, onend, isGujarati = false) {
   // Transliterate if using fallback/different script voices
   const hasGujarati = /[\u0A80-\u0AFF]/.test(text);
   const hasDevanagari = /[\u0900-\u097F]/.test(text);
-  if (hasGujarati || hasDevanagari) {
+  const hasTamil = /[\u0B80-\u0BFF]/.test(text);
+  const hasBengali = /[\u0980-\u09FF]/.test(text);
+
+  if (hasGujarati || hasDevanagari || hasTamil || hasBengali) {
     const voiceLang = (v && v.lang) ? v.lang : 'en';
+    // If voice is Hindi, convert Gujarati to Devanagari
     if (voiceLang.startsWith('hi')) {
       if (hasGujarati) {
         u.text = transliterateGujaratiToDevanagari(text);
       }
-    } else if (!voiceLang.startsWith('gu') && !voiceLang.startsWith('hi')) {
+    }
+    // If voice is not in the same language family, transliterate to Roman
+    else if (!voiceLang.startsWith('gu') && !voiceLang.startsWith('hi') &&
+             !voiceLang.startsWith('ta') && !voiceLang.startsWith('mr') &&
+             !voiceLang.startsWith('bn') && !voiceLang.startsWith('en-IN')) {
       u.text = transliterateIndicToRoman(text);
     }
   }
@@ -448,18 +602,16 @@ function _speakBrowser(text, persona, p, onend, isGujarati = false) {
   const estMs = (words / (2.6 * (persona.rate || 1))) * 1000;
 
   u.onstart = () => {
-    /* Start talking gesture with full animation */
-    if (state.avatar) { 
-      state.avatar.stopSpeaking(); 
-      state.avatar.setViseme('rest'); 
+    /* Start talking gesture — preserve current emotion (don't override with 'friendly') */
+    if (state.avatar) {
+      state.avatar.stopSpeaking();
+      state.avatar.setViseme('rest');
       state.avatar.gesture('talking');
-      state.avatar.setEmotion('friendly');  /* friendly expression while talking */
     }
-    if (state.callAvatar) { 
-      state.callAvatar.stopSpeaking(); 
-      state.callAvatar.setViseme('rest'); 
+    if (state.callAvatar) {
+      state.callAvatar.stopSpeaking();
+      state.callAvatar.setViseme('rest');
       state.callAvatar.gesture('talking');
-      state.callAvatar.setEmotion('friendly');
     }
   };
   u.onboundary = (event) => {
@@ -643,6 +795,15 @@ document.addEventListener('click', e => {
   const key = row.dataset.key;
   row.querySelectorAll('[data-val]').forEach(b => b.classList.remove('sel'));
   btn.classList.add('sel');
+
+  // Settings "Edit Character" flow: stage changes for a live preview, but do
+  // not persist until the user presses "Update Character".
+  if (state.charEditing && e.target.closest('#char-editor-body') &&
+      (key.startsWith('char_') || key === 'avatar_type')) {
+    stageCharPick(key, btn.dataset.val);
+    return;
+  }
+
   state.draft[key] = btn.dataset.val;
 
   // Handle avatar_type selection side-effects
@@ -814,7 +975,10 @@ async function saveProfilePatch(patch) {
 function buildSettingsChar() {
   const root = $('#settings-char');
   if (!root) return;
-  const p = state.profile || {};
+  // While editing, reflect the staged draft merged over the saved profile.
+  const p = state.charEditing
+    ? { ...(state.profile || {}), ...(state.charDraft || {}) }
+    : (state.profile || {});
   const cur = p.avatar_type || 'lia';
   root.innerHTML = `
     <div class="pick-row companion-row" data-key="avatar_type">
@@ -909,9 +1073,16 @@ function buildSettingsChar() {
     try {
       const r = await fetch('/api/avatar/upload', { method:'POST', headers:{ Authorization:'Bearer '+state.token }, body: fd }).then(x=>x.json());
       if (r.vrm_url) {
-        if (state.profile) { state.profile.vrm_path = r.vrm_url; state.profile.avatar_type = 'custom'; }
-        const el = $('#dash-avatar');
-        if (el) state.avatar = mountAvatar(el, state.profile);
+        if (state.charEditing) {
+          state.charDraft = state.charDraft || {};
+          state.charDraft.vrm_path = r.vrm_url;
+          state.charDraft.avatar_type = 'custom';
+          previewCharDraft();
+        } else if (state.profile) {
+          state.profile.vrm_path = r.vrm_url; state.profile.avatar_type = 'custom';
+          const el = $('#dash-avatar');
+          if (el) state.avatar = mountAvatar(el, state.profile);
+        }
         if (st) st.textContent = '✓ Custom VRM loaded';
         buildSettingsChar();
       } else {
@@ -926,6 +1097,8 @@ function buildSettingsChar() {
   root.querySelectorAll('.companion-card').forEach(btn => {
     btn.onclick = async () => {
       const val = btn.dataset.val;
+      // While editing, the global click handler stages this via stageCharPick().
+      if (state.charEditing) return;
       root.querySelectorAll('.companion-card').forEach(b => b.classList.remove('sel'));
       btn.classList.add('sel');
       const vrmArea = $('#settings-vrm-area');
@@ -946,11 +1119,87 @@ function buildSettingsChar() {
   if (nameInput) {
     nameInput.onchange = async (e) => {
       const newName = e.target.value.trim() || 'JARVIS';
+      if (state.charEditing) { stageCharPick('char_name', newName); return; }
       await saveProfilePatch({ char_name: newName });
       $('#dash-charname').textContent = newName;
     };
   }
 }
+/* ───────────── settings: staged "Edit Character" → "Update" flow ────────── */
+function stageCharPick(key, val) {
+  if (!state.charDraft) state.charDraft = {};
+  state.charDraft[key] = val;
+  const curName = state.charDraft.char_name ?? (state.profile || {}).char_name;
+
+  if (key === 'avatar_type') {
+    if (val === 'lia') {
+      state.charDraft.char_gender = 'female';
+      state.charDraft.vrm_path = '/static/LIA.vrm';
+      if (curName === 'JARVIS') state.charDraft.char_name = 'LIA';
+    } else if (val === 'male') {
+      state.charDraft.char_gender = 'male';
+      state.charDraft.vrm_path = '';
+      if (curName === 'LIA') state.charDraft.char_name = 'JARVIS';
+    }
+    buildSettingsChar();   // reveal/hide procedural options + VRM upload area
+  } else if (key === 'char_gender') {
+    if (val === 'female' && curName === 'JARVIS') state.charDraft.char_name = 'LIA';
+    if (val === 'male' && curName === 'LIA') state.charDraft.char_name = 'JARVIS';
+    buildSettingsChar();   // refresh the name field if it changed
+  }
+
+  previewCharDraft();
+}
+
+/* Live-preview the staged draft on the dashboard avatar without persisting. */
+function previewCharDraft() {
+  const cfg = { ...(state.profile || {}), ...(state.charDraft || {}) };
+  cfg.vrm_path = cfg.vrm_path || (cfg.avatar_type === 'male' ? '' : '/static/LIA.vrm');
+  const el = $('#dash-avatar');
+  if (el) state.avatar = mountAvatar(el, cfg);
+  if (cfg.char_name) $('#dash-charname').textContent = cfg.char_name;
+}
+
+function openCharEditor() {
+  state.charEditing = true;
+  state.charDraft = {};
+  buildSettingsChar();
+  const ed = $('#char-editor'); if (ed) ed.style.display = 'block';
+  const eb = $('#btn-edit-char'); if (eb) eb.style.display = 'none';
+  const st = $('#char-editor-status'); if (st) st.textContent = '';
+}
+
+async function commitCharEditor() {
+  const st = $('#char-editor-status');
+  const draft = state.charDraft || {};
+  if (Object.keys(draft).length) {
+    if (st) st.textContent = 'Saving…';
+    await saveProfilePatch(draft);   // persists to /api/profile + remounts avatar
+    if ($('#dash-charname') && state.profile) $('#dash-charname').textContent = state.profile.char_name;
+  }
+  state.charEditing = false;
+  state.charDraft = null;
+  const ed = $('#char-editor'); if (ed) ed.style.display = 'none';
+  const eb = $('#btn-edit-char'); if (eb) eb.style.display = '';
+  if (st) st.textContent = '';
+}
+
+function cancelCharEditor() {
+  state.charEditing = false;
+  state.charDraft = null;
+  // Restore the saved appearance on the live avatar.
+  const p = state.profile || {};
+  const cfg = { ...p, vrm_path: p.vrm_path || (p.avatar_type === 'male' ? '' : '/static/LIA.vrm') };
+  const el = $('#dash-avatar'); if (el) state.avatar = mountAvatar(el, cfg);
+  if (p.char_name) $('#dash-charname').textContent = p.char_name;
+  const ed = $('#char-editor'); if (ed) ed.style.display = 'none';
+  const eb = $('#btn-edit-char'); if (eb) eb.style.display = '';
+}
+
+$('#btn-edit-char')   && ($('#btn-edit-char').onclick   = openCharEditor);
+$('#btn-update-char') && ($('#btn-update-char').onclick = commitCharEditor);
+$('#btn-cancel-char') && ($('#btn-cancel-char').onclick = cancelCharEditor);
+
 const SAMPLES = {
   jarvis_classic: 'At your service, commander. All systems are online.',
   friday: 'Hello! FRIDAY here — ready when you are.',
@@ -1087,9 +1336,10 @@ $$('.tab').forEach(t => t.onclick = () => {
   $$('.tab-panel').forEach(x => x.classList.remove('active'));
   t.classList.add('active');
   $(`[data-panel="${t.dataset.tab}"]`).classList.add('active');
-  if (t.dataset.tab === 'memory') loadMemories();
+  if (t.dataset.tab === 'memory') { loadMemories(); loadVault(); }
   if (t.dataset.tab === 'device') { loadDevice(); loadProcesses(); }
   if (t.dataset.tab === 'files') loadExplorer();
+  if (t.dataset.tab === 'settings' && state.charEditing) cancelCharEditor();
 });
 
 /* ────────────────────────────── chat ───────────────────────────────── */
@@ -1128,87 +1378,239 @@ function updateAgentMonitor() {
   if (visionDot) visionDot.className = 'am-dot' + (state.webcamActive ? ' active' : '');
 }
 
-async function sendMessage(text) {
+async function streamChat(text, onToken, onDone) {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + state.token
+    },
+    body: JSON.stringify({ message: text, stream: true })
+  });
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.detail || 'Request failed');
+  }
+  
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let buffer = '';
+  
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try {
+        const obj = JSON.parse(trimmed);
+        if (obj.type === 'text') {
+          onToken(obj.content);
+        } else if (obj.type === 'done') {
+          onDone(obj);
+        }
+      } catch (err) {
+        console.warn("Failed to parse stream line:", trimmed, err);
+      }
+    }
+  }
+  
+  if (buffer.trim()) {
+    try {
+      const obj = JSON.parse(buffer.trim());
+      if (obj.type === 'text') {
+        onToken(obj.content);
+      } else if (obj.type === 'done') {
+        onDone(obj);
+      }
+    } catch (err) {}
+  }
+}
+
+async function sendMessage(text, speakResponse = false) {
   text = (text || $('#chat-input').value).trim();
   if (!text) return;
   $('#chat-input').value = '';
+
+  stopSpeaking();
+
+  // INSTANT reaction — avatar snaps to reacting/thinking posture immediately (<16ms)
+  if (state.avatar) {
+    state.avatar.setEmotion('focused');
+    state.avatar.gesture('reacting');
+  }
+  if (state.callAvatar) {
+    state.callAvatar.setEmotion('focused');
+    state.callAvatar.gesture('reacting');
+  }
+
   addMsg('user', text);
   const thinking = addMsg('ai', '…', 'thinking');
+  
+  let aiBubble = null;
+  let textBuffer = "";
+  let sentencesSpoken = 0;
+  
   try {
-    const res = await api('/api/chat', { method: 'POST', body: JSON.stringify({ message: text }) });
-    thinking.remove();
-    addMsg('ai', res.reply);
+    const p = state.profile || state.draft || {};
     
-    // Set 3D avatar expression
-    if (res.emotion && state.avatar) {
-      state.avatar.setEmotion(res.emotion);
-    }
-    
-    // Display code preview
-    if (res.engine === 'coder' && res.code) {
-      const pre = document.createElement('pre');
-      pre.className = 'code-block';
-      pre.innerHTML = `<div class="code-head">📄 ${res.filename || 'code'} — opened in your editor</div><code></code>`;
-      pre.querySelector('code').textContent = res.code;
-      $('#chat-log').appendChild(pre);
-      $('#chat-log').scrollTop = 1e9;
-    }
+    await streamChat(text,
+      (token) => {
+        if (!aiBubble) {
+          thinking.remove();
+          aiBubble = addMsg('ai', '');
+          // First token arrived — avatar transitions from reacting → thinking
+          if (state.avatar) { state.avatar.setEmotion('thinking'); state.avatar.gesture('thinking'); }
+          if (state.callAvatar) { state.callAvatar.setEmotion('thinking'); state.callAvatar.gesture('thinking'); }
+        }
+        aiBubble.textContent += token;
+        $('#chat-log').scrollTop = 1e9;
+        
+        if (speakResponse) {
+          textBuffer += token;
+          const isGujarati = /[\u0A80-\u0AFF]/.test(textBuffer) || p.language_mode === 'english_gujarati';
+          const matches = textBuffer.match(/[^.!?]+[.!?]+(?:\s+|$)/g) || [];
+          if (matches.length > sentencesSpoken) {
+            for (let i = sentencesSpoken; i < matches.length; i++) {
+              const sentence = matches[i].trim();
+              if (sentence) {
+                enqueueSpeech(sentence, isGujarati);
+              }
+              sentencesSpoken++;
+            }
+          }
+        }
+      },
+      (res) => {
+        if (!aiBubble) {
+          thinking.remove();
+          aiBubble = addMsg('ai', res.reply);
+        } else {
+          aiBubble.textContent = res.reply;
+        }
+        $('#chat-log').scrollTop = 1e9;
+        
+        addActivity('ai', 'LIA', res.reply);
+        
+        if (res.emotion) {
+          if (state.avatar) {
+            /* If speaking, update face expression only and keep talking gesture */
+            if (state.avatar._isSpeaking) {
+              state.avatar.setExpression(res.emotion);
+            } else {
+              state.avatar.setEmotion(res.emotion);
+            }
+          }
+          if (state.callAvatar) {
+            if (state.callAvatar._isSpeaking) {
+              state.callAvatar.setExpression(res.emotion);
+            } else {
+              state.callAvatar.setEmotion(res.emotion);
+            }
+          }
+        }
+        
+        if (res.engine === 'coder' && res.code) {
+          const pre = document.createElement('pre');
+          pre.className = 'code-block';
+          pre.innerHTML = `<div class="code-head">📄 ${res.filename || 'code'} — opened in your editor</div><code></code>`;
+          pre.querySelector('code').textContent = res.code;
+          $('#chat-log').appendChild(pre);
+          $('#chat-log').scrollTop = 1e9;
+        }
 
-    // Display generated image preview
-    if (res.engine === 'image' && res.image_url) {
-      const imgBlock = document.createElement('div');
-      imgBlock.className = 'image-block';
-      imgBlock.innerHTML = `
-        <div class="image-head">🎨 Generated Image: ${res.filename || 'image'}</div>
-        <div class="image-body">
-          <img src="${res.image_url}" alt="Generated Image" />
-        </div>
-      `;
-      $('#chat-log').appendChild(imgBlock);
-      $('#chat-log').scrollTop = 1e9;
-    }
+        if (res.engine === 'image' && res.image_url) {
+          const imgBlock = document.createElement('div');
+          imgBlock.className = 'image-block';
+          imgBlock.innerHTML = `
+            <div class="image-head">🎨 Generated Image: ${res.filename || 'image'}</div>
+            <div class="image-body">
+              <img src="${res.image_url}" alt="Generated Image" />
+            </div>
+          `;
+          $('#chat-log').appendChild(imgBlock);
+          $('#chat-log').scrollTop = 1e9;
+        }
 
-    // Display web search results card
-    if (res.search_results && res.search_results.length) {
-      const escapeHtml = str => (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-      const searchBlock = document.createElement('div');
-      searchBlock.className = 'search-block';
-      
-      let itemsHtml = '';
-      res.search_results.forEach(r => {
-        itemsHtml += `
-          <div class="search-item">
-            <a href="${r.link}" target="_blank" class="search-title">${escapeHtml(r.title)}</a>
-            <div class="search-url">${escapeHtml(r.link)}</div>
-            <div class="search-snippet">${escapeHtml(r.snippet)}</div>
-          </div>
-        `;
-      });
-      
-      searchBlock.innerHTML = `
-        <div class="search-head">🔍 Google Search: "${escapeHtml(res.search_query)}"</div>
-        <div class="search-body">${itemsHtml}</div>
-      `;
-      $('#chat-log').appendChild(searchBlock);
-      $('#chat-log').scrollTop = 1e9;
-    }
-    
-    // Handle desktop tasks requiring security prompts
-    if (res.task) {
-      promptSecureApproval(res.task);
-    }
+        if (res.search_results && res.search_results.length) {
+          const escapeHtml = str => (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+          const searchBlock = document.createElement('div');
+          searchBlock.className = 'search-block';
+          
+          let itemsHtml = '';
+          res.search_results.forEach(r => {
+            itemsHtml += `
+              <div class="search-item">
+                <a href="${r.link}" target="_blank" class="search-title">${escapeHtml(r.title)}</a>
+                <div class="search-url">${escapeHtml(r.link)}</div>
+                <div class="search-snippet">${escapeHtml(r.snippet)}</div>
+              </div>
+            `;
+          });
+          
+          searchBlock.innerHTML = `
+            <div class="search-head">🔍 Google Search: "${escapeHtml(res.search_query)}"</div>
+            <div class="search-body">${itemsHtml}</div>
+          `;
+          $('#chat-log').appendChild(searchBlock);
+          $('#chat-log').scrollTop = 1e9;
+        }
+        
+        if (res.task) {
+          promptSecureApproval(res.task);
+        }
 
-    const engineLabel =
-      res.engine === 'ollama' ? 'Local LLM · Ollama' :
-      res.engine === 'coder'  ? 'Coder · wrote a file' :
-      res.engine === 'image'  ? 'Image Gen · Pollinations' :
-      state.piperAvailable    ? 'Piper TTS · ready'    : 'Browser TTS · ready';
-    $('#engine-status').textContent = engineLabel;
+        // ── vault recall: show memories in chat as a soft card ──
+        if (res.vault_recalled && res.vault_memories && res.vault_memories.length) {
+          const vaultCard = document.createElement('div');
+          vaultCard.className = 'vault-chat-card';
+          vaultCard.innerHTML = `<div class="vault-chat-head">🔮 Heart Vault</div>` +
+            res.vault_memories.slice(0, 10).map(m =>
+              `<div class="vault-chat-item"><span>${(m.content || '').replace(/</g,'&lt;')}</span><small>${m.saved_at || ''}</small></div>`
+            ).join('');
+          $('#chat-log').appendChild(vaultCard);
+          $('#chat-log').scrollTop = 1e9;
+          loadVault();
+        }
 
-    if (res.emotion) addActivity('ai', 'EMOTION', res.emotion.toUpperCase());
-    state.lastDetectedLanguage = res.language_detected;
-    speak(res.reply, { language: res.language_detected });
-  } catch (e) { thinking.textContent = '⚠ ' + e.message; thinking.classList.remove('thinking'); }
+        // ── vault saved: refresh vault panel quietly ──
+        if (res.vault_saved) loadVault();
+
+        const engineLabel =
+          res.engine === 'ollama' ? 'Local LLM · Ollama' :
+          res.engine === 'vault'  ? '🔮 Heart Vault' :
+          res.engine === 'coder'  ? 'Coder · wrote a file' :
+          res.engine === 'image'  ? 'Image Gen · Pollinations' :
+          state.piperAvailable    ? 'Piper TTS · ready'    : 'Browser TTS · ready';
+        $('#engine-status').textContent = engineLabel;
+
+        if (res.emotion) addActivity('ai', 'EMOTION', res.emotion.toUpperCase());
+        state.lastDetectedLanguage = res.language_detected;
+        
+        if (speakResponse) {
+          const matches = textBuffer.match(/[^.!?]+[.!?]+(?:\s+|$)/g) || [];
+          const remaining = textBuffer.replace(matches.join(""), "").trim();
+          const isGujarati = /[\u0A80-\u0AFF]/.test(textBuffer) || p.language_mode === 'english_gujarati';
+          if (remaining) {
+            enqueueSpeech(remaining, isGujarati);
+          }
+          streamSpeechDone = true;
+          processSpeechQueue();
+        }
+      }
+    );
+  } catch (e) { 
+    if (thinking && thinking.parentNode) {
+      thinking.textContent = '⚠ ' + e.message; 
+      thinking.classList.remove('thinking'); 
+    } else {
+      addMsg('ai', '⚠ ' + e.message);
+    }
+  }
 }
 $('#btn-send').onclick = () => sendMessage();
 $('#chat-input').addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
@@ -1240,7 +1642,7 @@ if (SR) {
       isListening = false;
     }
   };
-  rec.onresult = e => sendMessage(e.results[0][0].transcript);
+  rec.onresult = e => sendMessage(e.results[0][0].transcript, true);
   rec.onend = () => {
     isListening = false;
     $('#btn-mic').classList.remove('listening');
@@ -1688,6 +2090,31 @@ $('#btn-add-memory').onclick = async () => {
   loadMemories();
 };
 
+/* ─────────────────────────── vault panel ───────────────────────────── */
+async function loadVault() {
+  const list = await api('/api/vault').catch(() => []);
+  const el = $('#vault-list');
+  if (!el) return;
+  el.innerHTML = list.length
+    ? list.map(m => `<li>
+        <span class="vault-content">${m.content.replace(/</g,'&lt;')}</span>
+        <span class="vault-ts">🕰 ${m.saved_at}</span>
+      </li>`).join('')
+    : '<li class="dim" style="color:var(--text-dim);font-size:12px;">Nothing saved yet — share something close to your heart and say "remember this".</li>';
+}
+
+$('#btn-add-vault').onclick = async () => {
+  const v = $('#vault-input').value.trim();
+  if (!v) return;
+  await api('/api/vault', { method: 'POST', body: JSON.stringify({ content: v }) }).catch(() => {});
+  $('#vault-input').value = '';
+  loadVault();
+  // gentle pulse acknowledgment
+  const btn = $('#btn-add-vault');
+  btn.textContent = '✓ Saved';
+  setTimeout(() => { btn.textContent = 'Save to Vault'; }, 1800);
+};
+
 /* ──────────────── device / process / explorer ─────────────────── */
 async function loadDevice() {
   const d = await api('/api/device').catch(() => null);
@@ -1794,22 +2221,77 @@ function startCallRecognition() {
     if (!text) return;
     autoRestartRec = false;
     try { if (callRec) callRec.stop(); } catch(e) {}
+    
+    stopSpeaking();
+    
     setCallStatus('THINKING…', 'pulse-gold');
     addMsg('user', text);
-    try {
-      const res = await api('/api/chat', { method: 'POST', body: JSON.stringify({ message: text }) });
-      addMsg('ai', res.reply);
-      state.lastDetectedLanguage = res.language_detected;
-      if (res.emotion && state.callAvatar) {
-        state.callAvatar.setEmotion(res.emotion);
+    
+    let aiBubble = null;
+    let textBuffer = "";
+    let sentencesSpoken = 0;
+    
+    streamOnEndCallback = () => {
+      if (state.inCall) {
+        autoRestartRec = true;
+        try { callRec.start(); } catch(err){}
       }
-      setCallStatus('SPEAKING…', 'pulse-blue');
-      speak(res.reply, {
-        language: res.language_detected,
-        onend: () => {
-          if (state.inCall) { autoRestartRec = true; try { callRec.start(); } catch(err){} }
+    };
+    streamSpeechDone = false;
+    
+    try {
+      const p = state.profile || {};
+      await streamChat(text,
+        (token) => {
+          if (!aiBubble) {
+            aiBubble = addMsg('ai', '');
+            setCallStatus('SPEAKING…', 'pulse-blue');
+          }
+          aiBubble.textContent += token;
+          $('#chat-log').scrollTop = 1e9;
+          
+          textBuffer += token;
+          const isGujarati = /[\u0A80-\u0AFF]/.test(textBuffer) || p.language_mode === 'english_gujarati';
+          const matches = textBuffer.match(/[^.!?]+[.!?]+(?:\s+|$)/g) || [];
+          if (matches.length > sentencesSpoken) {
+            for (let i = sentencesSpoken; i < matches.length; i++) {
+              const sentence = matches[i].trim();
+              if (sentence) {
+                enqueueSpeech(sentence, isGujarati);
+              }
+              sentencesSpoken++;
+            }
+          }
+        },
+        (res) => {
+          if (!aiBubble) {
+            aiBubble = addMsg('ai', res.reply);
+          } else {
+            aiBubble.textContent = res.reply;
+          }
+          $('#chat-log').scrollTop = 1e9;
+          
+          addActivity('ai', 'LIA', res.reply);
+          
+          state.lastDetectedLanguage = res.language_detected;
+          if (res.emotion && state.callAvatar) {
+            if (state.callAvatar._isSpeaking) {
+              state.callAvatar.setExpression(res.emotion);
+            } else {
+              state.callAvatar.setEmotion(res.emotion);
+            }
+          }
+          
+          const matches = textBuffer.match(/[^.!?]+[.!?]+(?:\s+|$)/g) || [];
+          const remaining = textBuffer.replace(matches.join(""), "").trim();
+          const isGujarati = /[\u0A80-\u0AFF]/.test(textBuffer) || p.language_mode === 'english_gujarati';
+          if (remaining) {
+            enqueueSpeech(remaining, isGujarati);
+          }
+          streamSpeechDone = true;
+          processSpeechQueue();
         }
-      });
+      );
     } catch(err) {
       addMsg('ai', '⚠ ' + err.message);
       state.callAvatar?.setEmotion('concerned');
