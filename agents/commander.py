@@ -142,6 +142,24 @@ except Exception:  # pragma: no cover
 
 
 # ---------------------------------------------------------------- Emotion ---
+def strip_markdown_for_speech(text: str) -> str:
+    """Remove markdown formatting so LIA doesn't read asterisks, hashes, etc."""
+    import re
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # **bold** → bold
+    text = re.sub(r'__(.*?)__', r'\1', text)  # __bold__ → bold
+    text = re.sub(r'\*(.*?)\*', r'\1', text)  # *italic* → italic
+    text = re.sub(r'_(.*?)_', r'\1', text)  # _italic_ → italic
+    text = re.sub(r'`(.*?)`', r'\1', text)  # `code` → code
+    text = re.sub(r'```[\s\S]*?```', '', text)  # ``` code blocks ``` → remove
+    text = re.sub(r'~~(.*?)~~', r'\1', text)  # ~~strikethrough~~ → strikethrough
+    text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)  # [link](url) → link
+    text = re.sub(r'#+\s', '', text)  # # headings → remove #
+    text = re.sub(r'\n{2,}', '\n', text)  # multiple newlines → single
+    text = re.sub(r'^\s*[-*]\s+', '', text, flags=re.MULTILINE)  # bullet points
+    text = re.sub(r'^\s*\d+\.\s+', '', text, flags=re.MULTILINE)  # numbered lists
+    return text.strip()
+
+
 def detect_emotion(reply: str) -> str:
     """Classify the reply into one of 10 emotions:
     happy, excited, thinking, curious, confident, sad, concerned, surprised, focused, friendly.
@@ -1037,6 +1055,9 @@ def handle_message(user_id: str, message: str) -> dict:
         reply = re.sub(r"\[COMMAND:[^\]]+\]", "", reply)
         reply = re.sub(r"\[SEARCH:[^\]]+\]", "", reply).strip()
 
+    # Strip markdown formatting so TTS doesn't read asterisks
+    reply = strip_markdown_for_speech(reply)
+
     memory_agent.save_turn(user_id, "assistant", reply, detected)
     emotion = detect_emotion(reply)
 
@@ -1477,6 +1498,9 @@ def handle_message_stream(user_id: str, message: str):
         
     reply = re.sub(r"\[COMMAND:[^\]]+\]", "", reply)
     reply = re.sub(r"\[SEARCH:[^\]]+\]", "", reply).strip()
+
+    # Strip markdown formatting so TTS doesn't read asterisks
+    reply = strip_markdown_for_speech(reply)
 
     memory_agent.save_turn(user_id, "assistant", reply, detected)
     emotion = detect_emotion(reply)
