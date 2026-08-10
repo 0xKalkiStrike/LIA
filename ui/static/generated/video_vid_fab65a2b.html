@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Video — Deep Space Exploration</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #050811; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .player-card { width: 100%; max-width: 900px; background: #0b1120; border: 1px solid rgba(0, 242, 254, 0.25); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+    .player-header { padding: 18px 24px; background: rgba(15, 23, 42, 0.8); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .player-title { font-size: 18px; font-weight: 700; color: #00f2fe; display: flex; align-items: center; gap: 8px; }
+    .viewport { position: relative; width: 100%; height: 480px; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .viewport-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.75); transition: transform 10s ease, filter 0.5s ease; }
+    .viewport-img.playing { transform: scale(1.15); }
+    .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 40%, rgba(0,0,0,0.85) 100%); }
+    .play-btn { align-self: center; width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #00f2fe, #4facfe); border: none; color: #000; font-size: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(0,242,254,0.6); transition: transform 0.2s, box-shadow 0.2s; }
+    .play-btn:hover { transform: scale(1.1); box-shadow: 0 0 40px rgba(0,242,254,0.8); }
+    .caption-box { background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); padding: 14px 20px; border-radius: 10px; color: #fff; font-size: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.15); line-height: 1.5; }
+    .progress-bar-wrap { width: 100%; height: 6px; background: rgba(255,255,255,0.15); cursor: pointer; }
+    .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); transition: width 0.1s linear; }
+    .controls-bar { padding: 16px 24px; background: #0f172a; display: flex; gap: 12px; overflow-x: auto; }
+    .chip { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+    .chip.active, .chip:hover { background: rgba(0,242,254,0.15); border-color: #00f2fe; color: #00f2fe; }
+  </style>
+</head>
+<body>
+  <div class="player-card">
+    <div class="player-header">
+      <div class="player-title">📹 AI Animated Video — Deep Space Exploration</div>
+      <div style="font-size: 13px; color: #94a3b8;">Duration: 00:20 | 1080p Preview</div>
+    </div>
+    
+    <div class="viewport" id="viewport">
+      <img src="https://image.pollinations.ai/prompt/Cinematic%20video%20frame%20of%20deep%20space%20exploration%2C%208k%20cyberpunk%203d%20render?nologo=true" id="v-img" class="viewport-img" />
+      <div class="overlay">
+        <div style="display:flex; justify-content:space-between;">
+          <span style="background:rgba(0,242,254,0.2); color:#00f2fe; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600;" id="v-tag">Scene 1</span>
+        </div>
+        <button class="play-btn" id="v-play">▶</button>
+        <div class="caption-box" id="v-caption">Welcome to the overview of deep space exploration. Let's take a deep dive into this exploration.</div>
+      </div>
+    </div>
+    <div class="progress-bar-wrap" id="prog-wrap"><div class="progress-bar" id="v-prog"></div></div>
+    
+    <div class="controls-bar" id="v-chips"></div>
+  </div>
+
+  <script>
+    const scenes = [{"scene": 1, "title": "Opening: The World of Deep Space Exploration", "visual": "Cinematic wide camera shot showing deep space exploration in high detail with glowing particle effects.", "duration": "00:05", "audio": "Welcome to the overview of deep space exploration. Let's take a deep dive into this exploration."}, {"scene": 2, "title": "Core Mechanism & Features", "visual": "Dynamic macro zoom into key highlights, smooth panning across glowing interface components.", "duration": "00:08", "audio": "Notice how every core mechanism connects seamlessly and functions in unison."}, {"scene": 3, "title": "Future Impact & Conclusion", "visual": "Futuristic skyline lighting up, futuristic HUD graphics displaying performance stats.", "duration": "00:07", "audio": "This marks a brand new standard for deep space exploration. The future is here."}];
+    let curIdx = 0, isPlaying = false, timer = null;
+    const vImg = document.getElementById('v-img');
+    const vTag = document.getElementById('v-tag');
+    const vCap = document.getElementById('v-caption');
+    const vProg = document.getElementById('v-prog');
+    const vPlay = document.getElementById('v-play');
+    const vChips = document.getElementById('v-chips');
+
+    function renderChips() {
+      vChips.innerHTML = scenes.map((s, i) => `
+        <button class="chip ${i === curIdx ? 'active' : ''}" onclick="jumpScene(${i})">
+          🎬 Scene ${s.scene}: ${s.title}
+        </button>
+      `).join('');
+    }
+
+    function jumpScene(idx) {
+      curIdx = idx;
+      const s = scenes[curIdx];
+      vTag.textContent = `Scene ${s.scene}: ${s.title}`;
+      vCap.textContent = s.audio;
+      vProg.style.width = `${(curIdx / scenes.length) * 100}%`;
+      renderChips();
+      if ('speechSynthesis' in window) {
+        speechSynthesis.cancel();
+        if (isPlaying) {
+          const ut = new SpeechSynthesisUtterance(s.audio);
+          speechSynthesis.speak(ut);
+        }
+      }
+    }
+
+    vPlay.onclick = () => {
+      isPlaying = !isPlaying;
+      vPlay.textContent = isPlaying ? '⏸' : '▶';
+      vImg.classList.toggle('playing', isPlaying);
+      if (isPlaying) {
+        jumpScene(curIdx);
+        let step = 0;
+        timer = setInterval(() => {
+          step += 1;
+          vProg.style.width = `${Math.min(100, step * 5)}%`;
+          if (step >= 20) {
+            step = 0;
+            curIdx = (curIdx + 1) % scenes.length;
+            jumpScene(curIdx);
+          }
+        }, 500);
+      } else {
+        clearInterval(timer);
+        if ('speechSynthesis' in window) speechSynthesis.cancel();
+      }
+    };
+
+    renderChips();
+  </script>
+</body>
+</html>

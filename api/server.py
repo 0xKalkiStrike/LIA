@@ -168,6 +168,44 @@ def chat(body: ChatBody, authorization: str | None = Header(default=None)):
         )
     return commander.handle_message(user_id, body.message.strip())
 
+class AgentInvokeBody(BaseModel):
+    agent: str
+    prompt: str
+
+@app.post("/api/agent/invoke")
+def invoke_agent(body: AgentInvokeBody, authorization: str | None = Header(default=None)):
+    user_id = require_user(authorization)
+    agent = body.agent.lower()
+    prompt = body.prompt.strip()
+
+    if agent in ("coder", "code", "webapp"):
+        from agents import coder_agent
+        return coder_agent.write_and_open(prompt)
+    elif agent in ("video", "clip"):
+        from agents import video_agent
+        return video_agent.generate_video(prompt, user_id)
+    elif agent in ("presentation", "slides"):
+        from agents import presentation_agent
+        return presentation_agent.generate_presentation(prompt, user_id)
+    elif agent in ("article", "blog"):
+        from agents import article_agent
+        return article_agent.generate_article(prompt, user_id)
+    elif agent in ("scraper", "scrape", "search"):
+        from agents import scraper_agent
+        return scraper_agent.process_scrape_request(prompt)
+    elif agent in ("analysis", "chart", "data"):
+        from agents import analysis_agent
+        return analysis_agent.analyze_data(prompt)
+    elif agent in ("automation", "workflow"):
+        from agents import automation_agent
+        return automation_agent.execute_automation(prompt, user_id)
+    elif agent in ("image", "art"):
+        from agents import image_agent
+        return image_agent.generate_and_save(prompt, user_id)
+    else:
+        raise HTTPException(400, f"Unknown agent: {agent}")
+
+
 # ------------------------------------------------------------------ memory
 @app.get("/api/memories")
 def memories(authorization: str | None = Header(default=None)):
@@ -555,6 +593,133 @@ async def websocket_endpoint(websocket: WebSocket, token: str | None = None):
         pass
     except Exception as e:
         print(f"[WebSocket] Error: {e}")
+
+# ------------------------------------------------------------- Workspace APIs (Code IDE + Presentation Editor)
+
+# — Code Workspace —
+class ProjectFileBody(BaseModel):
+    filename: str
+    content: str = ""
+
+@app.get("/api/workspace/projects")
+def workspace_projects(authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import coder_agent
+    return coder_agent.list_projects()
+
+@app.get("/api/workspace/project/{app_id}")
+def workspace_project(app_id: str, authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import coder_agent
+    data = coder_agent.get_project(app_id)
+    if not data:
+        raise HTTPException(404, "Project not found")
+    return data
+
+@app.put("/api/workspace/project/{app_id}/file")
+def workspace_update_file(app_id: str, body: ProjectFileBody, authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import coder_agent
+    ok = coder_agent.update_project_file(app_id, body.filename, body.content)
+    if not ok:
+        raise HTTPException(404, "File or project not found")
+    return {"ok": True}
+
+@app.post("/api/workspace/project/{app_id}/file")
+def workspace_create_file(app_id: str, body: ProjectFileBody, authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import coder_agent
+    ok = coder_agent.create_project_file(app_id, body.filename, body.content)
+    if not ok:
+        raise HTTPException(400, "Could not create file")
+    return {"ok": True}
+
+@app.delete("/api/workspace/project/{app_id}/file")
+def workspace_delete_file(app_id: str, filename: str = Query(...), authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import coder_agent
+    ok = coder_agent.delete_project_file(app_id, filename)
+    if not ok:
+        raise HTTPException(404, "File not found")
+    return {"ok": True}
+
+# — Presentation Workspace —
+class SlideBody(BaseModel):
+    title: str = "New Slide"
+    subtitle: str = ""
+    bullets: list[str] = []
+    notes: str = ""
+
+class UpdatePresentationBody(BaseModel):
+    slides: list[dict]
+    topic: str | None = None
+
+@app.get("/api/workspace/presentations")
+def workspace_presentations(authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import presentation_agent
+    return presentation_agent.list_presentations()
+
+@app.get("/api/workspace/presentation/{pres_id}")
+def workspace_presentation(pres_id: str, authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import presentation_agent
+    data = presentation_agent.get_presentation(pres_id)
+    if not data:
+        raise HTTPException(404, "Presentation not found")
+    return data
+
+@app.put("/api/workspace/presentation/{pres_id}")
+def workspace_update_presentation(pres_id: str, body: UpdatePresentationBody, authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import presentation_agent
+    data = presentation_agent.update_presentation(pres_id, body.slides, body.topic)
+    if not data:
+        raise HTTPException(404, "Presentation not found")
+    return data
+
+@app.post("/api/workspace/presentation/{pres_id}/slide")
+def workspace_add_slide(pres_id: str, body: SlideBody, authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import presentation_agent
+    data = presentation_agent.add_slide(pres_id, body.model_dump())
+    if not data:
+        raise HTTPException(404, "Presentation not found")
+    return data
+
+@app.delete("/api/workspace/presentation/{pres_id}/slide/{slide_num}")
+def workspace_delete_slide(pres_id: str, slide_num: int, authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import presentation_agent
+    data = presentation_agent.delete_slide(pres_id, slide_num)
+    if not data:
+        raise HTTPException(404, "Slide not found")
+    return data
+
+@app.get("/api/workspace/presentation/{pres_id}/download")
+def workspace_download_presentation(pres_id: str, format: str = Query("html"),
+                                     authorization: str | None = Header(default=None),
+                                     authorization_q: str | None = Query(default=None, alias="authorization")):
+    require_user(authorization or authorization_q)
+    from agents import presentation_agent
+    if format == "pptx":
+        pptx_path = presentation_agent.export_pptx(pres_id)
+        if not pptx_path:
+            raise HTTPException(500, "PPTX export failed — python-pptx may not be installed")
+        return FileResponse(
+            pptx_path,
+            media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            headers={"Content-Disposition": f"attachment; filename={pres_id}.pptx"}
+        )
+    else:
+        html_path = presentation_agent.PRESENTATIONS_DIR / f"{pres_id}.html"
+        if not html_path.exists():
+            raise HTTPException(404, "Presentation HTML not found")
+        return FileResponse(
+            str(html_path),
+            media_type="text/html",
+            headers={"Content-Disposition": f"attachment; filename={pres_id}.html"}
+        )
 
 # ------------------------------------------------------------------ AVATAR
 _VRM_DIR = STATIC

@@ -194,12 +194,19 @@ def launch_app(app_name: str) -> dict:
             return {"ok": False, "message": f"Could not find Tor Browser executable or shortcut on Desktop."}
 
     executable = apps.get(app_name, app_name)
+    
+    # Validation: If app_name is not in mapped apps, check if executable exists on PATH or filesystem
+    if app_name not in apps:
+        import shutil
+        resolved = shutil.which(executable) or shutil.which(app_name)
+        if not resolved and not os.path.exists(executable):
+            return {"ok": False, "message": f"Application '{app_name}' not found. Make sure it's installed and added to PATH."}
+        if resolved:
+            executable = resolved
+
     try:
         # Use Windows native shell execution via start to bring GUI to foreground
         if platform.system() == "Windows":
-            # For powershell, cmd, terminal, etc., we can launch them using startfile.
-            # For GUI applications (like Chrome, VS Code, Notepad) we want to guarantee they pop up in the foreground.
-            # Using cmd.exe /c start "" "app" does exactly this on Windows.
             subprocess.Popen(f"cmd.exe /c start \"\" \"{executable}\"", shell=True)
         else:
             # Linux/Mac fallback

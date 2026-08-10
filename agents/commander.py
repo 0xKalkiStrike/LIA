@@ -109,6 +109,37 @@ try:
 except Exception:  # pragma: no cover
     image_agent = None
 
+try:
+    from . import video_agent
+except Exception:  # pragma: no cover
+    video_agent = None
+
+try:
+    from . import presentation_agent
+except Exception:  # pragma: no cover
+    presentation_agent = None
+
+try:
+    from . import article_agent
+except Exception:  # pragma: no cover
+    article_agent = None
+
+try:
+    from . import scraper_agent
+except Exception:  # pragma: no cover
+    scraper_agent = None
+
+try:
+    from . import analysis_agent
+except Exception:  # pragma: no cover
+    analysis_agent = None
+
+try:
+    from . import automation_agent
+except Exception:  # pragma: no cover
+    automation_agent = None
+
+
 
 # ---------------------------------------------------------------- Emotion ---
 def detect_emotion(reply: str) -> str:
@@ -386,6 +417,80 @@ def _offline_reply(message: str, mode: str, name: str, char_name: str) -> str:
     return pack["default"]
 
 
+# ----------------------------------------------- Time/Date Direct Handler ---
+_TIME_TRIGGERS = (
+    "what time is it", "what's the time", "what is the time",
+    "current time", "tell me the time", "whats the time",
+    "time right now", "time now", "what time", "kitna baje",
+    "kitne baje", "samay kya hai", "samay kya che", "time kya hai",
+    "time kya che", "kya time hua", "kya time hai",
+    "abhi kya time hai", "abhi time kya hai", "atyare samay",
+)
+
+_DATE_TRIGGERS = (
+    "what date is it", "what's the date", "what is the date",
+    "current date", "tell me the date", "today's date",
+    "todays date", "what day is it", "what day is today",
+    "aaj kya date hai", "aaj kya tarikh che", "aaj ki date",
+    "aaj ki tarikh", "aajni tarikh",
+)
+
+def _handle_time_date_query(message: str, mode: str, name: str) -> str | None:
+    """Directly handle time/date queries with precise system time.
+    Returns None if the message is not a time/date query."""
+    low = message.lower().strip()
+    
+    # Do not intercept creation, coding, web app, presentation, software, or creative prompts
+    if any(w in low for w in (
+        "build", "create", "make", "write", "develop", "generate", "app", 
+        "website", "software", "code", "presentation", "slide", "prompt", 
+        "application", "game", "calculator", "dashboard", "tool", "site", "page"
+    )):
+        return None
+
+    # Remove punctuation for matching
+    clean = re.sub(r"[^\w\s]", "", low)
+    clean = re.sub(r"\s+", " ", clean).strip()
+    
+    now_dt = datetime.datetime.now()
+    
+    # Check for time queries strictly
+    is_time = any(t in clean for t in _TIME_TRIGGERS)
+    
+    # Check for date queries strictly
+    is_date = any(t in clean for t in _DATE_TRIGGERS)
+    
+    if is_time and is_date:
+        t = now_dt.strftime("%I:%M %p")
+        d = now_dt.strftime("%A, %B %d, %Y")
+        if mode == "english_gujarati":
+            return f"અત્યારે સમય {t} છે અને આજની તારીખ {d} છે, {name}."
+        elif mode == "english_hindi":
+            return f"Abhi time {t} hai aur aaj ki date {d} hai, {name}."
+        else:
+            return f"Right now it's {t}, and today's date is {d}, {name}."
+    
+    if is_time:
+        t = now_dt.strftime("%I:%M %p")
+        if mode == "english_gujarati":
+            return f"અત્યારે સમય {t} થયો છે, {name}."
+        elif mode == "english_hindi":
+            return f"Abhi time {t} hai, {name}."
+        else:
+            return f"It's currently {t} right now, {name}."
+    
+    if is_date:
+        d = now_dt.strftime("%A, %B %d, %Y")
+        if mode == "english_gujarati":
+            return f"આજની તારીખ {d} છે, {name}."
+        elif mode == "english_hindi":
+            return f"Aaj ki date {d} hai, {name}."
+        else:
+            return f"Today is {d}, {name}."
+    
+    return None
+
+
 # ----------------------------------------------- Task Execution ---
 def _execute_task(task: dict) -> dict:
     """Execute a task and return the result."""
@@ -517,12 +622,21 @@ def _handle_greetings(message: str, mode: str, name: str, detected_lang: str) ->
     clean = re.sub(r"[^\w\s]", "", low)
     clean = re.sub(r"\s+", " ", clean).strip()
 
+    # Do not intercept image feedback, code requests, or statements
+    if any(w in clean for w in ("look like", "looks like", "image", "picture", "photo", "generate", "create", "draw", "make", "fix", "wrong", "redo")):
+        return None
+
     has_krishna = any(w in clean for w in ("krishna", "krishnaa", "krisna"))
     has_kem_cho = any(w in clean for w in ("kem cho", "kem chho", "kemcho", "kemchho"))
-    has_jai_shree = any(w in clean for w in ("jai shree", "jay shree", "jai shri", "jay shri", "pranam", "jai shree krishna", "jay shree krishna"))
+    has_jai_shree = any(w in clean for w in ("jai shree", "jay shree", "jai shri", "jay shri", "pranam", "jai shree krishna", "jay shree krishna", "hare krishna", "radhe krishna", "radhe radhe"))
+    
+    # Krishna greetings require explicit devotional terms (jai, jay, hare, radhe, pranam, namaste) or direct greeting words
+    is_explicit_krishna_greeting = has_jai_shree or (
+        has_krishna and any(w in clean for w in ("jai", "jay", "shree", "shri", "hare", "radhe", "pranam", "namaste", "hi", "hello"))
+    )
 
     # Case 1: Kem cho, Jai Shree Krishna!
-    if has_kem_cho and (has_krishna or has_jai_shree):
+    if has_kem_cho and (is_explicit_krishna_greeting or has_jai_shree):
         if mode == "english_gujarati" or (mode == "auto" and detected_lang == "gujarati"):
             return f"જય શ્રી કૃષ્ણ, {name}! હું મજામાં છું. તમે કેમ છો?"
         elif mode == "english_hindi" or (mode == "auto" and detected_lang == "hindi"):
@@ -531,7 +645,7 @@ def _handle_greetings(message: str, mode: str, name: str, detected_lang: str) ->
             return f"Jai Shree Krishna, {name}! I am doing great. How are you?"
 
     # Case 2: Jai Shree Krishna! / Pranam / Hare Krishna
-    if has_krishna or has_jai_shree:
+    if is_explicit_krishna_greeting:
         if mode == "english_gujarati" or (mode == "auto" and detected_lang == "gujarati"):
             return f"જય શ્રી કૃષ્ણ, {name}! હું તમારી શું મદદ કરી શકું?"
         elif mode == "english_hindi" or (mode == "auto" and detected_lang == "hindi"):
@@ -632,11 +746,18 @@ def handle_message(user_id: str, message: str) -> dict:
             except Exception as e:
                 print(f"[Commander] Search failed: {e}")
 
-    # Offline Desktop Command Heuristics
+    # Offline Desktop Command Heuristics — only for explicit desktop apps
+    KNOWN_DESKTOP_APPS = ("notepad", "calc", "calculator", "explorer", "paint", "mspaint", "code", "vscode", "vs code", "visual studio code", "chrome", "google chrome", "firefox", "edge", "msedge", "powershell", "cmd", "terminal", "tor", "tor browser")
     open_match = re.match(r"^(?:open|launch|start)\s+([a-zA-Z0-9_\s\.\-]+)$", low_msg)
     if open_match:
-        app = open_match.group(1).strip()
-        task = {"type": "launch_app", "app": app}
+        target_app = open_match.group(1).strip().lower()
+        # If asking to open workspace/ide/editor/app.core, do not create a desktop app task
+        if any(w in target_app for w in ("workspace", "ide", "editor", "app.core", "app core", "slides", "presentation")):
+            task = None
+        elif target_app in KNOWN_DESKTOP_APPS:
+            task = {"type": "launch_app", "app": target_app}
+        else:
+            task = None
     elif "list files" in low_msg or "show files" in low_msg or "browse files" in low_msg:
         task = {"type": "list_files"}
     else:
@@ -644,6 +765,74 @@ def handle_message(user_id: str, message: str) -> dict:
         if run_match:
             cmd = run_match.group(1).strip()
             task = {"type": "execute_command", "command": cmd}
+
+    # ── route: is this a video request? ──
+    if task is None and video_agent and video_agent.looks_like_video_request(message):
+        result = video_agent.generate_video(message, user_id)
+        memory_agent.save_turn(user_id, "assistant", result["spoken"], detected)
+        return {
+            "reply": result["spoken"], "language_detected": detected,
+            "engine": "video", "video_id": result.get("video_id"),
+            "scenes": result.get("scenes"), "thumbnail": result.get("thumbnail"),
+            "video_url": result.get("video_url"), "mp4_url": result.get("mp4_url"),
+            "topic": result.get("topic"), "total_duration": result.get("total_duration"),
+            "emotion": "excited", "task": task
+        }
+
+    # ── route: is this a presentation / slides request? ──
+    if task is None and presentation_agent and presentation_agent.looks_like_presentation_request(message):
+        result = presentation_agent.generate_presentation(message, user_id)
+        memory_agent.save_turn(user_id, "assistant", result["spoken"], detected)
+        return {
+            "reply": result["spoken"], "language_detected": detected,
+            "engine": "presentation", "presentation_id": result.get("presentation_id"),
+            "slides": result.get("slides"), "download_url": result.get("download_url"),
+            "emotion": "confident", "task": task
+        }
+
+    # ── route: is this an article / blog request? ──
+    if task is None and article_agent and article_agent.looks_like_article_request(message):
+        result = article_agent.generate_article(message, user_id)
+        memory_agent.save_turn(user_id, "assistant", result["spoken"], detected)
+        return {
+            "reply": result["spoken"], "language_detected": detected,
+            "engine": "article", "article_id": result.get("article_id"),
+            "title": result.get("title"), "content": result.get("content"),
+            "download_url": result.get("download_url"),
+            "emotion": "focused", "task": task
+        }
+
+    # ── route: is this a data scraping / web search request? ──
+    if task is None and scraper_agent and scraper_agent.looks_like_scraper_request(message):
+        result = scraper_agent.process_scrape_request(message)
+        memory_agent.save_turn(user_id, "assistant", result["spoken"], detected)
+        return {
+            "reply": result["spoken"], "language_detected": detected,
+            "engine": "scraper", "scrape_data": result,
+            "emotion": "curious", "task": task
+        }
+
+    # ── route: is this a data analysis / chart request? ──
+    if task is None and analysis_agent and analysis_agent.looks_like_analysis_request(message):
+        result = analysis_agent.analyze_data(message)
+        memory_agent.save_turn(user_id, "assistant", result["spoken"], detected)
+        return {
+            "reply": result["spoken"], "language_detected": detected,
+            "engine": "analysis", "summary": result.get("summary"),
+            "chart_config": result.get("chart_config"),
+            "emotion": "focused", "task": task
+        }
+
+    # ── route: is this an automation request? ──
+    if task is None and automation_agent and automation_agent.looks_like_automation_request(message):
+        result = automation_agent.execute_automation(message, user_id)
+        memory_agent.save_turn(user_id, "assistant", result["spoken"], detected)
+        return {
+            "reply": result["spoken"], "language_detected": detected,
+            "engine": "automation", "task_name": result.get("task_name"),
+            "logs": result.get("logs"),
+            "emotion": "confident", "task": task
+        }
 
     # ── route: is this a "generate image" request? ──
     if task is None and image_agent and image_agent.looks_like_image_request(message):
@@ -660,7 +849,7 @@ def handle_message(user_id: str, message: str) -> dict:
             "task": task
         }
 
-    # ── route: is this a "write code / open VS Code" request? ──
+    # ── route: is this a "write code / open VS Code / build app" request? ──
     if task is None and coder_agent and coder_agent.looks_like_code_request(message):
         result = coder_agent.write_and_open(message)
         memory_agent.save_turn(user_id, "assistant", result["spoken"], detected)
@@ -669,11 +858,31 @@ def handle_message(user_id: str, message: str) -> dict:
             "reply": result["spoken"],
             "language_detected": detected,
             "engine": "coder",
+            "is_web_app": result.get("is_web_app", False),
+            "preview_url": result.get("preview_url"),
+            "download_url": result.get("download_url"),
+            "files": result.get("files"),
             "code": result.get("code_preview"),
             "filename": result.get("filename"),
             "path": result.get("path"),
             "emotion": emotion,
             "task": task
+        }
+
+
+    # ── route: is this a time/date query? (direct handler, no LLM) ──
+    time_reply = _handle_time_date_query(message, mode, name)
+    if time_reply:
+        memory_agent.save_turn(user_id, "assistant", time_reply, detected)
+        return {
+            "reply": time_reply,
+            "language_detected": detected,
+            "engine": "direct",
+            "emotion": "friendly",
+            "task": None,
+            "task_result": None,
+            "search_query": None,
+            "search_results": []
         }
 
     # ── route: is this a greeting? ──
@@ -697,12 +906,16 @@ def handle_message(user_id: str, message: str) -> dict:
         mode, profile.get("char_name", "LIA"), profile.get("display_name", "User"), detected_lang=detected
     )
     
-    # Inject current date and time for temporal awareness
+    # Inject current date and time for temporal awareness — emphatic instruction
     now_dt = datetime.datetime.now()
     system += (
-        f"\n\nCurrent System Context:\n"
+        f"\n\n## CRITICAL — Current Date & Time (Real-Time System Clock)\n"
+        f"The EXACT current date and time from the system clock is:\n"
         f"- Date: {now_dt.strftime('%A, %B %d, %Y')}\n"
         f"- Time: {now_dt.strftime('%I:%M %p')}\n"
+        f"- Timezone: Local system time\n"
+        f"If the user asks about the time or date, you MUST use EXACTLY these values. "
+        f"Do NOT estimate, guess, or invent a different time. Use the exact values above.\n"
     )
     
     # Instruct local LLM how to trigger desktop actions
@@ -922,11 +1135,18 @@ def handle_message_stream(user_id: str, message: str):
             except Exception as e:
                 print(f"[Commander] Search failed: {e}")
 
-    # Offline Desktop Command Heuristics
+    # Offline Desktop Command Heuristics — only for explicit desktop apps
+    KNOWN_DESKTOP_APPS = ("notepad", "calc", "calculator", "explorer", "paint", "mspaint", "code", "vscode", "vs code", "visual studio code", "chrome", "google chrome", "firefox", "edge", "msedge", "powershell", "cmd", "terminal", "tor", "tor browser")
     open_match = re.match(r"^(?:open|launch|start)\s+([a-zA-Z0-9_\s\.\-]+)$", low_msg)
     if open_match:
-        app = open_match.group(1).strip()
-        task = {"type": "launch_app", "app": app}
+        target_app = open_match.group(1).strip().lower()
+        # If asking to open workspace/ide/editor/app.core, do not create a desktop app task
+        if any(w in target_app for w in ("workspace", "ide", "editor", "app.core", "app core", "slides", "presentation")):
+            task = None
+        elif target_app in KNOWN_DESKTOP_APPS:
+            task = {"type": "launch_app", "app": target_app}
+        else:
+            task = None
     elif "list files" in low_msg or "show files" in low_msg or "browse files" in low_msg:
         task = {"type": "list_files"}
     else:
@@ -934,6 +1154,90 @@ def handle_message_stream(user_id: str, message: str):
         if run_match:
             cmd = run_match.group(1).strip()
             task = {"type": "execute_command", "command": cmd}
+
+    # ── route: is this a video request? ──
+    if task is None and video_agent and video_agent.looks_like_video_request(message):
+        result = video_agent.generate_video(message, user_id)
+        reply = result["spoken"]
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done", "reply": reply, "language_detected": detected,
+            "engine": "video", "video_id": result.get("video_id"),
+            "scenes": result.get("scenes"), "thumbnail": result.get("thumbnail"),
+            "emotion": "excited", "task": task
+        }) + "\n"
+        return
+
+    # ── route: is this a presentation request? ──
+    if task is None and presentation_agent and presentation_agent.looks_like_presentation_request(message):
+        result = presentation_agent.generate_presentation(message, user_id)
+        reply = result["spoken"]
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done", "reply": reply, "language_detected": detected,
+            "engine": "presentation", "presentation_id": result.get("presentation_id"),
+            "slides": result.get("slides"), "download_url": result.get("download_url"),
+            "emotion": "confident", "task": task
+        }) + "\n"
+        return
+
+    # ── route: is this an article / blog request? ──
+    if task is None and article_agent and article_agent.looks_like_article_request(message):
+        result = article_agent.generate_article(message, user_id)
+        reply = result["spoken"]
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done", "reply": reply, "language_detected": detected,
+            "engine": "article", "article_id": result.get("article_id"),
+            "title": result.get("title"), "content": result.get("content"),
+            "download_url": result.get("download_url"),
+            "emotion": "focused", "task": task
+        }) + "\n"
+        return
+
+    # ── route: is this a data scraping / web search request? ──
+    if task is None and scraper_agent and scraper_agent.looks_like_scraper_request(message):
+        result = scraper_agent.process_scrape_request(message)
+        reply = result["spoken"]
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done", "reply": reply, "language_detected": detected,
+            "engine": "scraper", "scrape_data": result,
+            "emotion": "curious", "task": task
+        }) + "\n"
+        return
+
+    # ── route: is this a data analysis / chart request? ──
+    if task is None and analysis_agent and analysis_agent.looks_like_analysis_request(message):
+        result = analysis_agent.analyze_data(message)
+        reply = result["spoken"]
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done", "reply": reply, "language_detected": detected,
+            "engine": "analysis", "summary": result.get("summary"),
+            "chart_config": result.get("chart_config"),
+            "emotion": "focused", "task": task
+        }) + "\n"
+        return
+
+    # ── route: is this an automation request? ──
+    if task is None and automation_agent and automation_agent.looks_like_automation_request(message):
+        result = automation_agent.execute_automation(message, user_id)
+        reply = result["spoken"]
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done", "reply": reply, "language_detected": detected,
+            "engine": "automation", "task_name": result.get("task_name"),
+            "logs": result.get("logs"),
+            "emotion": "confident", "task": task
+        }) + "\n"
+        return
 
     # ── route: is this a "generate image" request? ──
     if task is None and image_agent and image_agent.looks_like_image_request(message):
@@ -955,7 +1259,7 @@ def handle_message_stream(user_id: str, message: str):
         }) + "\n"
         return
 
-    # ── route: is this a "write code / open VS Code" request? ──
+    # ── route: is this a "write code / open VS Code / build app" request? ──
     if task is None and coder_agent and coder_agent.looks_like_code_request(message):
         result = coder_agent.write_and_open(message)
         reply = result["spoken"]
@@ -967,12 +1271,35 @@ def handle_message_stream(user_id: str, message: str):
             "reply": reply,
             "language_detected": detected,
             "engine": "coder",
+            "is_web_app": result.get("is_web_app", False),
+            "preview_url": result.get("preview_url"),
+            "download_url": result.get("download_url"),
+            "files": result.get("files"),
             "code": result.get("code_preview"),
             "filename": result.get("filename"),
             "path": result.get("path"),
             "emotion": emotion,
             "task": task,
             "task_result": None
+        }) + "\n"
+        return
+
+
+    # ── route: is this a time/date query? (direct handler, no LLM) ──
+    time_reply = _handle_time_date_query(message, mode, name)
+    if time_reply:
+        memory_agent.save_turn(user_id, "assistant", time_reply, detected)
+        yield json.dumps({"type": "text", "content": time_reply}) + "\n"
+        yield json.dumps({
+            "type": "done",
+            "reply": time_reply,
+            "language_detected": detected,
+            "engine": "direct",
+            "emotion": "friendly",
+            "task": None,
+            "task_result": None,
+            "search_query": None,
+            "search_results": []
         }) + "\n"
         return
 
@@ -1000,12 +1327,16 @@ def handle_message_stream(user_id: str, message: str):
         mode, profile.get("char_name", "LIA"), profile.get("display_name", "User"), detected_lang=detected
     )
     
-    # Inject current date and time for temporal awareness
+    # Inject current date and time for temporal awareness — emphatic instruction
     now_dt = datetime.datetime.now()
     system += (
-        f"\n\nCurrent System Context:\n"
+        f"\n\n## CRITICAL — Current Date & Time (Real-Time System Clock)\n"
+        f"The EXACT current date and time from the system clock is:\n"
         f"- Date: {now_dt.strftime('%A, %B %d, %Y')}\n"
         f"- Time: {now_dt.strftime('%I:%M %p')}\n"
+        f"- Timezone: Local system time\n"
+        f"If the user asks about the time or date, you MUST use EXACTLY these values. "
+        f"Do NOT estimate, guess, or invent a different time. Use the exact values above.\n"
     )
     
     # Instruct local LLM how to trigger desktop actions

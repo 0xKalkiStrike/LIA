@@ -1,0 +1,140 @@
+{
+  "domain": "image_generation",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for AI Image Generation engines (Stable Diffusion, SDXL, Flux.1, Midjourney, DALL-E 3, ComfyUI)",
+  "categories": [
+    "prompt_engineering",
+    "style_presets",
+    "negative_prompts",
+    "camera_and_lighting",
+    "comfyui_workflows",
+    "lora_triggers",
+    "model_configs"
+  ],
+  "training_data": [
+    {
+      "id": "img_gen_001",
+      "category": "prompt_engineering",
+      "prompt": "Hyper-realistic futuristic cyberpunk city street at night, neon reflections on wet asphalt, cinematic lighting, 8k resolution, photorealistic",
+      "completion": {
+        "model": "Flux.1-Dev",
+        "parameters": {
+          "steps": 30,
+          "cfg_scale": 7.0,
+          "sampler": "euler_ancestral",
+          "aspect_ratio": "16:9",
+          "width": 1280,
+          "height": 720,
+          "seed": 42918237
+        },
+        "style_tags": [
+          "cyberpunk",
+          "photorealistic",
+          "cinematic",
+          "octane_render",
+          "raytracing"
+        ],
+        "negative_prompt": "blurry, low quality, distorted, oversaturated, deformed hands, extra limbs, bad anatomy, text, watermark"
+      }
+    },
+    {
+      "id": "img_gen_002",
+      "category": "style_presets",
+      "prompt": "Create an anime-style character portrait of a female wizard casting a blue elemental spell",
+      "completion": {
+        "style_preset": "Makoto Shinkai / Studio Ghibli Fusion",
+        "enhanced_prompt": "Masterpiece anime illustration of a young female wizard with silver hair and glowing blue eyes, casting a swirling ice and blue aura spell, vibrant colors, detailed magical runes, dramatic atmospheric depth, artstation trending",
+        "recommended_lora": "anime_vibrant_v2.safetensors",
+        "lora_weight": 0.75
+      }
+    },
+    {
+      "id": "img_gen_003",
+      "category": "camera_and_lighting",
+      "prompt": "What are the best camera and lighting settings for dramatic portrait photography in image generation prompts?",
+      "completion": {
+        "lens_keywords": [
+          "85mm f/1.4 lens",
+          "shallow depth of field",
+          "bokeh background",
+          "bokeh circles",
+          "sharp focus on eyes"
+        ],
+        "lighting_keywords": [
+          "rembrandt lighting",
+          "volumetric lighting",
+          "god rays",
+          "dramatic side lighting",
+          "softbox fill light",
+          "rim light glow"
+        ],
+        "composition": [
+          "rule of thirds",
+          "golden ratio",
+          "close-up portrait",
+          "low angle shot"
+        ]
+      }
+    },
+    {
+      "id": "img_gen_004",
+      "category": "comfyui_workflows",
+      "prompt": "Generate a ComfyUI pipeline JSON structure for text-to-image with SDXL base and refiner",
+      "completion": {
+        "workflow_type": "SDXL_Base_Refiner_Cascade",
+        "nodes": [
+          {
+            "id": 1,
+            "type": "KSamplerAdvanced",
+            "title": "Base KSampler",
+            "start_step": 0,
+            "end_step": 20
+          },
+          {
+            "id": 2,
+            "type": "KSamplerAdvanced",
+            "title": "Refiner KSampler",
+            "start_step": 20,
+            "end_step": 30
+          },
+          {
+            "id": 3,
+            "type": "VAEDecode",
+            "title": "VAE Output Decoder"
+          },
+          {
+            "id": 4,
+            "type": "SaveImage",
+            "title": "Export Image"
+          }
+        ]
+      }
+    },
+    {
+      "id": "img_gen_005",
+      "category": "lora_triggers",
+      "prompt": "List essential LoRA trigger words and categories for realistic character modeling",
+      "completion": {
+        "categories": {
+          "skin_texture": [
+            "micro-skin texture",
+            "pore detail",
+            "subsurface scattering",
+            "natural skin imperfections"
+          ],
+          "expression": [
+            "subtle smile",
+            "intense gaze",
+            "thoughtful expression"
+          ],
+          "fashion": [
+            "haute couture",
+            "cybernetic suit",
+            "tactical gear",
+            "vintage silk dress"
+          ]
+        }
+      }
+    }
+  ]
+}

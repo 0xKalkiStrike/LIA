@@ -9,6 +9,8 @@ import { MemoryManager } from "../components/MemoryManager";
 import { ProductivityHub } from "../components/ProductivityHub";
 import { AgentDebate } from "../components/AgentDebate";
 import { Dashboard } from "../components/Dashboard";
+import { CodeWorkspace } from "../components/CodeWorkspace";
+import { PresentationWorkspace } from "../components/PresentationWorkspace";
 import {
   MessageSquare,
   Layers,
@@ -18,7 +20,9 @@ import {
   Database,
   Lock,
   User,
-  UserPlus
+  UserPlus,
+  Code2,
+  Presentation,
 } from "lucide-react";
 
 const MainContent: React.FC = () => {
@@ -30,9 +34,14 @@ const MainContent: React.FC = () => {
     signup,
     login,
     chatHistory,
+    isSpeaking,
+    spokenText,
+    activeProjectId,
+    activePresentationId,
+    closeWorkspace,
   } = useApp();
 
-  const [activePanel, setActivePanel] = useState<string>("chat"); // chat | productivity | debate | customizer | voice | memory
+  const [activePanel, setActivePanel] = useState<string>("chat"); // chat | productivity | debate | customizer | voice | memory | code | presentation
   
   // Onboarding & Login forms
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
@@ -86,10 +95,10 @@ const MainContent: React.FC = () => {
     return last.sender === "assistant" ? last.emotion || "neutral" : "neutral";
   };
 
-  const getActiveViseme = () => {
-    if (chatHistory.length === 0) return "rest";
+  const getLastMessage = () => {
+    if (chatHistory.length === 0) return "";
     const last = chatHistory[chatHistory.length - 1];
-    return last.sender === "assistant" && last.isStreaming ? "A" : "rest";
+    return last.sender === "assistant" ? last.text : "";
   };
 
   // ── SCREEN 1: Onboarding / Login (Unauthenticated)
@@ -339,6 +348,85 @@ const MainContent: React.FC = () => {
     );
   }
 
+  // ── FULLSCREEN WORKSPACE VIEWS ──
+  // Code Workspace takes over the full view
+  if (activePanel === "code" && activeProjectId && token) {
+    return (
+      <div className="w-full h-screen flex bg-slate-950 text-white overflow-hidden">
+        <nav className="w-16 bg-slate-900/80 border-r border-slate-800/80 flex flex-col justify-between py-6 items-center flex-shrink-0 z-10">
+          <div className="flex flex-col space-y-4">
+            {[
+              { id: "chat", label: "Chat room", icon: <MessageSquare className="w-5 h-5" /> },
+              { id: "code", label: "Code IDE", icon: <Code2 className="w-5 h-5" /> },
+              { id: "presentation", label: "Slides", icon: <Presentation className="w-5 h-5" /> },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                className={`p-3 rounded-xl transition-all ${
+                  activePanel === tab.id
+                    ? "bg-cyan-500/20 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.15)]"
+                    : "text-slate-500 hover:text-slate-350"
+                }`}
+                onClick={() => {
+                  if (tab.id === "chat") closeWorkspace();
+                  else setActivePanel(tab.id);
+                }}
+                title={tab.label}
+              >
+                {tab.icon}
+              </button>
+            ))}
+          </div>
+          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/50 flex items-center justify-center text-xs font-bold text-slate-300" title={`Logged in as ${profile?.username}`}>
+            {profile?.username ? profile.username[0].toUpperCase() : "U"}
+          </div>
+        </nav>
+        <div className="flex-1 overflow-hidden">
+          <CodeWorkspace projectId={activeProjectId} token={token} onClose={closeWorkspace} />
+        </div>
+      </div>
+    );
+  }
+
+  // Presentation Workspace takes over the full view
+  if (activePanel === "presentation" && activePresentationId && token) {
+    return (
+      <div className="w-full h-screen flex bg-slate-950 text-white overflow-hidden">
+        <nav className="w-16 bg-slate-900/80 border-r border-slate-800/80 flex flex-col justify-between py-6 items-center flex-shrink-0 z-10">
+          <div className="flex flex-col space-y-4">
+            {[
+              { id: "chat", label: "Chat room", icon: <MessageSquare className="w-5 h-5" /> },
+              { id: "code", label: "Code IDE", icon: <Code2 className="w-5 h-5" /> },
+              { id: "presentation", label: "Slides", icon: <Presentation className="w-5 h-5" /> },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                className={`p-3 rounded-xl transition-all ${
+                  activePanel === tab.id
+                    ? "bg-violet-500/20 text-violet-400 shadow-[0_0_12px_rgba(139,92,246,0.15)]"
+                    : "text-slate-500 hover:text-slate-350"
+                }`}
+                onClick={() => {
+                  if (tab.id === "chat") closeWorkspace();
+                  else setActivePanel(tab.id);
+                }}
+                title={tab.label}
+              >
+                {tab.icon}
+              </button>
+            ))}
+          </div>
+          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/50 flex items-center justify-center text-xs font-bold text-slate-300" title={`Logged in as ${profile?.username}`}>
+            {profile?.username ? profile.username[0].toUpperCase() : "U"}
+          </div>
+        </nav>
+        <div className="flex-1 overflow-hidden">
+          <PresentationWorkspace presentationId={activePresentationId} token={token} onClose={closeWorkspace} />
+        </div>
+      </div>
+    );
+  }
+
   // ── SCREEN 2: Dashboard (Authenticated)
   return (
     <div className="w-full h-screen flex bg-slate-950 text-white overflow-hidden">
@@ -348,6 +436,8 @@ const MainContent: React.FC = () => {
         <div className="flex flex-col space-y-4">
           {[
             { id: "chat", label: "Chat room", icon: <MessageSquare className="w-5 h-5" /> },
+            { id: "code", label: "Code IDE", icon: <Code2 className="w-5 h-5" /> },
+            { id: "presentation", label: "Slides", icon: <Presentation className="w-5 h-5" /> },
             { id: "productivity", label: "Productivity", icon: <Calendar className="w-5 h-5" /> },
             { id: "debate", label: "Agent Debate", icon: <Layers className="w-5 h-5" /> },
             { id: "customizer", label: "Customizer", icon: <Sliders className="w-5 h-5" /> },
@@ -388,7 +478,7 @@ const MainContent: React.FC = () => {
         )}
 
         {/* Otherwise, render a split view (LIA pod on the left, active tab panel on the right) */}
-        {activePanel !== "chat" && (
+        {activePanel !== "chat" && activePanel !== "code" && activePanel !== "presentation" && (
           <div className="flex-1 flex p-5 gap-5 min-h-0 bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black overflow-hidden">
             
             {/* LIA Pod column */}
@@ -401,7 +491,8 @@ const MainContent: React.FC = () => {
                 <ThreeCanvas
                   profile={profile}
                   emotion={getActiveEmotion()}
-                  viseme={getActiveViseme()}
+                  isSpeaking={isSpeaking}
+                  spokenText={spokenText || getLastMessage()}
                   asleep={profile?.greeting_style === "asleep"}
                 />
               </div>

@@ -1,0 +1,79 @@
+{
+  "domain": "article",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for Long-Form Article Generation, SEO Content Writing, Copywriting Frameworks, and Editorial Publishing",
+  "categories": [
+    "long_form_articles",
+    "seo_optimization",
+    "copywriting_frameworks",
+    "headline_generation",
+    "editorial_review"
+  ],
+  "training_data": [
+    {
+      "id": "art_001",
+      "category": "long_form_articles",
+      "prompt": "Generate a high-authority technical article outline and content strategy on Artificial Intelligence and Autonomous Agents",
+      "completion": {
+        "title": "The Evolution of Autonomous AI Agents: From Reactive Models to Goal-Driven Systems",
+        "structure": [
+          {
+            "section": "Introduction",
+            "focus": "Hook reader, define AI agents vs static LLMs, set thesis"
+          },
+          {
+            "section": "Core Architecture",
+            "focus": "Reasoning loops, planning engines, memory vector stores, tool execution"
+          },
+          {
+            "section": "Real-World Applications",
+            "focus": "Code assistance, automated research, device control, video synthesis"
+          },
+          {
+            "section": "Challenges & Security",
+            "focus": "Hallucination mitigation, prompt injection defense, sandbox safety"
+          },
+          {
+            "section": "Conclusion",
+            "focus": "Summary of future trajectory and strategic implications"
+          }
+        ],
+        "target_word_count": 2500,
+        "reading_grade_level": "College / Professional"
+      }
+    },
+    {
+      "id": "art_002",
+      "category": "seo_optimization",
+      "prompt": "What are the key SEO optimization directives for technical blog articles?",
+      "completion": {
+        "seo_directives": {
+          "primary_keyword_density": "1.5% to 2.5% natural inclusion",
+          "h1_title": "Includes primary keyword within first 60 characters",
+          "meta_description": "150-160 characters with compelling call to action and keyword",
+          "subheadings": "H2 and H3 tags containing LSI keywords",
+          "internal_linking": "Minimum 3-5 relevant contextual internal hyperlinks",
+          "readability": "Short paragraphs (2-4 sentences max), bullet points, and high scannability"
+        }
+      }
+    },
+    {
+      "id": "art_003",
+      "category": "copywriting_frameworks",
+      "prompt": "Demonstrate the PAS (Problem-Agitate-Solve) and AIDA (Attention-Interest-Desire-Action) copywriting frameworks",
+      "completion": {
+        "pas_framework": {
+          "problem": "Manual data extraction takes hours of tedious copy-pasting every day.",
+          "agitate": "Errors slip into your reports, deadlines get missed, and your team burns out on repetitive grunt work.",
+          "solve": "LIA Automated Scraping & Analysis Agent automates end-to-end data workflows in seconds with 99.9% accuracy."
+        },
+        "aida_framework": {
+          "attention": "Stop Wasting Time on Manual Content Generation!",
+          "interest": "AI-powered agents can write, design, and analyze 10x faster than traditional methods.",
+          "desire": "Imagine generating complete, polished presentations and articles in under 30 seconds.",
+          "action": "Deploy LIA AI today and transform your workflow."
+        }
+      }
+    }
+  ]
+}

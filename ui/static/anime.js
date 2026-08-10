@@ -1030,31 +1030,6 @@ export function buildAnime(el, cfg) {
 //       /* Hair physics (Verlet) */
 //       const windX = Math.sin(time * 3.1) * 0.06, windZ = Math.cos(time * 2.2) * 0.06;
 //       for (let s = 0; s < STRANDS; s++) {
-//         const nodes = strandsData[s], mesh = strandMeshes[s];
-//         const ang = (s / STRANDS) * Math.PI - Math.PI / 2;
-//         const rx = Math.cos(ang) * 0.88, ry = 0.42 + Math.sin(Math.abs(ang)) * 0.35, rz = -0.22 + Math.cos(Math.abs(ang)) * 0.45;
-//         const wr = new THREE.Vector3(rx, ry, rz).applyMatrix4(headMesh.matrixWorld);
-//         nodes[0].pos.copy(wr); nodes[0].prev.copy(wr);
-//         for (let i = 1; i < SEG; i++) {
-//           const n = nodes[i], tmp = n.pos.clone();
-//           const vel = n.pos.clone().sub(n.prev).multiplyScalar(0.88);
-//           n.pos.add(vel); n.pos.y -= 0.013; n.pos.x += windX * 0.018; n.pos.z += windZ * 0.018;
-//           n.prev.copy(tmp);
-//         }
-//         for (let it = 0; it < 2; it++) {
-//           for (let i = 0; i < SEG - 1; i++) {
-//             const n1 = nodes[i], n2 = nodes[i+1];
-//             const d = n2.pos.clone().sub(n1.pos), len = d.length(), err = SEG_LEN - len, off = d.normalize().multiplyScalar(err * 0.5);
-//             if (i > 0) n1.pos.sub(off); n2.pos.add(off);
-//           }
-//         }
-//         mesh.geometry.dispose();
-//         mesh.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(nodes.map(n => n.pos)), 6, 0.055 - s * 0.001, 6, false);
-//       }
-//     }
-//   };
-// }
-
   el.innerHTML = '';
   el.style.position = 'relative';
   el.style.overflow  = 'hidden';
@@ -1077,15 +1052,9 @@ export function buildAnime(el, cfg) {
   renderer.setSize(W, H);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  /*
-   * CRITICAL COLOR SETUP for three-vrm v1.0.8 + Three.js r139:
-   * - sRGBEncoding: gamma correction so textures display correctly
-   * - LinearToneMapping: REQUIRED for MToon — ACES/Reinhard desaturate anime colors
-   * - exposure 1.0: neutral, no color shift
-   */
   renderer.outputEncoding      = THREE.sRGBEncoding;
-  renderer.toneMapping         = THREE.NoToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMapping         = THREE.LinearToneMapping;
+  renderer.toneMappingExposure = 0.88;
   renderer.physicallyCorrectLights = false;
   renderer.sortObjects = false;
   renderer.autoClearColor = true;
@@ -1117,37 +1086,27 @@ export function buildAnime(el, cfg) {
   camera.lookAt(0, 0.82, 0);
 
   /*
-   * LIGHTING for MToon:
-   * MToon's toon shader responds to: AmbientLight + DirectionalLight.
-   * HemisphereLight is NOT supported by MToon's custom GLSL — use AmbientLight.
-   * Rule: keep ambient bright enough that shadingShiftFactor > 0 pushes ALL
-   * pixels into the lit zone → full texture colors visible.
+   * LIGHTING for MToon & VRM:
+   * Soft, balanced ambient + front key light to render rich skin tones and clear lips.
    */
   const accentColor = ACCENT_HEX[cfg.char_outfit || cfg.outfit] || ACCENT_HEX.cyan;
 
-  /* MToon lighting — warm amber tones give Asian golden skin undertone.
-   * Pure white light (0xffffff) renders pale/white skin; warm amber pushes
-   * it toward the golden-olive tone of East/South-East Asian complexions. */
-  const ambientLight = new THREE.AmbientLight(0xFFDFA0, 0.55);
+  const ambientLight = new THREE.AmbientLight(0xFFEADB, 0.35);
   scene.add(ambientLight);
 
-  /* Key light: warm golden from front-above */
-  const keyLight = new THREE.DirectionalLight(0xFFEAC8, 1.0);
+  const keyLight = new THREE.DirectionalLight(0xFFF2E6, 0.45);
   keyLight.position.set(0.5, 3.0, 4.0);
   scene.add(keyLight);
 
-  /* Soft cool fill from left — contrast against the warm key */
-  const fillLight = new THREE.DirectionalLight(0xC8D8FF, 0.4);
+  const fillLight = new THREE.DirectionalLight(0xD6E4FF, 0.18);
   fillLight.position.set(-3.0, 1.5, 2.0);
   scene.add(fillLight);
 
-  /* Coloured rim accent from side */
-  const rimLight = new THREE.DirectionalLight(accentColor, 0.5);
+  const rimLight = new THREE.DirectionalLight(accentColor, 0.20);
   rimLight.position.set(2.5, 1.0, 2.0);
   scene.add(rimLight);
 
-  /* Subtle back-top hair light */
-  const topLight = new THREE.DirectionalLight(0xffffff, 0.3);
+  const topLight = new THREE.DirectionalLight(0xffffff, 0.15);
   topLight.position.set(0, 5, -1);
   scene.add(topLight);
 
@@ -1212,12 +1171,6 @@ export function buildAnime(el, cfg) {
   /* Fallback procedural avatar (if VRM fails) */
   let fallback = null;
 
-  /* ── Environment Map ──
-   * MToon uses directional/ambient lighting (not PBR IBL).
-   * scene.environment is not needed for correct anime color rendering.
-   */
-  // No env map needed for MToon
-
   /* ── Load VRM using three-vrm v1.x VRMLoaderPlugin ── */
   const loader = new GLTFLoader();
   if (VRM.VRMLoaderPlugin) {
@@ -1243,21 +1196,11 @@ export function buildAnime(el, cfg) {
       st.vrm = vrm;
       modelGroup.add(vrm.scene);
 
-      /* ── ORIENTATION ──────────────────────────────────────────────────
-       * LIA.vrm (VRM0 loaded via VRMLoaderPlugin) naturally faces +Z — no flip.
-       * VRMUtils.rotateVRM0 is intentionally NOT called (corrupts MToon state).
-       * ──────────────────────────────────────────────────────────────── */
       vrm.scene.rotation.y = 0;
       vrm.scene.position.set(0, -0.85, 0);
       vrm.scene.scale.setScalar(1.15);
 
-      /* ── DEFINITIVE MToon color fix ──────────────────────────────────
-       * three-vrm v1.0.8 MToon materials have these key properties:
-       *   shadingShiftFactor: -1..1   (0.5 = push into lit zone = full color)
-       *   shadingToonyFactor: 0..1    (0.9 = hard toon edge)
-       * Standard Three.js materials: set texture color space.
-       * CSS canvas filter: absolute safety net for any residual B&W.
-       * ─────────────────────────────────────────────────────────────── */
+      /* ── DEFINITIVE MToon & Skin/Lips Color Optimization ────────────── */
       let mtoonCount = 0, stdCount = 0;
       vrm.scene.traverse(obj => {
         if (!obj.isMesh) return;
@@ -1266,8 +1209,9 @@ export function buildAnime(el, cfg) {
         const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
         mats.forEach(mat => {
           if (!mat) return;
+          const matName = (mat.name || '').toLowerCase();
 
-          /* Fix texture color space — works for both MToon and standard */
+          /* Fix texture color space */
           ['map', 'emissiveMap', 'shadeMultiplyTexture', 'matcapTexture',
            'rimMultiplyTexture', 'outlineWidthMultiplyTexture'].forEach(f => {
             if (mat[f] && mat[f].isTexture) {
@@ -1290,42 +1234,59 @@ export function buildAnime(el, cfg) {
               mat.map.needsUpdate = true;
             }
 
-            /* shadingShiftFactor 0.55: ~55% of surface in lit zone, leaving visible
-             * shadow gradients on skin — prevents uniformly flat white appearance.
-             * (Was 0.7 which over-lit everything → white skin.) */
-            if ('shadingShiftFactor' in mat) mat.shadingShiftFactor = 0.55;
-            if ('shadingToonyFactor' in mat) mat.shadingToonyFactor = 0.92;
-
-            /* Disable matcap — it overrides albedo with grey-ish tones */
+            /* Disable matcap, rim, outline overrides that bleach or muddy the face */
             if ('matcapFactor' in mat) mat.matcapFactor = new THREE.Color(0, 0, 0);
             if ('matcapTexture' in mat) mat.matcapTexture = null;
-
-            /* Disable rim lighting — it adds grey/white wash on edges */
             if ('rimLightingMixFactor' in mat) mat.rimLightingMixFactor = 0.0;
-
-            /* Disable outline — outline pass can darken and muddy the look */
             if ('outlineWidthMode' in mat) mat.outlineWidthMode = 0;
 
-            /* NOTE: do NOT override mat.color — let the VRM's baked tints show.
-             * NOTE: do NOT override emissive — eye glow, highlight dots need it. */
+            /* Material Classification by Name for LIA.vrm & VRM models */
+            if (matName.includes('facemouth') || matName.includes('mouth') || matName.includes('lip')) {
+              /* 👄 LIPS & MOUTH: Rich natural rose-coral lip color with crisp definition */
+              if ('color' in mat) mat.color.setHex(0xD94B68);
+              if ('shadeColor' in mat) mat.shadeColor.setHex(0xA32D48);
+              if ('shadingShiftFactor' in mat) mat.shadingShiftFactor = 0.0;
+              if ('shadingToonyFactor' in mat) mat.shadingToonyFactor = 0.95;
+            } else if (matName.includes('skin') || matName.includes('face_00') || matName.includes('body_00') || matName.includes('head_00')) {
+              /* 👩 FACE & BODY SKIN: Warm, soft, non-bright natural skin tone! */
+              const skinColors = {
+                porcelain: { lit: 0xE6C5B3, shade: 0xC69A84 },
+                fair:      { lit: 0xE2B49F, shade: 0xC48D75 },
+                tan:       { lit: 0xC08253, shade: 0x9B5D30 },
+                brown:     { lit: 0x8E502B, shade: 0x693517 },
+                deep:      { lit: 0x5A3316, shade: 0x3B1D0B },
+              };
+              const toneKey = (cfg.char_skin || 'fair').toLowerCase();
+              const palette = skinColors[toneKey] || skinColors.fair;
+
+              if ('color' in mat) mat.color.setHex(palette.lit);
+              if ('shadeColor' in mat) mat.shadeColor.setHex(palette.shade);
+              if ('shadingShiftFactor' in mat) mat.shadingShiftFactor = -0.10;
+              if ('shadingToonyFactor' in mat) mat.shadingToonyFactor = 0.80;
+            } else if (matName.includes('brow') || matName.includes('eyelash') || matName.includes('eyeline')) {
+              /* 👁 EYEBROWS & EYELASHES: Deep defined dark color */
+              if ('color' in mat) mat.color.setHex(0x1A1520);
+              if ('shadingShiftFactor' in mat) mat.shadingShiftFactor = 0.1;
+            } else if (matName.includes('eyewhite')) {
+              if ('color' in mat) mat.color.setHex(0xF4F4FA);
+            } else {
+              /* Clothing & Hair: Keep crisp textures with mild toon shading */
+              if ('shadingShiftFactor' in mat) mat.shadingShiftFactor = 0.15;
+              if ('shadingToonyFactor' in mat) mat.shadingToonyFactor = 0.9;
+            }
           } else {
             stdCount++;
-            /* Standard materials: show actual textures */
             if ('map' in mat && mat.map) {
               mat.map.magFilter = THREE.LinearFilter;
               mat.map.minFilter = THREE.LinearMipMapLinearFilter;
               mat.map.needsUpdate = true;
             }
-            if ('roughness' in mat) mat.roughness = 0.5;  /* Moderate roughness */
-            if ('metalness' in mat) mat.metalness = 0.0;  /* NO metalness - kills color */
-            if ('emissive' in mat) {
-              mat.emissive.set(0x000000);
-              if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.0;
-            }
-            /* Ensure color shows */
-            if ('color' in mat) {
-              mat.color.set(0xffffff);
-              mat.needsUpdate = true;
+            if ('roughness' in mat) mat.roughness = 0.5;
+            if ('metalness' in mat) mat.metalness = 0.0;
+            if (matName.includes('facemouth') || matName.includes('mouth') || matName.includes('lip')) {
+              if ('color' in mat) mat.color.setHex(0xE25875);
+            } else if (matName.includes('skin') || matName.includes('face')) {
+              if ('color' in mat) mat.color.setHex(0xF8D8C8);
             }
           }
 
@@ -1333,10 +1294,9 @@ export function buildAnime(el, cfg) {
         });
       });
 
-      /* brightness(0.82): pulls skin away from blown-out white.
-       * saturate(1.6): boosts the warm amber undertone from the lights
-       * so skin reads golden/Asian rather than washed. */
-      canvas.style.filter = 'saturate(1.6) brightness(0.82)';
+      /* Crisp natural canvas filter without bleaching */
+      canvas.style.filter = 'contrast(1.04) saturate(1.15) brightness(0.98)';
+
 
       _applyIdlePose(vrm);
 
@@ -1356,9 +1316,9 @@ export function buildAnime(el, cfg) {
       const b = getBoneNode(vrm, name);
       if (b) { b.rotation.x = x; b.rotation.y = y; b.rotation.z = z; }
     }
-    /* Confirmed: left -z=down (side), right +z=down (side) */
-    boneRot('leftUpperArm',  0, 0, -1.57);
-    boneRot('rightUpperArm', 0, 0,  1.57);
+    /* Both arms hanging naturally at sides */
+    boneRot('leftUpperArm',  0.04, 0.05, -1.25);
+    boneRot('rightUpperArm', 0.04, -0.05, 1.25);
     boneRot('leftLowerArm',  0.08, 0, 0);
     boneRot('rightLowerArm', 0.08, 0, 0);
     boneRot('leftHand',      0, 0, 0);
@@ -1384,17 +1344,19 @@ export function buildAnime(el, cfg) {
    *  GESTURE DEFINITIONS
    *  Each gesture sets target bone rotations that
    *  the main loop lerps toward each frame.
+   *  Normalized bone coordinate system:
+   *  - leftUpperArm: -1.25 points DOWN
+   *  - rightUpperArm: +1.25 points DOWN
    * ──────────────────────────────────────────── */
   function _setGestureTargets(gesture, t) {
     const sin = Math.sin, cos = Math.cos;
 
     switch (gesture) {
-      /* ── IDLE: gentle sway, arms at side ── */
+      /* ── IDLE: gentle breathing sway, arms down at sides ── */
       case 'idle':
       default:
-        /* Arms hanging at side: left -z=down, right +z=down */
-        st.lArm = { x: 0, y: 0, z: -1.57 + sin(t * 0.6) * 0.025 };
-        st.rArm = { x: 0, y: 0, z:  1.57 + sin(t * 0.6 + 1) * 0.025 };
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 + sin(t * 0.6) * 0.02 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.25 + sin(t * 0.6 + 1) * 0.02 };
         st.lForearm = { x: 0.08, y: 0, z: 0 };
         st.rForearm = { x: 0.08, y: 0, z: 0 };
         st.lHand = { x: 0, y: 0, z: 0 };
@@ -1403,151 +1365,147 @@ export function buildAnime(el, cfg) {
         st.chest = { x: 0.02, y: 0, z: sin(t * 0.4) * 0.008 };
         break;
 
-      /* ── WAVE: right arm waving hello ── */
+      /* ── WAVE: gentle subtle greeting wave with right hand low ── */
       case 'wave':
-        st.rArm = { x: -0.3, y: -0.3, z: -0.9 + sin(t * 6) * 0.25 };
-        st.rForearm = { x: 0.6 + sin(t * 6) * 0.3, y: 0, z: 0 };
-        st.rHand = { x: 0, y: sin(t * 6) * 0.2, z: 0 };
-        st.lArm = { x: 0, y: 0, z: -1.57 };  /* left arm at side */
+        st.rArm = { x: 0.04, y: -0.05, z: 1.20 };
+        st.rForearm = { x: 0.35 + sin(t * 5) * 0.15, y: 0, z: 0 };
+        st.rHand = { x: 0, y: sin(t * 5) * 0.12, z: 0 };
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 };
         st.lForearm = { x: 0.08, y: 0, z: 0 };
         st.spine = { x: 0.03, y: 0, z: 0 };
         break;
 
-      /* ── CELEBRATE: both arms raised, victory ── */
+      /* ── CELEBRATE: subtle happy sway, arms down ── */
       case 'celebrate':
-        st.lArm = { x: -0.2, y: 0.2,  z:   0.9 + sin(t * 8) * 0.15 };
-        st.rArm = { x: -0.2, y: -0.2, z: -(0.9 + sin(t * 8 + 0.5) * 0.15) };
-        st.lForearm = { x: 0.4 + sin(t * 8) * 0.2, y: 0, z: 0 };
-        st.rForearm = { x: 0.4 + sin(t * 8) * 0.2, y: 0, z: 0 };
-        st.lHand = { x: sin(t * 8) * 0.3, y: 0, z: 0 };
-        st.rHand = { x: sin(t * 8) * 0.3, y: 0, z: 0 };
-        st.spine = { x: -0.05, y: sin(t * 4) * 0.04, z: 0 };
+        st.lArm = { x: 0.04, y: 0.05, z: -1.20 + sin(t * 4) * 0.03 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.20 + sin(t * 4 + 0.5) * 0.03 };
+        st.lForearm = { x: 0.20 + sin(t * 4) * 0.10, y: 0, z: 0 };
+        st.rForearm = { x: 0.20 + sin(t * 4) * 0.10, y: 0, z: 0 };
+        st.lHand = { x: sin(t * 4) * 0.15, y: 0, z: 0 };
+        st.rHand = { x: sin(t * 4) * 0.15, y: 0, z: 0 };
+        st.spine = { x: -0.02, y: sin(t * 3) * 0.02, z: 0 };
         break;
 
-      /* ── THINKING: one hand near chin, slight tilt ── */
+      /* ── THINKING: slight head tilt, arms down at sides ── */
       case 'thinking':
-        st.lArm = { x: 0.25, y: 0.1, z: 0.25 };  /* left arm raised for chin gesture */
-        st.lForearm = { x: 1.2, y: -0.1, z: 0 };
-        st.lHand = { x: -0.4, y: 0, z: -0.2 };
-        st.rArm = { x: 0, y: 0, z:  1.57 };  /* right arm at side */
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.25 };
+        st.lForearm = { x: 0.25, y: 0.05, z: 0 };
         st.rForearm = { x: 0.08, y: 0, z: 0 };
-        st.rHand = { x: 0, y: 0, z: 0 };
-        st.neck = { x: sin(t * 1.2) * 0.04, y: 0.07, z: 0.08 };
-        st.spine = { x: 0.05, y: 0.04, z: 0 };
+        st.lHand = { x: -0.1, y: 0, z: 0 };
+        st.neck = { x: sin(t * 1.2) * 0.03, y: 0.06, z: 0.06 };
+        st.spine = { x: 0.04, y: 0.03, z: 0 };
         break;
 
-      /* ── LISTENING: slight forward lean, attentive ── */
+      /* ── LISTENING: attentive slight forward tilt, arms comfortably down ── */
       case 'listening':
-        st.lArm = { x: 0.1, y: 0, z: -1.1 };
-        st.rArm = { x: 0.1, y: 0, z:  1.1 };
-        st.lForearm = { x: 0.3, y: 0, z: 0 };
-        st.rForearm = { x: 0.3, y: 0, z: 0 };
-        st.spine = { x: 0.07 + sin(t * 1.5) * 0.015, y: 0, z: 0 };
-        st.neck = { x: -0.06, y: sin(t * 1.5) * 0.06, z: 0.05 };
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.25 };
+        st.lForearm = { x: 0.12, y: 0, z: 0 };
+        st.rForearm = { x: 0.12, y: 0, z: 0 };
+        st.spine = { x: 0.05 + sin(t * 1.5) * 0.01, y: 0, z: 0 };
+        st.neck = { x: -0.04, y: sin(t * 1.5) * 0.04, z: 0.03 };
         break;
 
-      /* ── FRIENDLY: relaxed open stance, arms comfortably at sides ── */
+      /* ── FRIENDLY: relaxed stance, arms naturally down at sides ── */
       case 'friendly':
-        st.lArm = { x: 0.04, y: 0.08, z: -0.95 + sin(t * 2.0) * 0.05 };
-        st.rArm = { x: 0.04, y: -0.08, z:  0.95 + sin(t * 2.0 + 1.2) * 0.05 };
-        st.lForearm = { x: 0.14, y: 0.06, z: 0 };
-        st.rForearm = { x: 0.14, y: -0.06, z: 0 };
-        st.lHand = { x: 0, y: 0.04, z: 0.04 };
-        st.rHand = { x: 0, y: -0.04, z: -0.04 };
-        st.spine = { x: 0.02, y: sin(t * 1.5) * 0.018, z: 0 };
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 + sin(t * 1.5) * 0.02 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.25 + sin(t * 1.5 + 1) * 0.02 };
+        st.lForearm = { x: 0.10, y: 0, z: 0 };
+        st.rForearm = { x: 0.10, y: 0, z: 0 };
+        st.lHand = { x: 0, y: 0.02, z: 0 };
+        st.rHand = { x: 0, y: -0.02, z: 0 };
+        st.spine = { x: 0.02, y: sin(t * 1.2) * 0.015, z: 0 };
         break;
 
-      /* ── GRACE: elegant feminine stance — arms naturally low, slight hand curl ── */
+      /* ── GRACE: elegant stance — arms resting comfortably low ── */
       case 'grace':
-        st.lArm = { x: 0.06, y: 0.06, z: -1.15 + sin(t * 0.7) * 0.04 };
-        st.rArm = { x: 0.06, y: -0.06, z:  1.15 + sin(t * 0.7 + 1.0) * 0.04 };
-        st.lForearm = { x: 0.18, y: 0.06, z: 0 };
-        st.rForearm = { x: 0.18, y: -0.06, z: 0 };
-        st.lHand = { x: 0, y: 0.06, z: 0.04 };
-        st.rHand = { x: 0, y: -0.06, z: -0.04 };
-        st.spine = { x: 0.03, y: sin(t * 0.5) * 0.018, z: 0 };
-        st.chest = { x: 0.02, y: 0, z: sin(t * 0.5) * 0.012 };
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 + sin(t * 0.7) * 0.02 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.25 + sin(t * 0.7 + 1.0) * 0.02 };
+        st.lForearm = { x: 0.12, y: 0.04, z: 0 };
+        st.rForearm = { x: 0.12, y: -0.04, z: 0 };
+        st.lHand = { x: 0, y: 0.04, z: 0 };
+        st.rHand = { x: 0, y: -0.04, z: 0 };
+        st.spine = { x: 0.03, y: sin(t * 0.5) * 0.015, z: 0 };
+        st.chest = { x: 0.02, y: 0, z: sin(t * 0.5) * 0.01 };
         break;
 
-      /* ── POSE: confident stance — right arm slightly angled, body gentle turn ── */
+      /* ── POSE: confident stance — arms resting down at sides ── */
       case 'pose':
-        st.rArm = { x: 0.10, y: -0.14, z:  0.88 + sin(t * 0.6) * 0.03 };
-        st.lArm = { x: 0.02, y: 0.10, z: -1.28 + sin(t * 0.6 + 0.9) * 0.03 };
-        st.rForearm = { x: 0.22, y: -0.12, z: 0 };
-        st.lForearm = { x: 0.10, y: 0.06, z: 0 };
-        st.rHand = { x: 0.04, y: 0, z: -0.08 };
-        st.lHand = { x: 0.04, y: 0, z: 0.06 };
-        st.spine = { x: 0.03, y: sin(t * 0.6) * 0.022, z: 0.015 };
-        st.chest = { x: 0.02, y: 0, z: sin(t * 0.5) * 0.012 };
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 + sin(t * 0.6) * 0.02 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.25 + sin(t * 0.6 + 0.9) * 0.02 };
+        st.lForearm = { x: 0.10, y: 0.04, z: 0 };
+        st.rForearm = { x: 0.14, y: -0.06, z: 0 };
+        st.rHand = { x: 0.02, y: 0, z: -0.04 };
+        st.lHand = { x: 0.02, y: 0, z: 0.04 };
+        st.spine = { x: 0.03, y: sin(t * 0.6) * 0.018, z: 0.01 };
+        st.chest = { x: 0.02, y: 0, z: sin(t * 0.5) * 0.01 };
         break;
 
-      /* ── SWAY: gentle natural walking sway, arms at sides ── */
+      /* ── SWAY: gentle natural walking sway, arms down at sides ── */
       case 'sway':
-        st.lArm = { x: 0, y: 0, z: -1.44 + sin(t * 0.55) * 0.07 };
-        st.rArm = { x: 0, y: 0, z:  1.44 + sin(t * 0.55 + Math.PI) * 0.07 };
+        st.lArm = { x: 0, y: 0, z: -1.28 + sin(t * 0.55) * 0.04 };
+        st.rArm = { x: 0, y: 0, z: 1.28 + sin(t * 0.55 + Math.PI) * 0.04 };
         st.lForearm = { x: 0.07, y: 0, z: 0 };
         st.rForearm = { x: 0.07, y: 0, z: 0 };
         st.lHand = { x: 0, y: 0, z: 0 };
         st.rHand = { x: 0, y: 0, z: 0 };
-        st.spine = { x: 0.02, y: sin(t * 0.55) * 0.022, z: sin(t * 0.35) * 0.012 };
-        st.chest = { x: 0.02, y: 0, z: sin(t * 0.55) * 0.014 };
+        st.spine = { x: 0.02, y: sin(t * 0.55) * 0.02, z: sin(t * 0.35) * 0.01 };
+        st.chest = { x: 0.02, y: 0, z: sin(t * 0.55) * 0.01 };
         break;
 
-      /* ── SURPRISED: hands up, startle ── */
+      /* ── SURPRISED: slight head tilt back, arms stay comfortably down ── */
       case 'surprised':
-        st.lArm = { x: -0.3, y: 0.1,  z:  0.85 + sin(t * 7) * 0.1 };
-        st.rArm = { x: -0.3, y: -0.1, z: -0.85 + sin(t * 7) * 0.1 };
-        st.lForearm = { x: 0.8, y: 0, z: 0 };
-        st.rForearm = { x: 0.8, y: 0, z: 0 };
-        st.neck = { x: -0.1, y: 0, z: 0 };
-        st.spine = { x: -0.04, y: 0, z: 0 };
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.25 };
+        st.lForearm = { x: 0.25, y: 0, z: 0 };
+        st.rForearm = { x: 0.25, y: 0, z: 0 };
+        st.neck = { x: -0.08, y: 0, z: 0 };
+        st.spine = { x: -0.03, y: 0, z: 0 };
         break;
 
-      /* ── TALKING: expressive bilateral gestures + head nod while speaking ── */
+      /* ── TALKING: natural head movement & subtle wrist/forearm expressions (arms stay DOWN by side) ── */
       case 'talking': {
-        const swing = sin(t * 4.5) * 0.14;
-        const swing2 = sin(t * 3.6 + 1.1) * 0.10;
-        st.rArm = { x: 0.12, y: -0.05, z: -0.48 + swing };   /* right arm gesturing */
-        st.rForearm = { x: 0.42 + sin(t * 4.5 + 1) * 0.18, y: 0.05, z: 0 };
-        st.rHand = { x: sin(t * 4.5) * 0.18, y: sin(t * 3.0) * 0.12, z: 0 };
-        st.lArm = { x: 0.08, y: 0.08, z: 0.62 + swing2 };    /* left arm gesturing */
-        st.lForearm = { x: 0.28 + sin(t * 3.6) * 0.14, y: 0.08, z: 0 };
-        st.lHand = { x: sin(t * 3.6) * 0.14, y: 0, z: 0 };
-        st.spine = { x: 0.02, y: sin(t * 2.2) * 0.025, z: 0 };
-        st.neck = { x: sin(t * 2.8) * 0.045, y: sin(t * 1.6) * 0.04, z: 0 };
-        st.head = { x: sin(t * 2.2) * 0.04, y: 0, z: 0 };
+        const swing = sin(t * 4.2) * 0.06;
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.25 };
+        st.rForearm = { x: 0.22 + swing, y: -0.04, z: 0 };
+        st.lForearm = { x: 0.18 + sin(t * 3.5) * 0.05, y: 0.04, z: 0 };
+        st.rHand = { x: sin(t * 4.2) * 0.10, y: 0, z: 0 };
+        st.lHand = { x: sin(t * 3.5) * 0.08, y: 0, z: 0 };
+        st.spine = { x: 0.02, y: sin(t * 2.0) * 0.018, z: 0 };
+        st.neck = { x: sin(t * 2.6) * 0.035, y: sin(t * 1.5) * 0.03, z: 0 };
+        st.head = { x: sin(t * 2.0) * 0.03, y: 0, z: 0 };
         break;
       }
 
-      /* ── REACTING: alert forward posture when user sends a message ── */
+      /* ── REACTING: posture alert, arms resting down at sides ── */
       case 'reacting':
-        st.lArm = { x: 0.06, y: 0, z:  0.58 };   /* slightly raised, attentive */
-        st.rArm = { x: 0.06, y: 0, z: -0.58 };
-        st.lForearm = { x: 0.22, y: 0.06, z: 0 };
-        st.rForearm = { x: 0.22, y: -0.06, z: 0 };
-        st.lHand = { x: 0.05, y: 0, z: 0.05 };
-        st.rHand = { x: 0.05, y: 0, z: -0.05 };
-        st.spine = { x: 0.10 + sin(t * 2) * 0.008, y: 0, z: 0 };
-        st.neck = { x: -0.09, y: 0, z: 0.03 };
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.25 };
+        st.lForearm = { x: 0.14, y: 0.04, z: 0 };
+        st.rForearm = { x: 0.14, y: -0.04, z: 0 };
+        st.spine = { x: 0.06 + sin(t * 2) * 0.006, y: 0, z: 0 };
+        st.neck = { x: -0.05, y: 0, z: 0.02 };
         st.head = { x: 0.02, y: 0, z: 0 };
         break;
 
-      /* ── ANGRY: tense arms, leaning forward ── */
+      /* ── ANGRY: tense stance, arms down ── */
       case 'angry':
-        st.lArm = { x: 0.1, y: 0, z: -1.0 };
-        st.rArm = { x: 0.1, y: 0, z:  1.0 };
-        st.lForearm = { x: 0.6 + sin(t * 5) * 0.05, y: 0, z: 0 };
-        st.rForearm = { x: 0.6 + sin(t * 5) * 0.05, y: 0, z: 0 };
-        st.spine = { x: 0.06, y: sin(t * 4) * 0.02, z: 0 };
-        st.neck = { x: 0.04, y: sin(t * 3) * 0.04, z: 0 };
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 };
+        st.rArm = { x: 0.04, y: -0.05, z: 1.25 };
+        st.lForearm = { x: 0.30, y: 0, z: 0 };
+        st.rForearm = { x: 0.30, y: 0, z: 0 };
+        st.spine = { x: 0.06, y: sin(t * 4) * 0.015, z: 0 };
+        st.neck = { x: 0.04, y: sin(t * 3) * 0.03, z: 0 };
         break;
 
-      /* ── POINTING: right arm out to point at something ── */
+      /* ── POINTING: right forearm angled forward low, upper arms stay down ── */
       case 'point':
-        st.rArm = { x: -0.2, y: -0.4, z: 0.3 };
-        st.rForearm = { x: 0, y: -0.3, z: 0 };
-        st.rHand = { x: 0, y: 0, z: 0.1 };
-        st.lArm = { x: 0, y: 0, z: -1.57 };  /* left arm at side */
+        st.lArm = { x: 0.04, y: 0.05, z: -1.25 };
+        st.rArm = { x: 0.04, y: -0.05, z: -1.25 };
+        st.rForearm = { x: 0.40, y: -0.15, z: 0 };
+        st.rHand = { x: 0.10, y: 0, z: 0 };
         break;
     }
   }
@@ -1581,13 +1539,11 @@ export function buildAnime(el, cfg) {
       /* Gentle bob while asleep */
       if (st.vrm) {
         st.vrm.scene.position.y = -0.85 + Math.sin(st.time * 0.5) * 0.008;
-        /* Must re-apply arm pose every frame — vrm.update() resets normalized
-         * bones to T-pose rest state before writing to raw bones each tick. */
         const _G = n => getBoneNode(st.vrm, n);
         const _lA = _G('leftUpperArm'),  _rA = _G('rightUpperArm');
         const _lF = _G('leftLowerArm'),  _rF = _G('rightLowerArm');
-        if (_lA) { _lA.rotation.z = -1.57; }
-        if (_rA) { _rA.rotation.z =  1.57; }
+        if (_lA) { _lA.rotation.z = -1.25; }
+        if (_rA) { _rA.rotation.z = -1.25; }
         if (_lF) { _lF.rotation.x = 0.08; }
         if (_rF) { _rF.rotation.x = 0.08; }
         st.vrm.update(delta);

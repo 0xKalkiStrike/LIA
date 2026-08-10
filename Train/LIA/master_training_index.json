@@ -1,0 +1,80 @@
+{
+  "project": "LIA AI - Local Intelligence Assistant",
+  "version": "2.0.0",
+  "environment": "Train_Master_Hub",
+  "description": "Master Index and Training Configuration for LIA Multi-Domain Autonomous Artificial Intelligence",
+  "datasets": [
+    {
+      "domain": "image_generation",
+      "file": "Image_Generation/image_generation.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for AI Image Generation engines (Stable Diffusion, SDXL, Flux.1, Midjourney, DALL-E 3, ComfyUI)"
+    },
+    {
+      "domain": "video_generation",
+      "file": "Video_Generation/video_generation.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for AI Video Generation, Motion Synthesis, AnimateDiff, Sora, Kling, Runway Gen-2/Gen-3, and Lip Sync"
+    },
+    {
+      "domain": "development",
+      "file": "Development/development.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for Full-Stack Development, Software Architecture, Code Generation, Refactoring, and DevOps"
+    },
+    {
+      "domain": "data_scraping",
+      "file": "Data_Scraping/data_scraping.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for Web Scraping, Automated Data Extraction, Headless Browsing, Anti-Bot Evasion, and Proxy Management"
+    },
+    {
+      "domain": "data_analysis",
+      "file": "Data_Analysis/data_analysis.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for Data Science, Exploratory Data Analysis (EDA), Statistical Analytics, Pandas DataFrames, and ML Models"
+    },
+    {
+      "domain": "article",
+      "file": "Article/article.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for Long-Form Article Generation, SEO Content Writing, Copywriting Frameworks, and Editorial Publishing"
+    },
+    {
+      "domain": "presentation",
+      "file": "Presentation/presentation.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for Presentation Deck Generation, Slide Layout Design, python-pptx Automation, and Pitch Decks"
+    },
+    {
+      "domain": "research",
+      "file": "Research/research.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for Academic Research Synthesis, Literature Review, Citation Analysis, and Scientific Reasoning"
+    },
+    {
+      "domain": "voice_speech",
+      "file": "Voice_Speech/voice_speech.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for Speech-to-Text (STT), Text-to-Speech (TTS), Voice Cloning, Piper Audio Engine, and Phonetic Processing"
+    },
+    {
+      "domain": "vision_multimodal",
+      "file": "Vision_Multimodal/vision_multimodal.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for Vision Language Models (VLM), Object Detection (YOLOv8), OCR (Tesseract/EasyOCR), and Visual QA"
+    },
+    {
+      "domain": "automation_control",
+      "file": "Automation_Control/automation_control.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for System Automation, PowerShell/Bash Scripting, PyAutoGUI Desktop Control, and n8n Workflows"
+    },
+    {
+      "domain": "memory_reasoning",
+      "file": "Memory_Reasoning/memory_reasoning.json",
+      "priority": 1,
+      "description": "Comprehensive training dataset for Semantic Memory Management, Vector Search (ChromaDB), Chain-of-Thought Reasoning, and Self-Reflection"
+    }
+  ]
+}

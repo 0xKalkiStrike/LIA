@@ -1,4 +1,4 @@
-# ── LIA / AntiGravity AI requirements ────────────────────────────────
+# ── LIA / AntiGravity AI requirements (Lightweight Edition) ────────────────────────────────
 # CORE (required — the app runs fully with just these)
 fastapi>=0.110
 uvicorn[standard]>=0.29
@@ -6,35 +6,31 @@ pydantic>=2.6
 python-multipart>=0.0.9          # file uploads (VRM, vision, ocr)
 
 # ── Voice: Piper TTS ─────────────────────────────────────────────────
-# Primary TTS engine — fully offline, low-latency female voices.
-# Install with: pip install piper-tts
-# Then call POST /api/tts/install to auto-download a voice model.
-# The server degrades to browser Speech API if piper-tts is missing.
-piper-tts>=1.2.0
+# Optional: server-side TTS. Browser Web Speech API is primary.
+# piper-tts>=1.2.0
 
-# ── Voice: server-side STT (optional) ────────────────────────────────
-# faster-whisper>=1.0
-
-# ── LLM brain ────────────────────────────────────────────────────────
-# Install Ollama separately (https://ollama.com) then:
-#   ollama serve && ollama pull llama3.2
+# ── LLM brain (LIGHTWEIGHT) ────────────────────────────────────────────
+# Use smaller Ollama models for low-end systems:
+#   ollama pull tinyllama (2.7B) or phi2 (2.7B) instead of llama3.2
 ollama>=0.1.7
-langgraph>=0.0.40                # multi-agent orchestration (Phase 3)
 
 # ── Memory (semantic) ────────────────────────────────────────────────
-chromadb>=0.4.24
+# Optional: only when needed for semantic search
+# chromadb>=0.4.24
 
 # ── Security / system ────────────────────────────────────────────────
 cryptography>=42.0
 psutil>=5.9
 
-# ── Database & Realtime (Upgrade v2.0) ────────────────────────────────
-psycopg2-binary>=2.9
-supabase>=2.4
+# ── Database ─────────────────────────────────────────────────────────
+# Use SQLite (default) for low-end systems; Postgres for production
 websockets>=12.0
 
-# ── Vision + OCR (optional) ──────────────────────────────────────────
-# ultralytics>=8.1               # YOLOv8 object detection
+# ── Presentation Export ───────────────────────────────────────────────
+python-pptx>=0.6.23               # PPTX generation for presentation workspace
+
+# ── Vision + OCR (optional, comment out if not needed) ──────────────────────────────────
+# ultralytics>=8.1               # YOLOv8 object detection (heavy)
 # opencv-python>=4.9
 # pytesseract>=0.3.10
 # pillow>=10.2

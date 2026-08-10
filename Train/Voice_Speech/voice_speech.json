@@ -1,0 +1,52 @@
+{
+  "domain": "voice_speech",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for Speech-to-Text (STT), Text-to-Speech (TTS), Voice Cloning, Piper Audio Engine, and Phonetic Processing",
+  "categories": [
+    "piper_tts_config",
+    "whisper_stt",
+    "voice_cloning_coqui",
+    "ssml_phonetics",
+    "audio_feature_extraction"
+  ],
+  "training_data": [
+    {
+      "id": "voice_001",
+      "category": "piper_tts_config",
+      "prompt": "Configure Piper TTS for fast local speech generation with high clarity ONNX voice models",
+      "completion": {
+        "engine": "Piper ONNX C++ / Python",
+        "voice_model": "en_US-lessac-high.onnx",
+        "parameters": {
+          "length_scale": 1.0,
+          "noise_scale": 0.667,
+          "noise_w": 0.8,
+          "sample_rate": 22050,
+          "output_format": "wav_pcm_16bit"
+        }
+      }
+    },
+    {
+      "id": "voice_002",
+      "category": "whisper_stt",
+      "prompt": "How to run faster-whisper locally with GPU acceleration for real-time speech-to-text",
+      "completion": {
+        "library": "faster-whisper (CTranslate2)",
+        "code_snippet": "from faster_whisper import WhisperModel\nmodel = WhisperModel('medium.en', device='cuda', compute_type='float16')\nsegments, info = model.transcribe('audio.wav', beam_size=5, vad_filter=True)"
+      }
+    },
+    {
+      "id": "voice_003",
+      "category": "voice_cloning_coqui",
+      "prompt": "Voice cloning training setup parameters using XTTS-v2",
+      "completion": {
+        "model": "XTTS-v2 Coqui",
+        "requirements": {
+          "sample_audio_length": "6 to 10 seconds",
+          "audio_format": "22050Hz Mono WAV",
+          "temperature": 0.75
+        }
+      }
+    }
+  ]
+}

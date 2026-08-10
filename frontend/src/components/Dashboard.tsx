@@ -12,11 +12,15 @@ import {
   FolderOpen,
   Check,
   X,
-  Play,
-  FileText,
   Activity,
   Layers,
-  UserCheck
+  Phone,
+  PhoneOff,
+  Mic,
+  ChevronDown,
+  ChevronUp,
+  Code2,
+  Presentation,
 } from "lucide-react";
 
 interface DashboardProps {
@@ -36,20 +40,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
     sendChatMessage,
     logout,
     systemStats,
-    processes,
-    files,
-    currentPath,
-    fetchFiles,
-    executeCommand,
-    activeTaskToApprove,
-    approveTask,
+    isSpeaking,
+    spokenText,
     wsConnected,
     isCollabActive,
-    runTelemetryTrigger
+    runTelemetryTrigger,
+    openCodeWorkspace,
+    openPresentationWorkspace,
   } = useApp();
 
   const [inputMessage, setInputMessage] = useState("");
   const [collaborate, setCollaborate] = useState(false);
+  const [liveCallActive, setLiveCallActive] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,91 +71,128 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return last.sender === "assistant" ? last.emotion || "neutral" : "neutral";
   };
 
-  const getActiveViseme = () => {
-    if (chatHistory.length === 0) return "rest";
+  const getLastMessage = () => {
+    if (chatHistory.length === 0) return "";
     const last = chatHistory[chatHistory.length - 1];
-    return last.sender === "assistant" && last.isStreaming ? "A" : "rest";
+    return last.sender === "assistant" ? last.text : "";
+  };
+
+  const isStreaming = chatHistory.length > 0 && chatHistory[chatHistory.length - 1].isStreaming;
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
     <div className="w-full h-screen flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
-      {/* Header bar */}
-      <header className="h-16 flex items-center justify-between px-6 bg-slate-900/60 border-b border-slate-800/80 backdrop-blur-md z-10 flex-shrink-0">
+      {/* ─── Header ─── */}
+      <header className="h-14 flex items-center justify-between px-5 bg-slate-900/50 border-b border-slate-800/60 backdrop-blur-xl z-10 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="relative">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-600 flex items-center justify-center font-bold tracking-wider text-sm shadow-[0_0_12px_rgba(6,182,212,0.3)]">L</div>
-            <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-900 ${wsConnected ? "bg-emerald-500" : "bg-red-500"}`} />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center font-bold text-sm shadow-lg shadow-cyan-950/30 animate-breathe">L</div>
+            <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-900 ${wsConnected ? "bg-emerald-400" : "bg-red-400"}`} />
           </div>
           <div>
-            <h1 className="text-sm font-bold tracking-wider uppercase bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">LIA AI Companion</h1>
-            <p className="text-[10px] text-slate-400">Status: {wsConnected ? "Online Core Connected" : "Offline Fallback Enabled"}</p>
+            <h1 className="text-sm font-semibold tracking-wide bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">{profile?.char_name || "LIA"} AI</h1>
+            <p className="text-[10px] text-slate-500">{wsConnected ? "Core Online" : "Offline Mode"}</p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          {/* Dashboard menu triggers */}
+        <div className="flex items-center space-x-1.5">
+          {/* Diagnostics toggle */}
           <button
-            onClick={onOpenCreator}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-all text-slate-400 hover:text-white"
-            title="Appearance Creator"
+            onClick={() => setShowDiagnostics(!showDiagnostics)}
+            className="p-2 hover:bg-slate-800/60 rounded-lg transition-all text-slate-500 hover:text-slate-300"
+            title="System Diagnostics"
           >
+            <Cpu className="w-4 h-4" />
+          </button>
+          <button onClick={onOpenCreator} className="p-2 hover:bg-slate-800/60 rounded-lg transition-all text-slate-500 hover:text-slate-300" title="Appearance">
             <Sliders className="w-4 h-4" />
           </button>
-          <button
-            onClick={onOpenVoice}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-all text-slate-400 hover:text-white"
-            title="Voice settings"
-          >
+          <button onClick={onOpenVoice} className="p-2 hover:bg-slate-800/60 rounded-lg transition-all text-slate-500 hover:text-slate-300" title="Voice">
             <Activity className="w-4 h-4" />
           </button>
-          <button
-            onClick={onOpenMemory}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-all text-slate-400 hover:text-white"
-            title="Long-Term Memory"
-          >
+          <button onClick={onOpenMemory} className="p-2 hover:bg-slate-800/60 rounded-lg transition-all text-slate-500 hover:text-slate-300" title="Memory">
             <Database className="w-4 h-4" />
           </button>
-          <div className="w-[1px] h-6 bg-slate-800 mx-2" />
-          <button
-            onClick={logout}
-            className="p-2 hover:bg-red-950/30 hover:text-red-400 rounded-lg transition-all text-slate-400"
-            title="Sign out"
-          >
+          <div className="w-[1px] h-5 bg-slate-800 mx-1" />
+          <button onClick={logout} className="p-2 hover:bg-red-950/30 hover:text-red-400 rounded-lg transition-all text-slate-500" title="Sign out">
             <LogOut className="w-4 h-4" />
           </button>
         </div>
       </header>
 
-      {/* Main dashboard columns */}
-      <main className="flex-1 flex p-5 gap-5 overflow-hidden min-h-0 bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
-        
-        {/* Left Column: VRM 3D Holo-pod Container */}
-        <section className="w-80 flex flex-col space-y-4 flex-shrink-0">
-          <div className="flex-1 relative rounded-2xl border border-slate-800/80 bg-slate-900/30 backdrop-blur-md overflow-hidden shadow-2xl">
-            {/* Holographic pod glow lines */}
-            <div className="absolute top-3 left-4 text-xs font-bold text-cyan-400 tracking-wider flex items-center space-x-1.5 z-10">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-              <span>HOLO-POD 01</span>
+      {/* ─── Diagnostics Bar (collapsible) ─── */}
+      {showDiagnostics && (
+        <div className="px-5 py-2 bg-slate-900/30 border-b border-slate-800/40 flex items-center space-x-6 text-[10px] animate-fade-in flex-shrink-0">
+          <div className="flex items-center space-x-1.5">
+            <span className="text-slate-500">CPU</span>
+            <span className="text-cyan-400 font-semibold">{systemStats.cpu_percent || 0}%</span>
+          </div>
+          <div className="flex items-center space-x-1.5">
+            <span className="text-slate-500">RAM</span>
+            <span className="text-cyan-400 font-semibold">{systemStats.memory_percent || 0}%</span>
+          </div>
+          <div className="flex items-center space-x-1.5">
+            <span className="text-slate-500">OS</span>
+            <span className="text-slate-400 font-mono">{systemStats.platform || "..."}</span>
+          </div>
+          {isSpeaking && (
+            <div className="flex items-center space-x-1.5 ml-auto">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-emerald-400 font-semibold">Speaking</span>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── Main 2-Column Layout ─── */}
+      <main className="flex-1 flex overflow-hidden min-h-0 bg-[radial-gradient(ellipse_at_top_left,rgba(6,182,212,0.04),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(139,92,246,0.04),transparent_50%)]">
+        
+        {/* ─── Left: Avatar Pod ─── */}
+        <section className="w-[340px] desktop-only flex flex-col flex-shrink-0 p-4 space-y-3">
+          <div className="flex-1 relative rounded-2xl border border-slate-800/60 bg-slate-900/20 backdrop-blur-md overflow-hidden shadow-2xl animate-border-glow">
+            {/* Status tag */}
+            <div className="absolute top-3 left-4 text-[10px] font-bold text-cyan-400/80 tracking-widest flex items-center space-x-1.5 z-10">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              <span>{profile?.char_name || "LIA"}</span>
+            </div>
+
+            {/* Speaking indicator */}
+            {isSpeaking && (
+              <div className="absolute top-3 right-4 flex items-center space-x-1.5 z-10 animate-fade-in">
+                <div className="flex space-x-0.5">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="w-0.5 bg-cyan-400 rounded-full animate-pulse" style={{
+                      height: `${6 + Math.random() * 8}px`,
+                      animationDelay: `${i * 0.1}s`,
+                      animationDuration: `${0.4 + Math.random() * 0.3}s`
+                    }} />
+                  ))}
+                </div>
+              </div>
+            )}
             
-            {/* VRM WebGL Component */}
+            {/* VRM WebGL */}
             <ThreeCanvas
               profile={profile}
               emotion={getActiveEmotion()}
-              viseme={getActiveViseme()}
+              isSpeaking={isSpeaking || isStreaming}
+              spokenText={spokenText || getLastMessage()}
               asleep={profile?.greeting_style === "asleep"}
             />
             
-            {/* Quick Actions (triggers telemetry manually for testing) */}
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2 px-4 z-10">
+            {/* Quick Actions */}
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center space-x-2 px-4 z-10">
               <button
-                className="px-2.5 py-1 text-[10px] font-semibold bg-slate-850 hover:bg-slate-800 border border-slate-700/50 rounded-lg transition-all"
+                className="px-3 py-1.5 text-[10px] font-medium bg-slate-900/80 hover:bg-slate-800 border border-slate-700/30 rounded-lg transition-all backdrop-blur-sm hover:border-slate-600/50"
                 onClick={() => runTelemetryTrigger("hand_wave")}
               >
                 👋 Wave
               </button>
               <button
-                className="px-2.5 py-1 text-[10px] font-semibold bg-slate-850 hover:bg-slate-800 border border-slate-700/50 rounded-lg transition-all"
+                className="px-3 py-1.5 text-[10px] font-medium bg-slate-900/80 hover:bg-slate-800 border border-slate-700/30 rounded-lg transition-all backdrop-blur-sm hover:border-slate-600/50"
                 onClick={() => runTelemetryTrigger("smile")}
               >
                 😊 Smile
@@ -160,93 +200,148 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          {/* Telemetry panel */}
-          <div className="p-4 rounded-xl border border-slate-800/80 bg-slate-900/30 backdrop-blur-md space-y-3 shadow-xl">
-            <h3 className="text-xs font-bold text-slate-400 flex items-center space-x-1.5">
-              <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-              <span>SYSTEM DIAGNOSTICS</span>
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <span className="text-[10px] text-slate-500 block">CPU LOAD</span>
-                <span className="text-lg font-bold text-cyan-400">{systemStats.cpu_percent || 0}%</span>
-              </div>
-              <div className="space-y-1">
-                <span className="text-[10px] text-slate-500 block">RAM UTILS</span>
-                <span className="text-lg font-bold text-cyan-400">{systemStats.memory_percent || 0}%</span>
-              </div>
-            </div>
-            <div className="pt-2 border-t border-slate-800/80">
-              <span className="text-[9px] text-slate-500 block">OPERATING SYSTEM</span>
-              <span className="text-[10px] text-slate-300 font-mono truncate block">{systemStats.platform || "Checking..."}</span>
-            </div>
-          </div>
+          {/* ─── Live Call Button ─── */}
+          <button
+            className={`live-call-btn w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center space-x-2 transition-all ${
+              liveCallActive
+                ? "active bg-gradient-to-r from-red-500/90 to-rose-600/90 text-white"
+                : "bg-gradient-to-r from-cyan-500/90 to-violet-600/90 text-white hover:shadow-lg hover:shadow-cyan-950/30"
+            }`}
+            onClick={() => setLiveCallActive(!liveCallActive)}
+          >
+            {liveCallActive ? (
+              <>
+                <PhoneOff className="w-4 h-4" />
+                <span>End Call</span>
+              </>
+            ) : (
+              <>
+                <Phone className="w-4 h-4" />
+                <span>Live Call</span>
+              </>
+            )}
+          </button>
         </section>
 
-        {/* Center Column: Chat Room (Floating Glass Card) */}
-        <section className="flex-1 flex flex-col rounded-2xl border border-slate-800/80 bg-slate-900/30 backdrop-blur-md shadow-2xl overflow-hidden min-w-[360px]">
-          {/* Chat log messages */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        {/* ─── Right: Chat ─── */}
+        <section className="flex-1 flex flex-col min-w-0 border-l border-slate-800/40">
+          
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-3">
             {chatHistory.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-bold border border-cyan-500/20">L</div>
+              <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-3 animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 flex items-center justify-center border border-cyan-500/10 animate-float">
+                  <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">L</span>
+                </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-slate-400">Initialize LIA Core 2.0</p>
-                  <p className="text-[10px] text-slate-500 mt-1">Hello, I am {profile?.char_name || "LIA"}. Say hi to start.</p>
+                  <p className="text-base font-semibold text-slate-300">{profile?.char_name || "LIA"} is ready</p>
+                  <p className="text-xs text-slate-500 mt-1">Say something to start a conversation</p>
                 </div>
               </div>
             ) : (
-              chatHistory.map((msg) => (
+              chatHistory.map((msg, idx) => (
                 <div
                   key={msg.id}
-                  className={`flex flex-col space-y-1 max-w-[85%] ${
-                    msg.sender === "user" ? "ml-auto items-end" : "mr-auto items-start"
+                  className={`flex flex-col space-y-0.5 max-w-[80%] ${
+                    msg.sender === "user"
+                      ? "ml-auto items-end msg-user"
+                      : "mr-auto items-start msg-assistant"
                   }`}
                 >
-                  <span className="text-[9px] text-slate-500 capitalize">{msg.sender}</span>
+                  {/* Sender + timestamp */}
+                  <div className="flex items-center space-x-2 px-1">
+                    <span className="text-[9px] text-slate-500 capitalize font-medium">{msg.sender === "user" ? "You" : profile?.char_name || "LIA"}</span>
+                    {msg.emotion && msg.sender === "assistant" && (
+                      <span className="text-[8px] text-cyan-500/60 bg-cyan-500/5 px-1.5 py-0.5 rounded-full border border-cyan-500/10">{msg.emotion}</span>
+                    )}
+                  </div>
+
+                  {/* Message bubble */}
                   <div
                     className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                       msg.sender === "user"
-                        ? "bg-cyan-600 text-white rounded-tr-none shadow-lg shadow-cyan-950/20"
-                        : "bg-slate-800/70 border border-slate-700/40 text-slate-200 rounded-tl-none shadow-md"
+                        ? "bg-gradient-to-br from-cyan-600 to-cyan-700 text-white rounded-tr-md shadow-lg shadow-cyan-950/15"
+                        : "bg-slate-800/50 border border-slate-700/30 text-slate-200 rounded-tl-md shadow-md"
                     }`}
                   >
                     {msg.text}
+                    {msg.isStreaming && (
+                      <span className="inline-flex ml-1.5 space-x-0.5 align-middle">
+                        <span className="typing-dot" />
+                        <span className="typing-dot" />
+                        <span className="typing-dot" />
+                      </span>
+                    )}
                   </div>
                   
-                  {/* Visual block showing execution tasks */}
+                  {/* Task approval */}
                   {msg.task && (
-                    <div className="mt-2 p-3 bg-slate-850 border border-slate-700/60 rounded-xl flex items-center justify-between space-x-4">
+                    <div className="mt-1.5 p-3 bg-slate-800/40 border border-slate-700/30 rounded-xl flex items-center justify-between space-x-4 animate-fade-in">
                       <div className="text-[11px]">
-                        <span className="font-bold block uppercase text-amber-400">Automation Trigger</span>
+                        <span className="font-bold block uppercase text-amber-400/90">Automation</span>
                         <span className="text-slate-300 mt-0.5">{msg.task.type === "launch_app" ? `Launch ${msg.task.app}` : msg.task.command}</span>
                       </div>
                       {msg.taskResult ? (
-                        <span className="text-[10px] text-emerald-400 font-bold">Completed</span>
+                        <span className="text-[10px] text-emerald-400 font-bold flex items-center space-x-1">
+                          <Check className="w-3 h-3" />
+                          <span>Done</span>
+                        </span>
                       ) : (
-                        <div className="flex space-x-1.5">
-                          <button
-                            className="p-1 hover:bg-emerald-500/20 hover:text-emerald-400 rounded transition-all text-slate-400"
-                            onClick={() => approveTask(true)}
-                          >
-                            <Check className="w-4 h-4" />
+                        <div className="flex space-x-1">
+                          <button className="p-1.5 hover:bg-emerald-500/15 hover:text-emerald-400 rounded-lg transition-all text-slate-500">
+                            <Check className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            className="p-1 hover:bg-red-500/20 hover:text-red-400 rounded transition-all text-slate-400"
-                            onClick={() => approveTask(false)}
-                          >
-                            <X className="w-4 h-4" />
+                          <button className="p-1.5 hover:bg-red-500/15 hover:text-red-400 rounded-lg transition-all text-slate-500">
+                            <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Web search details indicator */}
+                  {/* Search */}
                   {msg.searchQuery && (
-                    <span className="text-[9px] text-cyan-400 font-semibold mt-1 block">
-                      🔍 Web query: "{msg.searchQuery}" ({msg.searchResults?.length || 0} hits)
+                    <span className="text-[9px] text-cyan-400/70 font-medium mt-0.5 block px-1">
+                      🔍 "{msg.searchQuery}" ({msg.searchResults?.length || 0} results)
                     </span>
+                  )}
+
+                  {/* Web App IDE Action Button */}
+                  {msg.webApp && (
+                    <div className="mt-2 p-3 bg-[#0d1117] border border-cyan-500/30 rounded-xl flex items-center justify-between space-x-3 w-full shadow-lg">
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <Code2 className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-200 truncate">{msg.webApp.project_name.replace(/_/g, " ").toUpperCase()}</p>
+                          <p className="text-[10px] text-slate-400">Web Application Project</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => openCodeWorkspace(msg.webApp!.app_id)}
+                        className="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs rounded-lg transition-all shadow-md flex items-center space-x-1 flex-shrink-0"
+                      >
+                        <span>Open in Code IDE</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Presentation Workspace Action Button */}
+                  {msg.presentation && (
+                    <div className="mt-2 p-3 bg-[#0f172a] border border-violet-500/30 rounded-xl flex items-center justify-between space-x-3 w-full shadow-lg">
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <Presentation className="w-5 h-5 text-violet-400 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-200 truncate">{msg.presentation.topic.toUpperCase()}</p>
+                          <p className="text-[10px] text-slate-400">{msg.presentation.total_slides} Slides Presentation</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => openPresentationWorkspace(msg.presentation!.presentation_id)}
+                        className="px-3 py-1.5 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500 text-white font-bold text-xs rounded-lg transition-all shadow-md flex items-center space-x-1 flex-shrink-0"
+                      >
+                        <span>Open Slide Editor</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               ))
@@ -254,99 +349,49 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div ref={chatEndRef} />
           </div>
 
-          {/* Chat Control Input Bar */}
-          <div className="p-4 border-t border-slate-800/80 bg-slate-900/40 flex-shrink-0 space-y-3">
+          {/* ─── Input Bar ─── */}
+          <div className="p-4 border-t border-slate-800/40 bg-slate-900/20 flex-shrink-0 space-y-2.5">
+            {/* Options row */}
             <div className="flex items-center justify-between px-1">
-              {/* Collaborate switch */}
-              <label className="flex items-center space-x-2 cursor-pointer">
+              <label className="flex items-center space-x-2 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={collaborate}
                   onChange={() => setCollaborate(!collaborate)}
-                  className="rounded border-slate-700 bg-slate-800 accent-cyan-500 w-4 h-4 cursor-pointer"
+                  className="rounded border-slate-700 bg-slate-800 accent-cyan-500 w-3.5 h-3.5 cursor-pointer"
                 />
-                <span className="text-xs text-slate-400 flex items-center space-x-1">
-                  <Layers className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Agent Collaboration Panel</span>
+                <span className="text-[11px] text-slate-500 group-hover:text-slate-400 flex items-center space-x-1 transition-colors">
+                  <Layers className="w-3 h-3" />
+                  <span>Multi-Agent</span>
                 </span>
               </label>
-              <span className="text-[10px] text-slate-500">Press Enter to send</span>
+              <div className="flex items-center space-x-2">
+                {isSpeaking && (
+                  <span className="text-[10px] text-emerald-400 flex items-center space-x-1 animate-fade-in">
+                    <Mic className="w-3 h-3" />
+                    <span>Speaking...</span>
+                  </span>
+                )}
+                <span className="text-[10px] text-slate-600">Enter ↵</span>
+              </div>
             </div>
 
+            {/* Input + Send */}
             <div className="flex space-x-2">
               <input
                 type="text"
-                placeholder="Ask LIA a question..."
-                className="flex-1 bg-slate-850 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20 transition-all placeholder:text-slate-500"
+                placeholder={`Message ${profile?.char_name || "LIA"}...`}
+                className="flex-1 bg-slate-800/40 border border-slate-700/40 rounded-xl px-4 py-2.5 text-sm text-white focus:border-cyan-500/50 transition-all placeholder:text-slate-600"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
               />
               <button
-                className="p-3 bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-white rounded-xl shadow-lg hover:shadow-cyan-500/10 active:scale-[0.98] transition-all"
+                className="p-3 bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-white rounded-xl shadow-lg hover:shadow-cyan-500/15 active:scale-[0.97] transition-all"
                 onClick={handleSend}
               >
                 <Send className="w-4 h-4" />
               </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Right Column: Local Workspace Explorer & Process details */}
-        <section className="w-80 flex flex-col space-y-4 flex-shrink-0">
-          {/* File Manager */}
-          <div className="flex-1 p-4 rounded-xl border border-slate-800/80 bg-slate-900/30 backdrop-blur-md shadow-xl flex flex-col overflow-hidden">
-            <h3 className="text-xs font-bold text-slate-400 flex items-center space-x-1.5 flex-shrink-0 mb-3">
-              <FolderOpen className="w-3.5 h-3.5 text-cyan-400" />
-              <span>WORKSPACE FILE MANAGER</span>
-            </h3>
-            
-            <div className="text-[10px] text-slate-500 font-mono select-all truncate mb-2 px-1">
-              Path: {currentPath}
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 min-h-0">
-              {files.length === 0 ? (
-                <div className="text-center py-10 text-xs text-slate-600">Workspace is empty.</div>
-              ) : (
-                files.map((f, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-2 bg-slate-800/30 hover:bg-slate-800/50 rounded-lg border border-slate-700/20 transition-all text-xs"
-                  >
-                    <div className="flex items-center space-x-2 min-w-0 pr-1">
-                      <FileText className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                      <span className="truncate text-slate-300 font-mono">{f.name || f}</span>
-                    </div>
-                    {f.is_dir ? (
-                      <button
-                        className="text-[10px] text-cyan-400"
-                        onClick={() => fetchFiles(f.path)}
-                      >
-                        Open
-                      </button>
-                    ) : (
-                      <span className="text-[10px] text-slate-500">{Math.round((f.size || 0) / 1024)} KB</span>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Process diagnostics details */}
-          <div className="p-4 rounded-xl border border-slate-800/80 bg-slate-900/30 backdrop-blur-md space-y-3 shadow-xl max-h-48 flex flex-col overflow-hidden">
-            <h3 className="text-xs font-bold text-slate-400 flex items-center space-x-1.5 flex-shrink-0">
-              <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-              <span>ACTIVE PROCESS LOGS</span>
-            </h3>
-            <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 min-h-0 text-[10px] font-mono">
-              {processes.slice(0, 10).map((p, idx) => (
-                <div key={idx} className="flex justify-between text-slate-400">
-                  <span className="truncate max-w-[120px]">{p.name}</span>
-                  <span>CPU: {Math.round(p.cpu_percent || 0)}%</span>
-                </div>
-              ))}
             </div>
           </div>
         </section>

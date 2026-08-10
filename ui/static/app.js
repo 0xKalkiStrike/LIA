@@ -1514,12 +1514,157 @@ async function sendMessage(text, speakResponse = false) {
           }
         }
         
-        if (res.engine === 'coder' && res.code) {
-          const pre = document.createElement('pre');
-          pre.className = 'code-block';
-          pre.innerHTML = `<div class="code-head">📄 ${res.filename || 'code'} — opened in your editor</div><code></code>`;
-          pre.querySelector('code').textContent = res.code;
-          $('#chat-log').appendChild(pre);
+        if (res.engine === 'coder') {
+          if (res.is_web_app && res.preview_url) {
+            const appCard = document.createElement('div');
+            appCard.className = 'agent-card webapp-card';
+            appCard.innerHTML = `
+              <div class="agent-card-header">
+                <span class="agent-card-title">🚀 Interactive Web App: ${res.project_name || 'App'}</span>
+                <div>
+                  <a href="${res.preview_url}" target="_blank" class="action-link-btn" style="background:#53D7F0; color:#060A13; margin-right:8px;">🔗 Open Full Window</a>
+                  <a href="${res.download_url}" download class="action-link-btn">📦 Download ZIP</a>
+                </div>
+              </div>
+              <div class="iframe-container">
+                <iframe src="${res.preview_url}"></iframe>
+              </div>
+            `;
+            $('#chat-log').appendChild(appCard);
+            $('#chat-log').scrollTop = 1e9;
+          } else if (res.code) {
+            const pre = document.createElement('pre');
+            pre.className = 'code-block';
+            pre.innerHTML = `<div class="code-head">📄 ${res.filename || 'code'} — opened in your editor</div><code></code>`;
+            pre.querySelector('code').textContent = res.code;
+            $('#chat-log').appendChild(pre);
+            $('#chat-log').scrollTop = 1e9;
+          }
+        }
+
+        // (Obsolete static video card removed in favor of interactive player block)
+
+        if (res.engine === 'presentation' && res.slides) {
+          const presCard = document.createElement('div');
+          presCard.className = 'agent-card presentation-card';
+          let slideIdx = 0;
+          const slides = res.slides;
+          const cardId = 'pres-' + Math.random().toString(36).substr(2, 6);
+          presCard.innerHTML = `
+            <div class="agent-card-header">
+              <span class="agent-card-title">📊 Presentation Deck: ${res.topic || 'Slides'}</span>
+              <a href="${res.download_url}" target="_blank" download class="action-link-btn">📥 Download HTML Slides</a>
+            </div>
+            <div class="slide-box-card" id="${cardId}">
+              <h2 style="color:#53D7F0; margin-top:0;">${slides[0].title}</h2>
+              <h4 style="color:#94a3b8;">${slides[0].subtitle}</h4>
+              <ul style="line-height:1.7; color:#E2E8F0; padding-left:20px;">
+                ${slides[0].bullets.map(b => `<li>${b}</li>`).join('')}
+              </ul>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+              <button class="btn ghost sm" id="${cardId}-prev">◀ Previous</button>
+              <span id="${cardId}-count" style="color:#53D7F0; font-weight:bold;">1 / ${slides.length}</span>
+              <button class="btn solid sm" id="${cardId}-next">Next ▶</button>
+            </div>
+          `;
+          $('#chat-log').appendChild(presCard);
+          $('#chat-log').scrollTop = 1e9;
+
+          setTimeout(() => {
+            const renderSlide = () => {
+              const box = $(`#${cardId}`);
+              if (!box) return;
+              const s = slides[slideIdx];
+              box.innerHTML = `
+                <h2 style="color:#53D7F0; margin-top:0;">${s.title}</h2>
+                <h4 style="color:#94a3b8;">${s.subtitle}</h4>
+                <ul style="line-height:1.7; color:#E2E8F0; padding-left:20px;">
+                  ${s.bullets.map(b => `<li>${b}</li>`).join('')}
+                </ul>
+              `;
+              $(`#${cardId}-count`).textContent = `${slideIdx + 1} / ${slides.length}`;
+            };
+            $(`#${cardId}-prev`).onclick = () => { if (slideIdx > 0) { slideIdx--; renderSlide(); } };
+            $(`#${cardId}-next`).onclick = () => { if (slideIdx < slides.length - 1) { slideIdx++; renderSlide(); } };
+          }, 50);
+        }
+
+        if (res.engine === 'article' && res.content) {
+          const artCard = document.createElement('div');
+          artCard.className = 'agent-card article-card';
+          const htmlContent = window.marked ? marked.parse(res.content) : res.content.replace(/\n/g, '<br>');
+          artCard.innerHTML = `
+            <div class="agent-card-header">
+              <span class="agent-card-title">📝 Article / Blog: ${res.title || 'Post'}</span>
+              <a href="${res.download_url}" target="_blank" download class="action-link-btn">📥 Download Markdown</a>
+            </div>
+            <div class="article-reader-box">${htmlContent}</div>
+          `;
+          $('#chat-log').appendChild(artCard);
+          $('#chat-log').scrollTop = 1e9;
+        }
+
+        if (res.engine === 'analysis' && res.chart_config) {
+          const chartCard = document.createElement('div');
+          chartCard.className = 'agent-card chart-card';
+          const canvasId = 'chart-' + Math.random().toString(36).substr(2, 6);
+          chartCard.innerHTML = `
+            <div class="agent-card-header">
+              <span class="agent-card-title">📈 Data Analysis & Visual Metrics</span>
+              <span style="color:#10B981; font-weight:bold;">Total: ${res.summary ? res.summary.total : ''} | Avg: ${res.summary ? res.summary.average : ''}</span>
+            </div>
+            <div class="chart-container-box">
+              <canvas id="${canvasId}"></canvas>
+            </div>
+          `;
+          $('#chat-log').appendChild(chartCard);
+          $('#chat-log').scrollTop = 1e9;
+
+          setTimeout(() => {
+            const ctx = document.getElementById(canvasId);
+            if (ctx && window.Chart) {
+              new Chart(ctx, res.chart_config);
+            }
+          }, 100);
+        }
+
+        if (res.engine === 'scraper' && res.scrape_data) {
+          const scrapeCard = document.createElement('div');
+          scrapeCard.className = 'agent-card scrape-card';
+          const sd = res.scrape_data;
+          let contentHtml = '';
+          if (sd.results) {
+            contentHtml = sd.results.map(r => `
+              <div class="search-item" style="margin-bottom:8px;">
+                <a href="${r.url}" target="_blank" class="search-title">${r.title}</a>
+                <div class="search-url">${r.url}</div>
+                <div class="search-snippet">${r.snippet}</div>
+              </div>
+            `).join('');
+          } else if (sd.content) {
+            contentHtml = `<div style="max-height:200px; overflow-y:auto; font-size:13px; color:#cbd5e1; white-space:pre-wrap;">${sd.content}</div>`;
+          }
+          scrapeCard.innerHTML = `
+            <div class="agent-card-header">
+              <span class="agent-card-title">🕷 Web Scraper Results</span>
+            </div>
+            <div>${contentHtml}</div>
+          `;
+          $('#chat-log').appendChild(scrapeCard);
+          $('#chat-log').scrollTop = 1e9;
+        }
+
+        if (res.engine === 'automation' && res.logs) {
+          const autoCard = document.createElement('div');
+          autoCard.className = 'agent-card automation-card';
+          autoCard.innerHTML = `
+            <div class="agent-card-header">
+              <span class="agent-card-title">⚡ Automation Workflow: ${res.task_name || 'Task'}</span>
+            </div>
+            <pre style="background:#080b12; padding:12px; border-radius:6px; font-family:monospace; color:#10B981; font-size:13px;">${res.logs.join('\n')}</pre>
+          `;
+          $('#chat-log').appendChild(autoCard);
           $('#chat-log').scrollTop = 1e9;
         }
 
@@ -1534,6 +1679,195 @@ async function sendMessage(text, speakResponse = false) {
           `;
           $('#chat-log').appendChild(imgBlock);
           $('#chat-log').scrollTop = 1e9;
+        }
+
+        // ── Video Agent Interactive Playable Card ──
+        if (res.engine === 'video' || res.video_id || res.scenes) {
+          const vidId = res.video_id || ('vid_' + Math.random().toString(36).substring(2, 8));
+          const scenes = res.scenes || [];
+          const videoCard = document.createElement('div');
+          videoCard.className = 'agent-card video-player-card';
+          videoCard.style.cssText = 'background:#0b1120; border:1px solid rgba(0,242,254,0.3); border-radius:12px; padding:16px; margin-top:12px; margin-bottom:12px; box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+
+          videoCard.innerHTML = `
+            <div class="agent-card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span class="agent-card-title" style="color:#00f2fe; font-weight:700; font-size:15px;">📹 AI Video Preview: ${(res.topic || 'Video').toUpperCase()}</span>
+              <span style="background:rgba(0,242,254,0.15); color:#00f2fe; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600;">⏱ ${res.total_duration || '00:20'}</span>
+            </div>
+
+            <div class="video-viewport" style="position:relative; width:100%; height:280px; background:#000; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); margin-bottom:12px;">
+              ${res.mp4_url ? `
+                <video id="v-vid-${vidId}" controls autoplay loop muted playsinline poster="${(scenes[0] && scenes[0].image_url) || res.thumbnail || '/static/placeholder.jpg'}" style="width:100%; height:100%; object-fit:cover;">
+                  <source src="${res.mp4_url}" type="video/mp4">
+                  Your browser does not support playing this MP4 video.
+                </video>
+              ` : `
+                <img id="v-img-${vidId}" src="${(scenes[0] && scenes[0].image_url) || res.thumbnail || '/static/placeholder.jpg'}" style="width:100%; height:100%; object-fit:cover; filter:brightness(0.85); transition:transform 8s ease, filter 0.4s ease;" />
+                <div style="position:absolute; inset:0; display:flex; flex-direction:column; justify-content:space-between; padding:14px; background:linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 40%, rgba(0,0,0,0.85) 100%);">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span id="v-tag-${vidId}" style="background:rgba(0,242,254,0.25); color:#00f2fe; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600;">Scene 1: ${scenes[0] ? scenes[0].title : ''}</span>
+                    <span style="color:#94a3b8; font-size:11px; background:rgba(0,0,0,0.5); padding:3px 8px; border-radius:8px;">2K QHD (2560x1440)</span>
+                  </div>
+                  <button id="v-play-${vidId}" style="align-self:center; width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg, #00f2fe, #4facfe); border:none; color:#000; font-size:24px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 0 24px rgba(0,242,254,0.6); transition:transform 0.2s;">▶</button>
+                  <div id="v-cap-${vidId}" style="background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); padding:8px 14px; border-radius:6px; color:#fff; font-size:13px; text-align:center; border:1px solid rgba(255,255,255,0.1); line-height:1.4; max-height:65px; overflow-y:auto; word-break:break-word;">
+                    ${scenes[0] ? scenes[0].audio : ''}
+                  </div>
+                </div>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:4px; background:rgba(255,255,255,0.15);">
+                  <div id="v-prog-${vidId}" style="width:0%; height:100%; background:linear-gradient(90deg, #00f2fe, #4facfe); transition:width 0.1s linear;"></div>
+                </div>
+              `}
+            </div>
+
+            <div id="v-chips-${vidId}" style="display:flex; gap:8px; overflow-x:auto; margin-bottom:12px; padding-bottom:4px;">
+              ${scenes.map((s, idx) => `
+                <button class="scene-btn-${vidId} ${idx === 0 ? 'active' : ''}" data-idx="${idx}" title="${s.title}" style="background:${idx === 0 ? 'rgba(0,242,254,0.2)' : 'rgba(255,255,255,0.06)'}; border:1px solid ${idx === 0 ? '#00f2fe' : 'rgba(255,255,255,0.1)'}; color:${idx === 0 ? '#00f2fe' : '#94a3b8'}; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer; white-space:nowrap; max-width:240px; overflow:hidden; text-overflow:ellipsis;">
+                  🎬 Scene ${s.scene}: ${s.title}
+                </button>
+              `).join('')}
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              ${res.mp4_url ? `<a href="${res.mp4_url}" download class="btn solid sm" style="background:linear-gradient(135deg, #00f2fe, #4facfe); color:#000; font-weight:700; text-decoration:none; box-shadow:0 0 12px rgba(0,242,254,0.4);">📥 Download MP4 Video File</a>` : '<div></div>'}
+              <a href="${res.video_url || '#'}" target="_blank" class="btn ghost sm" style="text-decoration:none; color:#00f2fe; border-color:rgba(0,242,254,0.4);">↗ Open Interactive Video Player</a>
+            </div>
+          `;
+
+          $('#chat-log').appendChild(videoCard);
+          $('#chat-log').scrollTop = 1e9;
+
+          setTimeout(() => {
+            let curIdx = 0, isPlaying = false, timer = null;
+            const vImg = $(`#v-img-${vidId}`);
+            const vTag = $(`#v-tag-${vidId}`);
+            const vCap = $(`#v-cap-${vidId}`);
+            const vProg = $(`#v-prog-${vidId}`);
+            const vPlay = $(`#v-play-${vidId}`);
+
+            const switchScene = (idx) => {
+              curIdx = idx;
+              const s = scenes[curIdx] || {};
+              if (vTag) vTag.textContent = `Scene ${s.scene || (curIdx + 1)}: ${s.title || ''}`;
+              if (vCap) vCap.textContent = s.audio || '';
+              if (vImg && s.image_url) vImg.src = s.image_url;
+              if (vProg) vProg.style.width = `${((curIdx + 1) / scenes.length) * 100}%`;
+              document.querySelectorAll(`.scene-btn-${vidId}`).forEach((btn, i) => {
+                const active = i === curIdx;
+                btn.style.background = active ? 'rgba(0,242,254,0.2)' : 'rgba(255,255,255,0.06)';
+                btn.style.borderColor = active ? '#00f2fe' : 'rgba(255,255,255,0.1)';
+                btn.style.color = active ? '#00f2fe' : '#94a3b8';
+              });
+              if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                if (isPlaying && s.audio) {
+                  const ut = new SpeechSynthesisUtterance(s.audio);
+                  speechSynthesis.speak(ut);
+                }
+              }
+            };
+
+            document.querySelectorAll(`.scene-btn-${vidId}`).forEach(btn => {
+              btn.onclick = () => switchScene(parseInt(btn.dataset.idx, 10));
+            });
+
+            if (vPlay) {
+              vPlay.onclick = () => {
+                isPlaying = !isPlaying;
+                vPlay.textContent = isPlaying ? '⏸' : '▶';
+                if (vImg) vImg.style.transform = isPlaying ? 'scale(1.12)' : 'scale(1.0)';
+                if (isPlaying) {
+                  switchScene(curIdx);
+                  let step = 0;
+                  clearInterval(timer);
+                  timer = setInterval(() => {
+                    step += 1;
+                    if (vProg) vProg.style.width = `${Math.min(100, (((curIdx * 20) + step) / (scenes.length * 20)) * 100)}%`;
+                    if (step >= 20) {
+                      step = 0;
+                      curIdx = (curIdx + 1) % scenes.length;
+                      switchScene(curIdx);
+                    }
+                  }, 400);
+                } else {
+                  clearInterval(timer);
+                  if ('speechSynthesis' in window) speechSynthesis.cancel();
+                }
+              };
+            }
+          }, 50);
+        }
+
+        // ── Presentation Agent Interactive Slide Viewer Card ──
+        if (res.engine === 'presentation' || res.presentation_id || res.slides) {
+          const presId = res.presentation_id || ('pres_' + Math.random().toString(36).substring(2, 8));
+          const slides = res.slides || [];
+          const presCard = document.createElement('div');
+          presCard.className = 'agent-card presentation-card';
+          presCard.style.cssText = 'background:#0b1120; border:1px solid rgba(0,242,254,0.3); border-radius:12px; padding:18px; margin-top:12px; margin-bottom:12px; box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+
+          const scenes_bullets_html = (arr) => {
+            return (arr || []).map(b => `<li style="margin-bottom:6px; position:relative; padding-left:18px;"><span style="position:absolute; left:0; color:#00f2fe;">▸</span>${b}</li>`).join('');
+          };
+
+          presCard.innerHTML = `
+            <div class="agent-card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px;">
+              <span class="agent-card-title" style="color:#00f2fe; font-weight:700; font-size:15px;">📊 Presentation Deck: ${(res.topic || 'Slides').toUpperCase()}</span>
+              <span id="p-counter-${presId}" style="background:rgba(0,242,254,0.15); color:#00f2fe; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600;">1 / ${slides.length}</span>
+            </div>
+
+            <!-- SLIDE CANVAS VIEWPORT -->
+            <div class="slide-viewport" style="background:#070b14; border-radius:10px; padding:24px; min-height:220px; border:1px solid rgba(255,255,255,0.08); margin-bottom:14px; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div id="p-tag-${presId}" style="font-size:11px; color:#00f2fe; background:rgba(0,242,254,0.12); padding:3px 10px; border-radius:10px; width:fit-content; margin-bottom:10px; font-weight:600;">Slide 1 of ${slides.length}</div>
+                <h3 id="p-title-${presId}" style="font-size:20px; color:#f8fafc; font-weight:700; margin-bottom:6px;">${slides[0] ? slides[0].title : ''}</h3>
+                <div id="p-sub-${presId}" style="font-size:13px; color:#94a3b8; margin-bottom:16px;">${slides[0] ? slides[0].subtitle : ''}</div>
+                <ul id="p-bullets-${presId}" style="list-style:none; padding:0; margin:0; line-height:1.8; font-size:14px; color:#cbd5e1;">
+                  ${scenes_bullets_html(slides[0] ? slides[0].bullets : [])}
+                </ul>
+              </div>
+              <div id="p-notes-${presId}" style="background:rgba(0,0,0,0.4); border-left:3px solid #00f2fe; padding:8px 12px; border-radius:4px; font-size:12px; color:#94a3b8; margin-top:14px;">
+                💡 Note: ${slides[0] ? slides[0].notes : ''}
+              </div>
+            </div>
+
+            <!-- SLIDE CONTROLS BAR -->
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; gap:8px;">
+                <button id="p-prev-${presId}" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; padding:8px 16px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:600;">◄ Previous</button>
+                <button id="p-next-${presId}" style="background:linear-gradient(135deg, #00f2fe, #4facfe); border:none; color:#000; padding:8px 18px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:700; box-shadow:0 0 12px rgba(0,242,254,0.3);">Next ►</button>
+              </div>
+              <a href="${res.download_url || '#'}" target="_blank" class="btn ghost sm" style="text-decoration:none; color:#00f2fe; border-color:rgba(0,242,254,0.4); font-size:12px;">↗ Open Deck Presentation</a>
+            </div>
+          `;
+
+          $('#chat-log').appendChild(presCard);
+          $('#chat-log').scrollTop = 1e9;
+
+          setTimeout(() => {
+            let pIdx = 0;
+            const pTitle = $(`#p-title-${presId}`);
+            const pSub = $(`#p-sub-${presId}`);
+            const pBul = $(`#p-bullets-${presId}`);
+            const pNot = $(`#p-notes-${presId}`);
+            const pTag = $(`#p-tag-${presId}`);
+            const pCount = $(`#p-counter-${presId}`);
+            const pPrev = $(`#p-prev-${presId}`);
+            const pNext = $(`#p-next-${presId}`);
+
+            const renderSlide = (i) => {
+              pIdx = i;
+              const s = slides[pIdx] || {};
+              if (pTag) pTag.textContent = `Slide ${pIdx + 1} of ${slides.length}`;
+              if (pTitle) pTitle.textContent = s.title || '';
+              if (pSub) pSub.textContent = s.subtitle || '';
+              if (pBul) pBul.innerHTML = scenes_bullets_html(s.bullets);
+              if (pNot) pNot.textContent = `💡 Note: ${s.notes || ''}`;
+              if (pCount) pCount.textContent = `${pIdx + 1} / ${slides.length}`;
+            };
+
+            if (pPrev) pPrev.onclick = () => { if (pIdx > 0) renderSlide(pIdx - 1); };
+            if (pNext) pNext.onclick = () => { if (pIdx < slides.length - 1) renderSlide(pIdx + 1); };
+          }, 50);
         }
 
         if (res.search_results && res.search_results.length) {
@@ -2468,4 +2802,17 @@ $('#btn-call-cam').onclick = () => {
   }
 };
 
+// Wire Quick Agent toolbar buttons
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.agent-btn');
+  if (btn && btn.dataset.prompt) {
+    const input = $('#chat-input');
+    if (input) {
+      input.value = btn.dataset.prompt;
+      sendMessage(btn.dataset.prompt, false);
+    }
+  }
+});
+
 boot();
+

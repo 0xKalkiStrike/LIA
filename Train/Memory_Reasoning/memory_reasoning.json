@@ -1,0 +1,48 @@
+{
+  "domain": "memory_reasoning",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for Semantic Memory Management, Vector Search (ChromaDB), Chain-of-Thought Reasoning, and Self-Reflection",
+  "categories": [
+    "chromadb_vector_store",
+    "chain_of_thought_prompting",
+    "episodic_memory_recall",
+    "agent_self_reflection"
+  ],
+  "training_data": [
+    {
+      "id": "mem_001",
+      "category": "chromadb_vector_store",
+      "prompt": "How to query ChromaDB for semantic similarity search with metadata filtering in Python",
+      "completion": {
+        "code_snippet": "import chromadb\nclient = chromadb.PersistentClient(path='./data/chroma')\ncollection = client.get_or_create_collection('lia_memory')\nresults = collection.query(query_texts=['AnimateDiff video generation'], n_results=5)"
+      }
+    },
+    {
+      "id": "mem_002",
+      "category": "chain_of_thought_prompting",
+      "prompt": "Provide a standard Chain-of-Thought (CoT) reasoning template",
+      "completion": {
+        "cot_template": [
+          "1. Understand goal",
+          "2. Deconstruct sub-tasks",
+          "3. Identify constraints",
+          "4. Execute step-by-step",
+          "5. Validate"
+        ]
+      }
+    },
+    {
+      "id": "mem_003",
+      "category": "agent_self_reflection",
+      "prompt": "Define the self-reflection loop mechanism for AI agents upon encountering runtime execution errors",
+      "completion": {
+        "reflection_loop": [
+          "Capture error",
+          "Identify root cause",
+          "Formulate targeted remedy",
+          "Re-run verification"
+        ]
+      }
+    }
+  ]
+}

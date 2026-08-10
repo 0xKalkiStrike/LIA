@@ -1,0 +1,46 @@
+{
+  "domain": "data_scraping",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for Web Scraping, Automated Data Extraction, Headless Browsing, Anti-Bot Evasion, and Proxy Management",
+  "categories": [
+    "playwright_async",
+    "beautifulsoup_parsing",
+    "anti_bot_evasion",
+    "proxy_rotation",
+    "structured_data_extraction"
+  ],
+  "training_data": [
+    {
+      "id": "scrape_001",
+      "category": "playwright_async",
+      "prompt": "Write an asynchronous Python Playwright scraper to extract product details from dynamic e-commerce web pages",
+      "completion": {
+        "framework": "Playwright Python Async",
+        "code_snippet": "import asyncio\nfrom playwright.async_api import async_playwright\n\nasync def scrape_products(url):\n    async with async_playwright() as p:\n        browser = await p.chromium.launch(headless=True)\n        page = await browser.new_page()\n        await page.goto(url, wait_until='networkidle')\n        products = []\n        elements = await page.query_selector_all('.product-card')\n        for el in elements:\n            title = await el.query_selector_eval('.title', 'e => e.innerText')\n            price = await el.query_selector_eval('.price', 'e => e.innerText')\n            products.append({'title': title.strip(), 'price': price.strip()})\n        await browser.close()\n        return products"
+      }
+    },
+    {
+      "id": "scrape_002",
+      "category": "anti_bot_evasion",
+      "prompt": "How to bypass Cloudflare, Akamai, and Bot Detection mechanisms during automated web scraping?",
+      "completion": {
+        "techniques": [
+          "Use Playwright-stealth / Undetected-Chromium drivers to mask navigator.webdriver flags",
+          "Rotate User-Agent strings with realistic browser fingerprint parameters (Sec-CH-UA, Accept-Language)",
+          "Implement residential proxy pools with automatic IP rotation per request batch",
+          "Add human-like randomized interaction delays (mouse jitter, smooth scroll, random pause)",
+          "Bypass Cloudflare turnstile using browser subagents or automated solver APIs"
+        ]
+      }
+    },
+    {
+      "id": "scrape_003",
+      "category": "structured_data_extraction",
+      "prompt": "Extract JSON-LD and microdata schemas from web pages using BeautifulSoup and extruct",
+      "completion": {
+        "parser": "BeautifulSoup4 + extruct",
+        "code_snippet": "from bs4 import BeautifulSoup\nimport json\n\ndef parse_json_ld(html_content):\n    soup = BeautifulSoup(html_content, 'html.parser')\n    scripts = soup.find_all('script', type='application/ld+json')\n    extracted = []\n    for s in scripts:\n        try:\n            data = json.loads(s.string)\n            extracted.append(data)\n        except Exception:\n            continue\n    return extracted"
+      }
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "domain": "presentation",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for Presentation Deck Generation, Slide Layout Design, python-pptx Automation, and Pitch Decks",
+  "categories": [
+    "slide_deck_templates",
+    "python_pptx_automation",
+    "pitch_deck_structure",
+    "visual_design_palettes",
+    "speaker_notes_generation"
+  ],
+  "training_data": [
+    {
+      "id": "pres_001",
+      "category": "slide_deck_templates",
+      "prompt": "Create a 10-slide executive presentation outline for a corporate AI Strategy launch",
+      "completion": {
+        "presentation_title": "Enterprise AI Transformation Strategy 2026",
+        "theme": "Modern Dark Glassmorphism / Cyber Teal Accent",
+        "slides": [
+          {
+            "slide_number": 1,
+            "layout": "Title Slide",
+            "headline": "Enterprise AI Transformation Strategy"
+          },
+          {
+            "slide_number": 2,
+            "layout": "Executive Summary",
+            "headline": "Strategic Vision & Goals"
+          },
+          {
+            "slide_number": 3,
+            "layout": "Market Analysis",
+            "headline": "The AI Imperative"
+          },
+          {
+            "slide_number": 4,
+            "layout": "Architecture Blueprint",
+            "headline": "LIA Multi-Agent Ecosystem"
+          },
+          {
+            "slide_number": 5,
+            "layout": "Implementation Roadmap",
+            "headline": "4-Phase Rollout Plan"
+          },
+          {
+            "slide_number": 6,
+            "layout": "ROI & Impact",
+            "headline": "Expected Business Outcomes"
+          },
+          {
+            "slide_number": 7,
+            "layout": "Risk & Security",
+            "headline": "Governance & Safety"
+          },
+          {
+            "slide_number": 8,
+            "layout": "Team & Resources",
+            "headline": "Core Execution Team"
+          },
+          {
+            "slide_number": 9,
+            "layout": "Financial Budget",
+            "headline": "Resource Allocation"
+          },
+          {
+            "slide_number": 10,
+            "layout": "Call to Action",
+            "headline": "Next Steps & Discussion"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pres_002",
+      "category": "python_pptx_automation",
+      "prompt": "Write a Python script using `python-pptx` to programmatically build custom formatted PowerPoint slides",
+      "completion": {
+        "library": "python-pptx",
+        "code_snippet": "from pptx import Presentation\nfrom pptx.util import Inches, Pt\nfrom pptx.dml.color import RGBColor\n\ndef generate_deck(title_text, subtitle_text, output_path='presentation.pptx'):\n    prs = Presentation()\n    prs.slide_width = Inches(13.333)\n    prs.slide_height = Inches(7.5)\n    slide = prs.slides.add_slide(prs.slide_layouts[6])\n    tx_box = slide.shapes.add_textbox(Inches(1.0), Inches(2.0), Inches(11.333), Inches(2.0))\n    tf = tx_box.text_frame\n    p = tf.paragraphs[0]\n    p.text = title_text\n    p.font.size = Pt(44)\n    p.font.bold = True\n    p.font.color.rgb = RGBColor(15, 23, 42)\n    prs.save(output_path)\n    return output_path"
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "domain": "vision_multimodal",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for Vision Language Models (VLM), Object Detection (YOLOv8), OCR (Tesseract/EasyOCR), and Visual QA",
+  "categories": [
+    "yolo_object_detection",
+    "ocr_text_extraction",
+    "vlm_prompting",
+    "spatial_bounding_box"
+  ],
+  "training_data": [
+    {
+      "id": "vis_001",
+      "category": "yolo_object_detection",
+      "prompt": "Configure YOLOv8 for real-time webcam object detection and tracking in Python",
+      "completion": {
+        "framework": "Ultralytics YOLOv8",
+        "code_snippet": "from ultralytics import YOLO\nmodel = YOLO('yolov8n.pt')\nresults = model.track(source=0, show=True, tracker='bytetrack.yaml')"
+      }
+    },
+    {
+      "id": "vis_002",
+      "category": "ocr_text_extraction",
+      "prompt": "Image preprocessing techniques to boost OCR accuracy using OpenCV and Tesseract",
+      "completion": {
+        "preprocessing_pipeline": [
+          "1. Convert to grayscale",
+          "2. GaussianBlur",
+          "3. Otsu thresholding",
+          "4. Deskew",
+          "5. Run Tesseract PSM 6"
+        ]
+      }
+    },
+    {
+      "id": "vis_003",
+      "category": "vlm_prompting",
+      "prompt": "How to structure multimodal prompt requests for VLM models",
+      "completion": {
+        "prompt_format": {
+          "system_instruction": "Identify all text elements and UI components in screenshot.",
+          "image_input": "base64"
+        }
+      }
+    }
+  ]
+}

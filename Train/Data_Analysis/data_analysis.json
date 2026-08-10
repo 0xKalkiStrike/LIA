@@ -1,0 +1,53 @@
+{
+  "domain": "data_analysis",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for Data Science, Exploratory Data Analysis (EDA), Statistical Analytics, Pandas DataFrames, and ML Models",
+  "categories": [
+    "exploratory_data_analysis",
+    "pandas_data_wrangling",
+    "statistical_testing",
+    "machine_learning_pipeline",
+    "visualization_charts"
+  ],
+  "training_data": [
+    {
+      "id": "analysis_001",
+      "category": "exploratory_data_analysis",
+      "prompt": "Provide a complete Python automated Exploratory Data Analysis (EDA) script using Pandas and Seaborn",
+      "completion": {
+        "libraries": [
+          "pandas",
+          "numpy",
+          "seaborn",
+          "matplotlib.pyplot"
+        ],
+        "code_snippet": "import pandas as pd\nimport numpy as np\nimport seaborn as sns\nimport matplotlib.pyplot as plt\n\ndef perform_eda(df):\n    summary = {\n        'shape': df.shape,\n        'missing_values': df.isnull().sum().to_dict(),\n        'data_types': df.dtypes.astype(str).to_dict(),\n        'numeric_stats': df.describe().to_dict()\n    }\n    numeric_df = df.select_dtypes(include=[np.number])\n    corr_matrix = numeric_df.corr()\n    return summary, corr_matrix"
+      }
+    },
+    {
+      "id": "analysis_002",
+      "category": "statistical_testing",
+      "prompt": "How to execute A/B test hypothesis testing using SciPy stats (t-test and Chi-square test)",
+      "completion": {
+        "methodology": "Two-sample independent t-test for continuous metrics, Chi-square for conversion rates",
+        "code_snippet": "from scipy import stats\n\ndef evaluate_ab_test(control_group, treatment_group, alpha=0.05):\n    t_stat, p_val = stats.ttest_ind(control_group, treatment_group)\n    significant = p_val < alpha\n    return {'t_statistic': t_stat, 'p_value': p_val, 'statistically_significant': significant}"
+      }
+    },
+    {
+      "id": "analysis_003",
+      "category": "machine_learning_pipeline",
+      "prompt": "Build an end-to-end XGBoost classification pipeline with hyperparameter tuning and cross-validation",
+      "completion": {
+        "pipeline": "Scikit-Learn Pipeline + XGBClassifier + GridSearchCV",
+        "steps": [
+          "1. SimpleImputer for handling missing numeric values",
+          "2. OneHotEncoder / TargetEncoder for categorical features",
+          "3. StandardScaler for feature normalization",
+          "4. XGBClassifier with binary:logistic objective",
+          "5. 5-Fold Stratified K-Fold Cross Validation",
+          "6. Evaluation via ROC-AUC score and confusion matrix"
+        ]
+      }
+    }
+  ]
+}

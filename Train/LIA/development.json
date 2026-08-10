@@ -1,0 +1,73 @@
+{
+  "domain": "development",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for Full-Stack Development, Software Architecture, Code Generation, Refactoring, and DevOps",
+  "categories": [
+    "backend_python",
+    "frontend_typescript",
+    "database_architecture",
+    "async_concurrency",
+    "clean_architecture",
+    "devops_docker"
+  ],
+  "training_data": [
+    {
+      "id": "dev_001",
+      "category": "backend_python",
+      "prompt": "Create an asynchronous FastAPI backend service with JWT authentication and Pydantic v2 schemas",
+      "completion": {
+        "architecture": "FastAPI Async Router Pattern",
+        "code_snippet": "from fastapi import FastAPI, Depends, HTTPException, status\nfrom fastapi.security import OAuth2PasswordBearer\nfrom pydantic import BaseModel, EmailStr\nimport jwt\n\napp = FastAPI(title='LIA Enterprise API', version='1.0.0')\n\nclass UserRegister(BaseModel):\n    username: str\n    email: EmailStr\n    password: str\n\n@app.post('/api/v1/auth/register', status_code=status.HTTP_201_CREATED)\nasync def register_user(user: UserRegister):\n    return {'status': 'success', 'user': user.username}"
+      }
+    },
+    {
+      "id": "dev_002",
+      "category": "frontend_typescript",
+      "prompt": "How to structure a Next.js App Router project with Tailwind CSS and Zustand state management",
+      "completion": {
+        "directory_layout": {
+          "src/app": [
+            "page.tsx",
+            "layout.tsx",
+            "providers.tsx",
+            "globals.css"
+          ],
+          "src/components": [
+            "ui/Button.tsx",
+            "ui/Modal.tsx",
+            "chat/ChatBox.tsx"
+          ],
+          "src/store": [
+            "useChatStore.ts",
+            "useAuthStore.ts"
+          ],
+          "src/lib": [
+            "apiClient.ts",
+            "utils.ts"
+          ]
+        },
+        "state_management_pattern": "Zustand slices with persist middleware"
+      }
+    },
+    {
+      "id": "dev_003",
+      "category": "database_architecture",
+      "prompt": "Design an optimized PostgreSQL schema for a multi-tenant chat application with vector search capabilities",
+      "completion": {
+        "extensions": [
+          "pgvector",
+          "uuid-ossp"
+        ],
+        "schema_sql": "CREATE EXTENSION IF NOT EXISTS vector;\nCREATE TABLE users (\n  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n  email VARCHAR(255) UNIQUE NOT NULL,\n  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n);\nCREATE TABLE embeddings (\n  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n  user_id UUID REFERENCES users(id) ON DELETE CASCADE,\n  content TEXT NOT NULL,\n  embedding vector(1536)\n);\nCREATE INDEX idx_embeddings_vector ON embeddings USING hnsw (embedding vector_cosine_ops);"
+      }
+    },
+    {
+      "id": "dev_004",
+      "category": "devops_docker",
+      "prompt": "Write a multi-stage Dockerfile for a Python FastAPI application with UV package manager",
+      "completion": {
+        "dockerfile": "FROM python:3.11-slim as builder\nWORKDIR /app\nRUN pip install uv\nCOPY requirements.txt .\nRUN uv pip install --system --no-cache -r requirements.txt\n\nFROM python:3.11-slim as runner\nWORKDIR /app\nCOPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages\nCOPY . .\nEXPOSE 8000\nCMD [\"python\", \"run.py\"]"
+      }
+    }
+  ]
+}

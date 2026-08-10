@@ -1,0 +1,87 @@
+{
+  "domain": "video_generation",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for AI Video Generation, Motion Synthesis, AnimateDiff, Sora, Kling, Runway Gen-2/Gen-3, and Lip Sync",
+  "categories": [
+    "text_to_video",
+    "image_to_video",
+    "animatediff_params",
+    "camera_motion_control",
+    "lip_sync_audio",
+    "video_upconversion"
+  ],
+  "training_data": [
+    {
+      "id": "vid_gen_001",
+      "category": "text_to_video",
+      "prompt": "Cinematic slow-motion shot of a futuristic drone navigating through a foggy pine forest at sunrise, 4k 60fps",
+      "completion": {
+        "engine": "AnimateDiff_v3 / HunyuanVideo",
+        "fps": 24,
+        "duration_seconds": 4.0,
+        "motion_bucket_id": 127,
+        "camera_motion": {
+          "pan": "forward_slow",
+          "zoom": "in",
+          "tilt": "slightly_down",
+          "rotation": 0.0
+        },
+        "negative_prompt": "choppy movement, flickering, morphing limbs, static camera, noise artifacts, frame dropping"
+      }
+    },
+    {
+      "id": "vid_gen_002",
+      "category": "image_to_video",
+      "prompt": "Animate a static image of water cascading down a mountain waterfall with realistic mist effect",
+      "completion": {
+        "method": "Image-to-Video Motion Vector Guided Diffusion",
+        "motion_strength": 0.65,
+        "denoise_strength": 0.7,
+        "masking": "fluid_dynamics_mask",
+        "guidance_scale": 8.5
+      }
+    },
+    {
+      "id": "vid_gen_003",
+      "category": "camera_motion_control",
+      "prompt": "Explain camera movement parameters for high-end cinematic video generation",
+      "completion": {
+        "camera_moves": {
+          "dolly_zoom": "simultaneous zoom in and backward movement for vertigo effect",
+          "orbit_around": "360-degree smooth rotational camera sweep around target subject",
+          "truck_left_right": "horizontal lateral camera tracking shot",
+          "crane_up": "vertical elevation shot exposing wide landscape"
+        }
+      }
+    },
+    {
+      "id": "vid_gen_004",
+      "category": "lip_sync_audio",
+      "prompt": "How to configure audio-driven avatar lip sync for video generation using SadTalker or Wav2Lip",
+      "completion": {
+        "pipeline": "Wav2Lip_GAN / SadTalker_v0.0.2",
+        "audio_sample_rate": 16000,
+        "face_detector": "retinaface",
+        "expression_scale": 1.1,
+        "pose_style": 0,
+        "post_processing": [
+          "GFPGAN_face_enhancer",
+          "codeformer_restoration"
+        ]
+      }
+    },
+    {
+      "id": "vid_gen_005",
+      "category": "video_upconversion",
+      "prompt": "Workflow for taking a 512x512 low fps video and upscaling it to 4K 60fps smooth video",
+      "completion": {
+        "steps": [
+          "Step 1: Frame interpolation using RIFE / Real-CSI to increase framerate from 15fps to 60fps",
+          "Step 2: Spatial AI upscaling using Real-ESRGAN / SeedVR to 4K resolution",
+          "Step 3: Temporal smoothing filter to eliminate inter-frame flicker",
+          "Step 4: H.265 / AV1 encoding with CRF 18"
+        ]
+      }
+    }
+  ]
+}

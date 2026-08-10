@@ -45,6 +45,9 @@ export interface ChatMessage {
   searchQuery?: string;
   searchResults?: any[];
   isStreaming?: boolean;
+  // Workspace action data
+  webApp?: { app_id: string; project_name: string; preview_url: string; download_url: string };
+  presentation?: { presentation_id: string; topic: string; total_slides: number; download_url: string };
 }
 
 export interface CollabTurn {
@@ -95,6 +98,8 @@ interface AppContextType {
   chatHistory: ChatMessage[];
   collabTurns: CollabTurn[];
   isCollabActive: boolean;
+  isSpeaking: boolean;
+  spokenText: string;
   wsConnected: boolean;
   activeTab: string;
   tasks: Task[];
@@ -106,6 +111,12 @@ interface AppContextType {
   currentPath: string;
   files: any[];
   activeTaskToApprove: any;
+  // Workspace state
+  activeProjectId: string | null;
+  activePresentationId: string | null;
+  openCodeWorkspace: (projectId: string) => void;
+  openPresentationWorkspace: (presId: string) => void;
+  closeWorkspace: () => void;
   
   signup: (username: string, display_name: string, secret_word: string, profileData: Partial<Profile>) => Promise<void>;
   login: (username: string, secret_word: string) => Promise<void>;
@@ -216,6 +227,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentPath, setCurrentPath] = useState("C:/hacker/LIA");
   const [files, setFiles] = useState<any[]>([]);
   const [activeTaskToApprove, setActiveTaskToApprove] = useState<any>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [spokenText, setSpokenText] = useState("");
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [activePresentationId, setActivePresentationId] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const streamIdRef = useRef<string | null>(null);
@@ -433,12 +448,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             task: msg.task,
             taskResult: msg.task_result,
             searchQuery: msg.search_query,
-            searchResults: msg.search_results
+            searchResults: msg.search_results,
+            webApp: msg.is_web_app ? {
+              app_id: msg.app_id,
+              project_name: msg.project_name || "Web App",
+              preview_url: msg.preview_url,
+              download_url: msg.download_url,
+            } : undefined,
+            presentation: msg.presentation_id ? {
+              presentation_id: msg.presentation_id,
+              topic: msg.topic || "Presentation",
+              total_slides: msg.total_slides || 5,
+              download_url: msg.download_url,
+            } : undefined,
           }
         ];
       }
       return prev;
     });
+
+    // Auto-launch workspace if app or presentation was generated
+    if (msg.is_web_app && msg.app_id) {
+      openCodeWorkspace(msg.app_id);
+    } else if (msg.presentation_id) {
+      openPresentationWorkspace(msg.presentation_id);
+    }
+
     // Speak response out loud
     if (msg.reply && profile) {
       speakText(msg.reply, msg.emotion);
@@ -473,6 +508,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Web Speech ranges: pitch 0–2, rate 0.1–10. Clamp our UI values.
         utter.pitch = Math.min(2, Math.max(0, pitch));
         utter.rate = Math.min(2, Math.max(0.5, rate));
+
+        // Track speaking state for lip sync
+        utter.onstart = () => {
+          setIsSpeaking(true);
+          setSpokenText(text);
+        };
+        utter.onend = () => {
+          setIsSpeaking(false);
+          setSpokenText("");
+        };
+        utter.onerror = () => {
+          setIsSpeaking(false);
+          setSpokenText("");
+        };
 
         const apply = () => {
           const chosen = pickBrowserVoice(synth.getVoices(), accentCfg, personaCfg);
@@ -544,8 +593,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             task: res.task,
             taskResult: res.task_result,
             searchQuery: res.search_query,
-            searchResults: res.search_results
+            searchResults: res.search_results,
+            webApp: res.is_web_app ? {
+              app_id: res.app_id,
+              project_name: res.project_name || "Web App",
+              preview_url: res.preview_url,
+              download_url: res.download_url,
+            } : undefined,
+            presentation: res.presentation_id ? {
+              presentation_id: res.presentation_id,
+              topic: res.topic || "Presentation",
+              total_slides: res.total_slides || 5,
+              download_url: res.download_url,
+            } : undefined,
           }]);
+          if (res.is_web_app && res.app_id) {
+            openCodeWorkspace(res.app_id);
+          } else if (res.presentation_id) {
+            openPresentationWorkspace(res.presentation_id);
+          }
           if (res.reply) speakText(res.reply, res.emotion);
         });
       return;
@@ -793,10 +859,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return await apiCall("/api/voice/settings");
   };
 
+  const openCodeWorkspace = (projectId: string) => {
+    setActiveProjectId(projectId);
+    setActivePresentationId(null);
+    setActiveTab("code");
+  };
+
+  const openPresentationWorkspace = (presId: string) => {
+    setActivePresentationId(presId);
+    setActiveProjectId(null);
+    setActiveTab("presentation");
+  };
+
+  const closeWorkspace = () => {
+    setActiveProjectId(null);
+    setActivePresentationId(null);
+    setActiveTab("chat");
+  };
+
   return (
     <AppContext.Provider value={{
-      token, profile, hasUsers, voices, accents, langModes, chatHistory, collabTurns, isCollabActive, wsConnected, activeTab,
+      token, profile, hasUsers, voices, accents, langModes, chatHistory, collabTurns, isCollabActive, isSpeaking, spokenText, wsConnected, activeTab,
       tasks, notes, events, reminders, systemStats, processes, currentPath, files, activeTaskToApprove,
+      activeProjectId, activePresentationId, openCodeWorkspace, openPresentationWorkspace, closeWorkspace,
       signup, login, logout, updateProfile, sendChatMessage, approveTask,
       fetchNotes, createNote, updateNote, deleteNote,
       fetchTasks, createTask, updateTask, deleteTask,

@@ -1,0 +1,52 @@
+{
+  "domain": "research",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for Academic Research Synthesis, Literature Review, Citation Analysis, and Scientific Reasoning",
+  "categories": [
+    "literature_synthesis",
+    "arxiv_pubmed_queries",
+    "citation_bibtex_parsing",
+    "hypothesis_formulation",
+    "peer_review_critique"
+  ],
+  "training_data": [
+    {
+      "id": "res_001",
+      "category": "literature_synthesis",
+      "prompt": "Synthesize key scientific literature on Retrieval-Augmented Generation (RAG) vs Long-Context Window LLMs",
+      "completion": {
+        "topic": "RAG vs Long-Context Windows in LLMs",
+        "synthesis": "While extreme long-context windows allow processing full books or codebases in a single prompt, RAG architectures remain superior in cost efficiency, dynamic knowledge updating, precise source attribution, and latency reduction.",
+        "key_citations": [
+          {
+            "author": "Lewis et al.",
+            "year": 2020,
+            "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks"
+          },
+          {
+            "author": "Gao et al.",
+            "year": 2023,
+            "title": "Retrieval-Augmented Generation for Large Language Models: A Survey"
+          }
+        ]
+      }
+    },
+    {
+      "id": "res_002",
+      "category": "arxiv_pubmed_queries",
+      "prompt": "How to construct precise boolean search queries for arXiv and PubMed APIs",
+      "completion": {
+        "arxiv_query": "cat:q-bio.BM OR cat:cs.AI AND ti:\"AlphaFold\" OR abs:\"protein structure prediction\"",
+        "pubmed_eutilities_query": "((\"artificial intelligence\"[MeSH Terms] OR \"deep learning\"[All Fields]) AND (\"drug discovery\"[All Fields]))"
+      }
+    },
+    {
+      "id": "res_003",
+      "category": "citation_bibtex_parsing",
+      "prompt": "Provide standard BibTeX entry parsing and generation rules for scientific publishing",
+      "completion": {
+        "bibtex_template": "@article{lia_agent_2026,\n  author = {LIA AI Research Group},\n  title = {Universal Multi-Agent System for Autonomous Task Execution},\n  journal = {Journal of Artificial Intelligence Research},\n  year = {2026}\n}"
+      }
+    }
+  ]
+}

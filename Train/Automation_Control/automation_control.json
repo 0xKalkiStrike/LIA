@@ -1,0 +1,42 @@
+{
+  "domain": "automation_control",
+  "version": "1.0.0",
+  "description": "Comprehensive training dataset for System Automation, PowerShell/Bash Scripting, PyAutoGUI Desktop Control, and n8n Workflows",
+  "categories": [
+    "powershell_windows_admin",
+    "pyautogui_desktop_control",
+    "n8n_workflow_integration",
+    "system_health_monitoring"
+  ],
+  "training_data": [
+    {
+      "id": "auto_001",
+      "category": "powershell_windows_admin",
+      "prompt": "Write a PowerShell script to audit running processes and RAM usage",
+      "completion": {
+        "script": "Get-Process | Sort-Object WorkingSet64 -Descending | Select-Object -First 10 ProcessName, ID"
+      }
+    },
+    {
+      "id": "auto_002",
+      "category": "pyautogui_desktop_control",
+      "prompt": "How to safely perform GUI automation using PyAutoGUI",
+      "completion": {
+        "failsafe_config": "import pyautogui\npyautogui.FAILSAFE = True"
+      }
+    },
+    {
+      "id": "auto_003",
+      "category": "n8n_workflow_integration",
+      "prompt": "Blueprint for an n8n webhook automation triggering AI task execution",
+      "completion": {
+        "nodes": [
+          {
+            "name": "Webhook Trigger",
+            "type": "n8n-nodes-base.webhook"
+          }
+        ]
+      }
+    }
+  ]
+}

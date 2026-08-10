@@ -1,16 +1,51 @@
 import type { NextConfig } from "next";
 
-// The FastAPI backend (api/server.py) runs on 127.0.0.1:8001 (see config/settings.json).
-// In dev we proxy same-origin /api and /static calls to it so the browser never
-// hits CORS and the token/cookie story stays simple. Override with BACKEND_ORIGIN.
 const BACKEND = process.env.BACKEND_ORIGIN ?? "http://127.0.0.1:8001";
 
 const nextConfig: NextConfig = {
+  // Performance optimizations for low-end devices
+  productionBrowserSourceMaps: false,
+  compress: true,
+  swcMinify: true,
+  optimizeFonts: true,
+  images: {
+    formats: ["image/webp", "image/avif"],
+    deviceSizes: [320, 640, 750, 828, 1080, 1200, 1920],
+  },
   async rewrites() {
     return [
       { source: "/api/:path*", destination: `${BACKEND}/api/:path*` },
       { source: "/static/:path*", destination: `${BACKEND}/static/:path*` },
     ];
+  },
+  webpack: (config) => {
+    config.optimization = {
+      ...config.optimization,
+      minimize: true,
+      splitChunks: {
+        chunks: "all",
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          monaco: {
+            test: /[\\/]node_modules[\\/]@monaco-editor[\\/]/,
+            name: "monaco",
+            priority: 10,
+          },
+          three: {
+            test: /[\\/]node_modules[\\/](three|@pixiv)[\\/]/,
+            name: "three",
+            priority: 10,
+          },
+          common: {
+            minChunks: 2,
+            priority: 5,
+            reuseExistingChunk: true,
+          },
+        },
+      },
+    };
+    return config;
   },
 };
 

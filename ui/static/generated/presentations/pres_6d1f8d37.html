@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Act As Expert Designer. Detailed Outline And Content For [Number]-Slide [Your Topic]. Goal: To [E.G., Inform, Persuade, Train] Audience About [Core Message]. Audience: [E.G., Executives, Clients, Students, Team Members]. Tone & Style: Professional, Minimal, Clear, And Direct. Formatting Instructions: Provide Slide-By-Slide Content (Slide Title, Key Takeaways/Bullets, And Visual Suggestions). Keep Text Concise And Scannable—Use Strong Headings And Short Bullet Points Instead Long Paragraphs. Limit Each Slide To 3–4 Main Points To Maintain Clean Layout. Include Intro/Agenda Slide At Beginning And Conclusion/Q&Slide At End. - Presentation</title>
+<style>
+  body { margin:0; padding:0; background:#0b0f19; color:#f0f4f8; font-family:'Inter', sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; }
+  .deck-container { width:85%; max-width:900px; background:rgba(18,24,38,0.9); border:1px solid rgba(83,215,240,0.3); border-radius:16px; padding:40px; box-shadow:0 10px 40px rgba(0,0,0,0.8); backdrop-filter:blur(10px); position:relative; }
+  h1 { font-size:32px; color:#53d7f0; margin-top:0; border-bottom:1px solid rgba(83,215,240,0.2); padding-bottom:12px; }
+  h3 { font-size:18px; color:#94a3b8; font-weight:400; margin-bottom:24px; }
+  ul { line-height:1.8; font-size:18px; color:#e2e8f0; }
+  li { margin-bottom:12px; }
+  .nav-bar { display:flex; justify-content:space-between; width:85%; max-width:900px; margin-top:20px; }
+  .btn { background:#10b981; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:600; font-size:16px; }
+  .btn:hover { background:#059669; }
+</style>
+</head>
+<body>
+<div class="deck-container" id="slide-box">
+  <h1 id="title">Act As Expert Designer. Detailed Outline And Content For [Number]-Slide [Your Topic]. Goal: To [E.G., Inform, Persuade, Train] Audience About [Core Message]. Audience: [E.G., Executives, Clients, Students, Team Members]. Tone & Style: Professional, Minimal, Clear, And Direct. Formatting Instructions: Provide Slide-By-Slide Content (Slide Title, Key Takeaways/Bullets, And Visual Suggestions). Keep Text Concise And Scannable—Use Strong Headings And Short Bullet Points Instead Long Paragraphs. Limit Each Slide To 3–4 Main Points To Maintain Clean Layout. Include Intro/Agenda Slide At Beginning And Conclusion/Q&Slide At End.</h1>
+  <h3 id="subtitle">Strategic Insights, Overview & Future Roadmap</h3>
+  <ul id="bullets">
+    <li>Executive Summary & Vision</li><li>Key Technological Innovations</li><li>Market Impact & Implementation Strategy</li>
+  </ul>
+</div>
+<div class="nav-bar">
+  <button class="btn" onclick="prev()">Previous</button>
+  <span id="counter" style="color:#53d7f0; font-size:18px; font-weight:bold;">1 / 5</span>
+  <button class="btn" onclick="next()">Next</button>
+</div>
+<script>
+  const slides = [{"slide_number": 1, "title": "Act As Expert Designer. Detailed Outline And Content For [Number]-Slide [Your Topic]. Goal: To [E.G., Inform, Persuade, Train] Audience About [Core Message]. Audience: [E.G., Executives, Clients, Students, Team Members]. Tone & Style: Professional, Minimal, Clear, And Direct. Formatting Instructions: Provide Slide-By-Slide Content (Slide Title, Key Takeaways/Bullets, And Visual Suggestions). Keep Text Concise And Scannable\u2014Use Strong Headings And Short Bullet Points Instead Long Paragraphs. Limit Each Slide To 3\u20134 Main Points To Maintain Clean Layout. Include Intro/Agenda Slide At Beginning And Conclusion/Q&Slide At End.", "subtitle": "Strategic Insights, Overview & Future Roadmap", "bullets": ["Executive Summary & Vision", "Key Technological Innovations", "Market Impact & Implementation Strategy"], "notes": "Introduce the presentation title clearly, highlighting the main vision."}, {"slide_number": 2, "title": "1. Executive Overview & Problem Statement", "subtitle": "Current Industry Landscape & Challenges", "bullets": ["Existing workflows face efficiency bottlenecks and legacy constraints", "Modern demand requires real-time automated intelligence", "Opportunity for massive scalability and cost reduction"], "notes": "Elaborate on current pain points in the market."}, {"slide_number": 3, "title": "2. Core Architecture & Key Pillars", "subtitle": "How the Solution Operates", "bullets": ["Multi-Agent Autonomous Processing Engine", "Low-latency streaming communication pipelines", "Unified central command and control dashboard"], "notes": "Focus on the architectural highlights."}, {"slide_number": 4, "title": "3. Benefits & Value Proposition", "subtitle": "Measurable Outcomes", "bullets": ["\ud83d\ude80 10x faster execution and response times", "\ud83d\udd12 Local-first privacy and military-grade encryption", "\u26a1 Continuous self-improving memory retention"], "notes": "Emphasize key takeaways and quantitative metrics."}, {"slide_number": 5, "title": "4. Next Steps & Action Plan", "subtitle": "Deployment & Adoption", "bullets": ["Phase 1: Environment Setup & Core Integration", "Phase 2: Automated Testing & Optimization", "Phase 3: Full Production Deployment"], "notes": "Conclude with actionable recommendations."}];
+  let idx = 0;
+  function render() {
+    document.getElementById('title').innerText = slides[idx].title;
+    document.getElementById('subtitle').innerText = slides[idx].subtitle;
+    document.getElementById('bullets').innerHTML = slides[idx].bullets.map(b => '<li>' + b + '</li>').join('');
+    document.getElementById('counter').innerText = (idx + 1) + ' / ' + slides.length;
+  }
+  function next() { if(idx < slides.length - 1) { idx++; render(); } }
+  function prev() { if(idx > 0) { idx--; render(); } }
+</script>
+</body>
+</html>

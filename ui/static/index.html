@@ -7,9 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%23060A13' stroke='%2353D7F0' stroke-width='2'/><text x='16' y='22' text-anchor='middle' font-size='16' font-family='sans-serif' fill='%2353D7F0'>⚡</text></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/static/style.css?v=2.2.2"/>
-
-<!-- CDN imports for WebGL and MediaPipe Computer Vision -->
+<link rel="stylesheet" href="/static/style.css?v=2.2.2"/><!-- CDN imports for WebGL, MediaPipe, Chart.js & Marked -->
 <script type="importmap">
   {
     "imports": {
@@ -22,6 +20,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
 </head>
 <body>
 
@@ -98,7 +98,6 @@
           <button class="swatch" data-val="fair"      style="--c:#F0C8A8"><i></i>Fair</button>
           <button class="swatch" data-val="tan"       style="--c:#D9A06E"><i></i>Tan</button>
           <button class="swatch" data-val="brown"     style="--c:#A86A3E"><i></i>Brown</button>
-          <button class="swatch" data-val="deep"      style="--c:#6E4426"><i></i>Deep</button>
         </div>
       </div>
 
@@ -252,10 +251,11 @@
       <div class="am-header">AGENT MONITOR</div>
       <div class="am-agents" id="agent-monitor-list">
         <div class="am-agent"><span class="am-dot active"></span>Commander</div>
-        <div class="am-agent"><span class="am-dot active"></span>Memory</div>
-        <div class="am-agent"><span class="am-dot active"></span>Voice</div>
-        <div class="am-agent"><span class="am-dot" id="am-vision-dot"></span>Vision</div>
-        <div class="am-agent"><span class="am-dot" id="am-piper-dot"></span>Piper TTS</div>
+        <div class="am-agent"><span class="am-dot active"></span>Coder</div>
+        <div class="am-agent"><span class="am-dot active"></span>Scraper</div>
+        <div class="am-agent"><span class="am-dot active"></span>Analytics</div>
+        <div class="am-agent"><span class="am-dot active"></span>Media Gen</div>
+        <div class="am-agent"><span class="am-dot active"></span>Automation</div>
       </div>
     </div>
   </aside>
@@ -263,7 +263,7 @@
   <!-- CENTER COLUMN: Workspace / Panels -->
   <main class="dash-main glass">
     <nav class="dash-nav">
-      <button class="tab active" data-tab="chat">Chat</button>
+      <button class="tab active" data-tab="chat">Chat & Agents</button>
       <button class="tab" data-tab="files">Files & Shell</button>
       <button class="tab" data-tab="memory">Memory Vault</button>
       <button class="tab" data-tab="activity">Activity Feed</button>
@@ -279,9 +279,10 @@
     <!-- CHAT PANEL -->
     <div class="tab-panel active" data-panel="chat">
       <div class="chat-log" id="chat-log"></div>
+
       <div class="chat-bar">
         <button id="btn-mic" class="mic-btn" title="Hold to speak">🎤</button>
-        <input id="chat-input" class="text-input grow" placeholder="Talk to your AI… (kem cho / kaise ho / hello)"/>
+        <input id="chat-input" class="text-input grow" placeholder="Ask LIA to code apps, create images, videos, presentations, blogs, or analyze data…"/>
         <button id="btn-send" class="btn solid">Send</button>
       </div>
     </div>

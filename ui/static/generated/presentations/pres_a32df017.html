@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artificial Intelligence — Presentation Deck</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { margin: 0; padding: 0; background: #070b14; color: #f8fafc; font-family: 'Inter', system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .deck-box { width: 100%; max-width: 960px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 20px; padding: 48px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); backdrop-filter: blur(16px); position: relative; min-height: 480px; display: flex; flex-direction: column; justify-content: space-between; }
+    .slide-tag { background: rgba(0, 242, 254, 0.15); color: #00f2fe; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; width: fit-content; margin-bottom: 16px; border: 1px solid rgba(0,242,254,0.3); }
+    h1 { font-size: 34px; color: #00f2fe; margin-bottom: 8px; line-height: 1.25; font-weight: 700; }
+    h3 { font-size: 18px; color: #94a3b8; font-weight: 400; margin-bottom: 28px; }
+    ul { line-height: 2; font-size: 18px; color: #cbd5e1; list-style-type: none; margin-bottom: 24px; }
+    li { margin-bottom: 14px; padding-left: 28px; position: relative; }
+    li::before { content: "▸"; position: absolute; left: 0; color: #00f2fe; font-size: 20px; }
+    .notes-box { background: rgba(0,0,0,0.4); border-left: 3px solid #00f2fe; padding: 12px 16px; border-radius: 6px; font-size: 13px; color: #94a3b8; margin-top: 16px; }
+    .nav-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 960px; margin-top: 24px; }
+    .btn { background: linear-gradient(135deg, #00f2fe, #4facfe); color: #000; border: none; padding: 12px 26px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 15px; box-shadow: 0 4px 14px rgba(0,242,254,0.3); transition: transform 0.2s, box-shadow 0.2s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,242,254,0.5); }
+    .counter { color: #00f2fe; font-size: 18px; font-weight: 700; background: rgba(0,242,254,0.1); padding: 8px 18px; border-radius: 12px; border: 1px solid rgba(0,242,254,0.2); }
+  </style>
+</head>
+<body>
+  <div class="deck-box" id="slide-box">
+    <div>
+      <div class="slide-tag" id="scenetag">Slide 1 of 5</div>
+      <h1 id="title">Artificial Intelligence: The Next Frontier</h1>
+      <h3 id="subtitle">Overview of Next-Generation Intelligent Systems</h3>
+      <ul id="bullets">
+        <li>⚡ Breakthroughs in Generative Intelligence & LLM Architectures</li><li>🤖 Transition from Passive Software to Autonomous AI Agents</li><li>🌐 Global Industrial Transformation & Market Disruption</li>
+      </ul>
+    </div>
+    <div class="notes-box" id="notes">💡 Note: Introduce the core vision of artificial intelligence and high-level market impact.</div>
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn" onclick="prev()">◄ Previous</button>
+    <span class="counter" id="counter">1 / 5</span>
+    <button class="btn" onclick="next()">Next ►</button>
+  </div>
+
+  <script>
+    const slides = [{"slide_number": 1, "title": "Artificial Intelligence: The Next Frontier", "subtitle": "Overview of Next-Generation Intelligent Systems", "bullets": ["\u26a1 Breakthroughs in Generative Intelligence & LLM Architectures", "\ud83e\udd16 Transition from Passive Software to Autonomous AI Agents", "\ud83c\udf10 Global Industrial Transformation & Market Disruption"], "notes": "Introduce the core vision of artificial intelligence and high-level market impact."}, {"slide_number": 2, "title": "1. Current Landscape & Core Challenges", "subtitle": "Addressing Modern Bottlenecks", "bullets": ["\u26a0\ufe0f High computational resource demands and infrastructure costs", "\ud83d\udd12 Data privacy concerns & ethical governance frameworks", "\ud83e\udde9 Integration friction with legacy enterprise IT pipelines"], "notes": "Discuss technical and operational challenges facing modern AI adoption."}, {"slide_number": 3, "title": "2. Architectural Pillars & Innovation", "subtitle": "How Modern AI Systems Function", "bullets": ["\ud83e\udde0 Neural Attention Mechanisms & Transformer Scaling Laws", "\ud83d\udd04 Retrieval-Augmented Generation (RAG) for Contextual Accuracy", "\u26a1 Edge Execution & Quantized On-Device Intelligence"], "notes": "Explain technical foundations and algorithmic advances."}, {"slide_number": 4, "title": "3. Quantitative Benefits & Value Proposition", "subtitle": "Measurable Impact", "bullets": ["\ud83d\ude80 10x acceleration in automated workflow completion", "\ud83d\udcca 70% reduction in manual data processing overhead", "\ud83d\udcc8 24/7 continuous autonomous operational availability"], "notes": "Highlight key quantitative gains and ROI metrics."}, {"slide_number": 5, "title": "4. Strategic Roadmap & Action Plan", "subtitle": "Deployment Milestones", "bullets": ["Phase 1: Architecture Audit & Capability Mapping", "Phase 2: Pilot Deployment & Model Alignment", "Phase 3: Full Enterprise Scale-Out & Monitoring"], "notes": "Conclude with clear implementation steps."}];
+    let idx = 0;
+    function render() {
+      document.getElementById('scenetag').innerText = 'Slide ' + (idx + 1) + ' of ' + slides.length;
+      document.getElementById('title').innerText = slides[idx].title;
+      document.getElementById('subtitle').innerText = slides[idx].subtitle;
+      document.getElementById('bullets').innerHTML = slides[idx].bullets.map(b => '<li>' + b + '</li>').join('');
+      document.getElementById('notes').innerText = '💡 Note: ' + slides[idx].notes;
+      document.getElementById('counter').innerText = (idx + 1) + ' / ' + slides.length;
+    }
+    function next() { if(idx < slides.length - 1) { idx++; render(); } }
+    function prev() { if(idx > 0) { idx--; render(); } }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'Space') next();
+      if (e.key === 'ArrowLeft') prev();
+    });
+  </script>
+</body>
+</html>
