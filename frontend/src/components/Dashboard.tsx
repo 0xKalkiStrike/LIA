@@ -151,7 +151,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <main className="flex-1 flex overflow-hidden min-h-0 bg-[radial-gradient(ellipse_at_top_left,rgba(6,182,212,0.04),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(139,92,246,0.04),transparent_50%)]">
         
         {/* ─── Left: Avatar Pod ─── */}
-        <section className="w-[340px] desktop-only flex flex-col flex-shrink-0 p-4 space-y-3">
+        <section className="w-72 desktop-only flex flex-col flex-shrink-0 p-3 space-y-2">
           <div className="flex-1 relative rounded-2xl border border-slate-800/60 bg-slate-900/20 backdrop-blur-md overflow-hidden shadow-2xl animate-border-glow">
             {/* Status tag */}
             <div className="absolute top-3 left-4 text-[10px] font-bold text-cyan-400/80 tracking-widest flex items-center space-x-1.5 z-10">
@@ -227,7 +227,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <section className="flex-1 flex flex-col min-w-0 border-l border-slate-800/40">
           
           {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-3">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {chatHistory.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-3 animate-fade-in">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 flex items-center justify-center border border-cyan-500/10 animate-float">
@@ -350,7 +350,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           {/* ─── Input Bar ─── */}
-          <div className="p-4 border-t border-slate-800/40 bg-slate-900/20 flex-shrink-0 space-y-2.5">
+          <div className="p-3 border-t border-slate-800/40 bg-slate-900/20 flex-shrink-0 space-y-2">
             {/* Options row */}
             <div className="flex items-center justify-between px-1">
               <label className="flex items-center space-x-2 cursor-pointer group">

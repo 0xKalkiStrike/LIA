@@ -479,10 +479,10 @@ const MainContent: React.FC = () => {
 
         {/* Otherwise, render a split view (LIA pod on the left, active tab panel on the right) */}
         {activePanel !== "chat" && activePanel !== "code" && activePanel !== "presentation" && (
-          <div className="flex-1 flex p-5 gap-5 min-h-0 bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black overflow-hidden">
-            
+          <div className="flex-1 flex p-3 gap-4 min-h-0 bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black overflow-hidden">
+
             {/* LIA Pod column */}
-            <div className="w-80 flex flex-col space-y-4 flex-shrink-0">
+            <div className="w-64 flex flex-col space-y-3 flex-shrink-0">
               <div className="flex-1 relative rounded-2xl border border-slate-800/80 bg-slate-900/30 backdrop-blur-md overflow-hidden shadow-2xl">
                 <div className="absolute top-3 left-4 text-xs font-bold text-cyan-400 tracking-wider flex items-center space-x-1.5 z-10">
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
@@ -497,7 +497,7 @@ const MainContent: React.FC = () => {
                 />
               </div>
               <button
-                className="w-full bg-slate-900/60 border border-slate-800 hover:border-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center space-x-1.5"
+                className="w-full bg-slate-900/60 border border-slate-800 hover:border-slate-700 text-slate-300 font-semibold py-2 rounded-lg text-xs transition-all flex items-center justify-center space-x-1"
                 onClick={() => setActivePanel("chat")}
               >
                 <MessageSquare className="w-3.5 h-3.5" />
@@ -506,7 +506,7 @@ const MainContent: React.FC = () => {
             </div>
 
             {/* Panel Column */}
-            <div className="flex-1 min-w-[360px] h-full overflow-hidden">
+            <div className="flex-1 min-w-[300px] h-full overflow-hidden">
               {activePanel === "customizer" && <CharacterCreator />}
               {activePanel === "voice" && <VoiceSettings />}
               {activePanel === "memory" && <MemoryManager />}
