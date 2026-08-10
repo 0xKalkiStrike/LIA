@@ -484,6 +484,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // voices, offline, accent-aware) as the primary path, and falls back to the
   // server-side Piper TTS (with the auth token as a query param, since an
   // <audio> GET cannot send an Authorization header).
+  // Strip markdown formatting for TTS
+  const stripMarkdown = (text: string): string => {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, "$1") // **bold** → bold
+      .replace(/__(.*?)__/g, "$1") // __bold__ → bold
+      .replace(/\*(.*?)\*/g, "$1") // *italic* → italic
+      .replace(/_(.*?)_/g, "$1") // _italic_ → italic
+      .replace(/`(.*?)`/g, "$1") // `code` → code
+      .replace(/```[\s\S]*?```/g, "") // ``` code blocks ``` → (remove)
+      .replace(/~~(.*?)~~/g, "$1") // ~~strikethrough~~ → strikethrough
+      .replace(/\[(.*?)\]\(.*?\)/g, "$1") // [link](url) → link
+      .replace(/#+\s/g, "") // # headings → (remove #)
+      .replace(/\n{2,}/g, "\n") // multiple newlines → single newline
+      .trim();
+  };
+
   const synthSpeak = (opts: {
     text: string;
     personaId?: string;
@@ -491,7 +507,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     pitch?: number;
     rate?: number;
   }) => {
-    const text = (opts.text || "").trim();
+    const text = stripMarkdown((opts.text || "")).trim();
     if (!text) return;
     const personaId = opts.personaId || "friday";
     const accentId = opts.accentId || "us";

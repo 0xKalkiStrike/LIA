@@ -1,0 +1,23 @@
+
+> frontend@0.1.0 dev
+> next dev --webpack
+
+▲ Next.js 16.2.10 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.7:3000
+✓ Ready in 1274ms
+⚠ Invalid next.config.ts options detected: 
+⚠     Unrecognized key(s) in object: 'swcMinify', 'optimizeFonts'
+⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\hacker\LIA\package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * C:\hacker\LIA\frontend\package-lock.json
+
+
+THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+ GET / 200 in 4.3s (next.js: 3.5s, application-code: 844ms)
+THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+ GET / 200 in 79ms (next.js: 9ms, application-code: 70ms)
