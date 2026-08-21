@@ -5,7 +5,7 @@
 ▲ Next.js 16.2.10 (webpack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.1.7:3000
-✓ Ready in 1274ms
+✓ Ready in 1508ms
 ⚠ Invalid next.config.ts options detected: 
 ⚠     Unrecognized key(s) in object: 'swcMinify', 'optimizeFonts'
 ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
@@ -17,7 +17,6 @@
    * C:\hacker\LIA\frontend\package-lock.json
 
 
+○ Compiling / ...
 THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
- GET / 200 in 4.3s (next.js: 3.5s, application-code: 844ms)
-THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
- GET / 200 in 79ms (next.js: 9ms, application-code: 70ms)
+ GET / 200 in 7.7s (next.js: 6.8s, application-code: 914ms)
