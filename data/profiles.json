@@ -1,1 +1,32 @@
-{}
+{
+  "18509596ddc54fd39a3193e55890d9ef": {
+    "user_id": "18509596ddc54fd39a3193e55890d9ef",
+    "char_gender": "female",
+    "char_skin": "fair",
+    "char_hair_style": "long",
+    "char_hair_color": "black",
+    "char_eyes": "sapphire",
+    "char_outfit": "cyan",
+    "char_style": "anime",
+    "char_name": "LIA",
+    "char_face_shape": "default",
+    "char_nose_shape": "default",
+    "char_lip_shape": "default",
+    "char_makeup": "none",
+    "char_freckles": 0,
+    "char_height": 1.0,
+    "char_proportions": "default",
+    "char_posture": "default",
+    "char_accessories": "[]",
+    "char_clothing_style": "casual",
+    "voice_persona": "friday",
+    "voice_accent": "us",
+    "language_mode": "auto",
+    "avatar_type": "lia",
+    "vrm_path": "",
+    "speech_rate": 1.0,
+    "pitch": 1.0,
+    "volume_level": 60,
+    "greeting_style": "time_aware"
+  }
+}

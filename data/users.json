@@ -1,1 +1,10 @@
-{}
+{
+  "18509596ddc54fd39a3193e55890d9ef": {
+    "username": "verifyuser",
+    "display_name": "Verify User",
+    "secret_hash": "06648f4c39a213ddce12e741d81d5b491fe065f27289aa264ac9a12e8a68751b",
+    "secret_salt": "959a50ea3f596469008caa026c07be1e",
+    "role": "commander",
+    "created_at": 1787467767.529401
+  }
+}
