@@ -1,16 +1,15 @@
-"""Authentication Agent — accounts, character profiles, sessions.
+"""Authentication Agent — accounts, character profiles, JWT tokens."""
+import time
+from core import json_db
+from core.jwt_security import hash_password, verify_password, create_token
 
-Onboarding flow (handled by the UI, persisted here):
-  1. Choose character  : gender -> skin tone -> hair -> outfit -> AI name
-  2. Choose voice      : one of 4 personas
-  3. Choose language   : Auto / English / English+Gujarati / English+Hindi / ...
-  4. Create account    : your name + secret word  ->  DONE
-Login: name + secret word  ->  session token  ->  character wakes up + greets.
-"""
-from core.database import db, new_id, now, log_event
-from core.security import hash_secret, verify_secret, create_session
+def _new_id() -> str:
+    import uuid
+    return uuid.uuid4().hex
 
-# Allowed sets for Enum fields
+def _now() -> float:
+    return time.time()
+
 ENUMS = {
     "char_gender": {"male", "female"},
     "char_skin": {"porcelain", "fair", "tan", "brown", "deep"},
@@ -25,28 +24,26 @@ ENUMS = {
                       "english_marathi", "english_tamil", "english_bengali"},
 }
 
-
 def has_users() -> bool:
-    with db() as conn:
-        return conn.execute("SELECT COUNT(*) c FROM Users").fetchone()["c"] > 0
-
+    return json_db.count("users") > 0
 
 def _validate(profile: dict) -> dict:
+    """Validate and sanitize profile data."""
     clean = {}
-    
-    # 1. Enums
+
+    # Enums
     for key, allowed in ENUMS.items():
         val = profile.get(key)
         if val in allowed:
             clean[key] = val
 
-    # 2. Free Text / Arbitrary Strings
+    # String fields
     str_fields = ["avatar_type", "vrm_path", "char_accessories", "char_clothing_style", "greeting_style"]
     for key in str_fields:
         if key in profile:
             clean[key] = str(profile[key]).strip()
 
-    # 3. Numeric parameters
+    # Numeric fields
     num_fields = ["char_height", "speech_rate", "pitch", "volume_level", "char_freckles"]
     for key in num_fields:
         if key in profile:
@@ -55,82 +52,128 @@ def _validate(profile: dict) -> dict:
             except (ValueError, TypeError):
                 pass
 
-    # 4. Special cases
+    # Special cases
     name = str(profile.get("char_name", "LIA")).strip()[:24]
     clean["char_name"] = name or "LIA"
-    
+
     return clean
 
-
 def create_account(username: str, display_name: str, secret_word: str, profile: dict):
+    """Create new user account."""
     username = username.strip().lower()
     if not username or not secret_word or len(secret_word.strip()) < 3:
         raise ValueError("Name and a secret word (3+ characters) are required.")
-    with db() as conn:
-        if conn.execute("SELECT 1 FROM Users WHERE username=?", (username,)).fetchone():
-            raise ValueError("That name is already registered. Try logging in.")
-    digest, salt = hash_secret(secret_word)
-    uid = new_id()
-    p = _validate(profile)
-    with db() as conn:
-        conn.execute(
-            "INSERT INTO Users VALUES (?,?,?,?,?,?,?)",
-            (uid, username, display_name.strip() or username.title(),
-             digest, salt, "commander", now()),
-        )
-        conn.execute(
-            """INSERT INTO Profiles
-               (user_id, char_gender, char_skin, char_hair_style, char_hair_color,
-                char_eyes, char_outfit, char_style, char_name,
-                voice_persona, voice_accent, language_mode, avatar_type, vrm_path,
-                char_height, char_accessories, char_clothing_style, speech_rate, pitch)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-            (uid,
-             p.get("char_gender", "female"), p.get("char_skin", "fair"),
-             p.get("char_hair_style", "long"), p.get("char_hair_color", "black"),
-             p.get("char_eyes", "sapphire"), p.get("char_outfit", "cyan"),
-             p.get("char_style", "anime"), p["char_name"],
-             p.get("voice_persona", "friday"), p.get("voice_accent", "us"),
-             p.get("language_mode", "auto"),
-             p.get("avatar_type", "lia"), p.get("vrm_path", ""),
-             p.get("char_height", 1.0), p.get("char_accessories", "[]"),
-             p.get("char_clothing_style", "casual"), p.get("speech_rate", 1.0),
-             p.get("pitch", 1.0)),
-        )
-    log_event(uid, "account_created", username)
-    return uid, create_session(uid)
 
+    # Check if username exists
+    if json_db.find_one("users", {"username": username}):
+        raise ValueError("That name is already registered. Try logging in.")
+
+    uid = _new_id()
+    digest, salt = hash_password(secret_word)
+    p = _validate(profile)
+
+    # Create user
+    user_doc = {
+        "username": username,
+        "display_name": display_name.strip() or username.title(),
+        "secret_hash": digest,
+        "secret_salt": salt,
+        "role": "commander",
+        "created_at": _now()
+    }
+    json_db.insert("users", uid, user_doc)
+
+    # Create profile
+    profile_doc = {
+        "user_id": uid,
+        "char_gender": p.get("char_gender", "female"),
+        "char_skin": p.get("char_skin", "fair"),
+        "char_hair_style": p.get("char_hair_style", "long"),
+        "char_hair_color": p.get("char_hair_color", "black"),
+        "char_eyes": p.get("char_eyes", "sapphire"),
+        "char_outfit": p.get("char_outfit", "cyan"),
+        "char_style": p.get("char_style", "anime"),
+        "char_name": p["char_name"],
+        "char_face_shape": p.get("char_face_shape", "default"),
+        "char_nose_shape": p.get("char_nose_shape", "default"),
+        "char_lip_shape": p.get("char_lip_shape", "default"),
+        "char_makeup": p.get("char_makeup", "none"),
+        "char_freckles": p.get("char_freckles", 0),
+        "char_height": p.get("char_height", 1.0),
+        "char_proportions": p.get("char_proportions", "default"),
+        "char_posture": p.get("char_posture", "default"),
+        "char_accessories": p.get("char_accessories", "[]"),
+        "char_clothing_style": p.get("char_clothing_style", "casual"),
+        "voice_persona": p.get("voice_persona", "friday"),
+        "voice_accent": p.get("voice_accent", "us"),
+        "language_mode": p.get("language_mode", "auto"),
+        "avatar_type": p.get("avatar_type", "lia"),
+        "vrm_path": p.get("vrm_path", ""),
+        "speech_rate": p.get("speech_rate", 1.0),
+        "pitch": p.get("pitch", 1.0),
+        "volume_level": p.get("volume_level", 60),
+        "greeting_style": p.get("greeting_style", "time_aware")
+    }
+    json_db.insert("profiles", uid, profile_doc)
+
+    token = create_token(uid)
+    return uid, token
 
 def login(username: str, secret_word: str):
-    with db() as conn:
-        row = conn.execute(
-            "SELECT id, secret_hash, secret_salt FROM Users WHERE username=?",
-            (username.strip().lower(),),
-        ).fetchone()
-    if not row or not verify_secret(secret_word, row["secret_hash"], row["secret_salt"]):
-        raise ValueError("Voiceprint mismatch — name or secret word is wrong.")
-    log_event(row["id"], "login")
-    return row["id"], create_session(row["id"])
+    """Login user and return token."""
+    user = json_db.find_one("users", {"username": username.strip().lower()})
 
+    if not user or not verify_password(secret_word, user["secret_hash"], user["secret_salt"]):
+        raise ValueError("Voiceprint mismatch — name or secret word is wrong.")
+
+    # Log event
+    log_event(user["id"], "login")
+
+    token = create_token(user["id"])
+    return user["id"], token
 
 def get_profile(user_id: str) -> dict:
-    with db() as conn:
-        u = conn.execute(
-            "SELECT username, display_name, role FROM Users WHERE id=?", (user_id,)
-        ).fetchone()
-        p = conn.execute("SELECT * FROM Profiles WHERE user_id=?", (user_id,)).fetchone()
-    out = dict(p) if p else {}
-    out.update(dict(u) if u else {})
+    """Get user profile."""
+    user = json_db.get("users", user_id)
+    profile = json_db.get("profiles", user_id)
+
+    out = {}
+    if profile:
+        out.update(profile)
+    if user:
+        out.update({
+            "username": user.get("username"),
+            "display_name": user.get("display_name"),
+            "role": user.get("role")
+        })
+
     out.pop("user_id", None)
+    out.pop("secret_hash", None)
+    out.pop("secret_salt", None)
+    out.pop("id", None)
+
     return out
 
-
 def update_profile(user_id: str, changes: dict):
-    clean = _validate({**get_profile(user_id), **changes})
-    cols = ", ".join(f"{k}=?" for k in clean)
-    with db() as conn:
-        conn.execute(
-            f"UPDATE Profiles SET {cols} WHERE user_id=?",
-            (*clean.values(), user_id),
-        )
+    """Update user profile."""
+    current = get_profile(user_id)
+    updated = {**current, **changes}
+    clean = _validate(updated)
+
+    # Update profiles collection
+    profile = json_db.get("profiles", user_id)
+    if profile:
+        profile.update(clean)
+        json_db.insert("profiles", user_id, profile)
+
     return get_profile(user_id)
+
+def log_event(user_id: str, event: str, detail: str = ""):
+    """Log user event."""
+    log_doc = {
+        "user_id": user_id,
+        "event": event,
+        "detail": detail,
+        "created_at": _now()
+    }
+    json_db.insert("logs", _new_id(), log_doc)

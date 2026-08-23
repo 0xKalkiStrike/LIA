@@ -20,8 +20,8 @@ from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel
 
 from core.config import ROOT, load
-from core.database import init_db, db, new_id, now
-from core.security import resolve_session, end_session
+from core import json_db
+from core.jwt_security import get_user_id_from_token
 from fastapi.middleware.cors import CORSMiddleware
 from agents import auth_agent, commander, memory_agent, device_agent, coder_agent, productivity, collaboration, voice_cloning
 
@@ -35,18 +35,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-init_db()
+json_db.init_db()
 
 STATIC = ROOT / "ui" / "static"
 CUSTOM_VOICES = ROOT / "data" / "custom_voices"
 CUSTOM_VOICES.mkdir(parents=True, exist_ok=True)
 
+def _new_id() -> str:
+    import uuid
+    return uuid.uuid4().hex
+
+def _now() -> float:
+    import time
+    return time.time()
+
 # ------------------------------------------------------------------ helpers
 def require_user(authorization: str | None) -> str:
     token = (authorization or "").removeprefix("Bearer ").strip()
-    user_id = resolve_session(token)
+    user_id = get_user_id_from_token(token)
     if not user_id:
-        raise HTTPException(401, "Session expired — please log in again.")
+        raise HTTPException(401, "Invalid or expired token — please log in again.")
     return user_id
 
 # ------------------------------------------------------------------- models
@@ -138,7 +146,7 @@ def login(body: LoginBody):
 
 @app.post("/api/logout")
 def logout(authorization: str | None = Header(default=None)):
-    end_session((authorization or "").removeprefix("Bearer ").strip())
+    require_user(authorization)  # Validate token
     return {"ok": True}
 
 # ----------------------------------------------------------- profile & wake
@@ -210,12 +218,10 @@ def invoke_agent(body: AgentInvokeBody, authorization: str | None = Header(defau
 @app.get("/api/memories")
 def memories(authorization: str | None = Header(default=None)):
     user_id = require_user(authorization)
-    with db() as conn:
-        rows = conn.execute(
-            "SELECT category, content, created_at FROM Memories "
-            "WHERE user_id=? AND category != 'vault' ORDER BY created_at DESC LIMIT 100", (user_id,)
-        ).fetchall()
-    return [dict(r) for r in rows]
+    mems = json_db.find("memories", {"user_id": user_id})
+    mems = [m for m in mems if m.get("category") != "vault"]
+    mems.sort(key=lambda x: -x.get("created_at", 0))
+    return mems[:100]
 
 @app.post("/api/memories")
 def add_memory(body: MemoryBody, authorization: str | None = Header(default=None)):
@@ -226,14 +232,11 @@ def add_memory(body: MemoryBody, authorization: str | None = Header(default=None
 @app.get("/api/memories/export")
 def export_memories(
     authorization: str | None = Header(default=None),
-    # Browser downloads (window.open / <a download>) can't set an Authorization
-    # header, so also accept the token as an ?authorization=Bearer <token> query.
     authorization_q: str | None = Query(default=None, alias="authorization"),
 ):
     user_id = require_user(authorization or authorization_q)
-    with db() as conn:
-        memories = [dict(r) for r in conn.execute("SELECT * FROM Memories WHERE user_id=?", (user_id,)).fetchall()]
-        chats = [dict(r) for r in conn.execute("SELECT * FROM Conversations WHERE user_id=?", (user_id,)).fetchall()]
+    memories = json_db.find("memories", {"user_id": user_id})
+    chats = json_db.find("conversations", {"user_id": user_id}) if "conversations" in json_db.COLLECTIONS else []
     return JSONResponse(
         content={"memories": memories, "chat_history": chats},
         headers={"Content-Disposition": "attachment; filename=lia_brain_export.json"}
@@ -242,9 +245,8 @@ def export_memories(
 @app.delete("/api/memories/clear")
 def clear_memories(authorization: str | None = Header(default=None)):
     user_id = require_user(authorization)
-    with db() as conn:
-        conn.execute("DELETE FROM Memories WHERE user_id=?", (user_id,))
-        conn.execute("DELETE FROM Conversations WHERE user_id=?", (user_id,))
+    json_db.delete_many("memories", {"user_id": user_id})
+    json_db.delete_many("conversations", {"user_id": user_id}) if "conversations" in json_db.COLLECTIONS else None
     return {"ok": True, "message": "All memories and chat logs cleared successfully."}
 
 # ------------------------------------------------------------------ vault
@@ -301,12 +303,16 @@ def desktop_execute(body: ExecuteBody, authorization: str | None = Header(defaul
 @app.post("/api/vision/telemetry")
 def vision_telemetry(body: TelemetryBody, authorization: str | None = Header(default=None)):
     user_id = require_user(authorization)
-    with db() as conn:
-        conn.execute(
-            "INSERT INTO Detections VALUES (?,?,?,?,?,?,?)",
-            (new_id(), user_id, "telemetry", body.event, 1.0, body.meta, now())
-        )
-    
+    detection_doc = {
+        "user_id": user_id,
+        "kind": "telemetry",
+        "label": body.event,
+        "confidence": 1.0,
+        "meta": body.meta,
+        "created_at": _now()
+    }
+    json_db.insert("detections", _new_id(), detection_doc)
+
     reply = None
     if body.event == "hand_wave":
         reply = "I see you waving! Hello there, commander!"
@@ -316,7 +322,7 @@ def vision_telemetry(body: TelemetryBody, authorization: str | None = Header(def
         reply = "Commander has walked away."
     elif body.event == "presence_gain":
         reply = "Welcome back, commander. Ready when you are."
-        
+
     return {"ok": True, "reply": reply}
 
 # ----------------------------------------------------------- vision & OCR
@@ -409,19 +415,19 @@ def upload_voice_clip(file: UploadFile = File(...),
     user_id = require_user(authorization)
     if not legal_authorized:
         raise HTTPException(400, "You must check the legal rights checkbox to proceed.")
-        
+
     try:
         contents = file.file.read()
         saved_url = voice_cloning.save_voice_clip(user_id, file.filename, contents)
-        
+
         # Save to voice settings
-        with db() as conn:
-            conn.execute(
-                "INSERT INTO VoiceSettings (user_id, custom_voice_path, legal_authorized, updated_at) "
-                "VALUES (?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET "
-                "custom_voice_path=EXCLUDED.custom_voice_path, legal_authorized=EXCLUDED.legal_authorized, updated_at=EXCLUDED.updated_at",
-                (user_id, saved_url, 1 if legal_authorized else 0, now())
-            )
+        vs = json_db.get("voice_settings", user_id) or {"user_id": user_id}
+        vs.update({
+            "custom_voice_path": saved_url,
+            "legal_authorized": legal_authorized,
+            "updated_at": _now()
+        })
+        json_db.insert("voice_settings", user_id, vs)
         return {"ok": True, "voice_url": saved_url}
     except Exception as e:
         raise HTTPException(500, f"Failed to upload voice: {e}")
@@ -429,22 +435,27 @@ def upload_voice_clip(file: UploadFile = File(...),
 @app.get("/api/voice/settings")
 def get_voice_settings(authorization: str | None = Header(default=None)):
     user_id = require_user(authorization)
-    with db() as conn:
-        row = conn.execute("SELECT * FROM VoiceSettings WHERE user_id=?", (user_id,)).fetchone()
-    if row:
-        return dict(row)
-    return {"voice_id": "friday", "accent": "us", "pitch": 1.0, "speed": 1.0, "style": "default", "emotional_speech": 0, "custom_voice_path": "", "legal_authorized": 0}
+    vs = json_db.get("voice_settings", user_id)
+    if vs:
+        return vs
+    return {"voice_id": "friday", "accent": "us", "pitch": 1.0, "speed": 1.0, "style": "default", "emotional_speech": False, "custom_voice_path": "", "legal_authorized": False}
 
 @app.post("/api/voice/settings")
 def save_voice_settings(body: VoiceSettingsBody, authorization: str | None = Header(default=None)):
     user_id = require_user(authorization)
-    with db() as conn:
-        conn.execute(
-            "INSERT INTO VoiceSettings (user_id, voice_id, accent, pitch, speed, style, emotional_speech, custom_voice_path, legal_authorized, updated_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET "
-            "voice_id=EXCLUDED.voice_id, accent=EXCLUDED.accent, pitch=EXCLUDED.pitch, speed=EXCLUDED.speed, style=EXCLUDED.style, emotional_speech=EXCLUDED.emotional_speech, custom_voice_path=EXCLUDED.custom_voice_path, legal_authorized=EXCLUDED.legal_authorized, updated_at=EXCLUDED.updated_at",
-            (user_id, body.voice_id, body.accent, body.pitch, body.speed, body.style, 1 if body.emotional_speech else 0, body.custom_voice_path, 1 if body.legal_authorized else 0, now())
-        )
+    vs = json_db.get("voice_settings", user_id) or {"user_id": user_id}
+    vs.update({
+        "voice_id": body.voice_id,
+        "accent": body.accent,
+        "pitch": body.pitch,
+        "speed": body.speed,
+        "style": body.style,
+        "emotional_speech": body.emotional_speech,
+        "custom_voice_path": body.custom_voice_path,
+        "legal_authorized": body.legal_authorized,
+        "updated_at": _now()
+    })
+    json_db.insert("voice_settings", user_id, vs)
     return {"ok": True}
 
 # ------------------------------------------------------------- Productivity APIs
@@ -570,11 +581,16 @@ async def websocket_endpoint(websocket: WebSocket, token: str | None = None):
             elif msg_type == "telemetry":
                 event = data.get("event")
                 meta = data.get("meta", "")
-                with db() as conn:
-                    conn.execute(
-                        "INSERT INTO Detections VALUES (?,?,?,?,?,?,?)",
-                        (new_id(), user_id, "telemetry", event, 1.0, meta, now())
-                    )
+                detection_doc = {
+                    "user_id": user_id,
+                    "kind": "telemetry",
+                    "label": event,
+                    "confidence": 1.0,
+                    "meta": meta,
+                    "created_at": _now()
+                }
+                json_db.insert("detections", _new_id(), detection_doc)
+
                 reply = None
                 if event == "hand_wave":
                     reply = "I see you waving! Hello there, commander!"
@@ -584,7 +600,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str | None = None):
                     reply = "Commander has walked away."
                 elif event == "presence_gain":
                     reply = "Welcome back, commander. Ready when you are."
-                
+
                 if reply:
                     await websocket.send_json({"type": "text", "content": reply})
                     await websocket.send_json({"type": "done", "reply": reply, "emotion": "friendly"})

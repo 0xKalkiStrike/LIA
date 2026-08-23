@@ -69,7 +69,7 @@ def run_train_ingestion(train_dir, validate_only=False):
 
     print("\nStarting memory database ingestion...")
     try:
-        init_db()
+        json_db.init_db()
     except Exception as e:
         print(f"Warning: Database initialization notice: {e}")
 

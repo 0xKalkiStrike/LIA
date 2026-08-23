@@ -1,36 +1,20 @@
 # ── LIA / AntiGravity AI requirements (Lightweight Edition) ────────────────────────────────
-# CORE (required — the app runs fully with just these)
+# CORE (required)
 fastapi>=0.110
 uvicorn[standard]>=0.29
 pydantic>=2.6
-python-multipart>=0.0.9          # file uploads (VRM, vision, ocr)
+python-multipart>=0.0.9          # file uploads
+pyjwt>=2.8.0                      # JWT authentication
 
-# ── Voice: Piper TTS ─────────────────────────────────────────────────
-# Optional: server-side TTS. Browser Web Speech API is primary.
-# piper-tts>=1.2.0
-
-# ── LLM brain (LIGHTWEIGHT) ────────────────────────────────────────────
-# Use smaller Ollama models for low-end systems:
-#   ollama pull tinyllama (2.7B) or phi2 (2.7B) instead of llama3.2
+# ── LLM brain ────────────────────────────────────────────────────────────────────
 ollama>=0.1.7
-
-# ── Memory (semantic) ────────────────────────────────────────────────
-# Optional: only when needed for semantic search
-# chromadb>=0.4.24
 
 # ── Security / system ────────────────────────────────────────────────
 cryptography>=42.0
 psutil>=5.9
 
-# ── Database ─────────────────────────────────────────────────────────
-# Use SQLite (default) for low-end systems; Postgres for production
+# ── WebSockets ─────────────────────────────────────────────────────────
 websockets>=12.0
 
 # ── Presentation Export ───────────────────────────────────────────────
-python-pptx>=0.6.23               # PPTX generation for presentation workspace
-
-# ── Vision + OCR (optional, comment out if not needed) ──────────────────────────────────
-# ultralytics>=8.1               # YOLOv8 object detection (heavy)
-# opencv-python>=4.9
-# pytesseract>=0.3.10
-# pillow>=10.2
+python-pptx>=0.6.23

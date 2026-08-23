@@ -17,7 +17,7 @@ import argparse
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents import memory_agent
-from core.database import init_db
+from core import json_db
 
 def find_eroot_directory(custom_path=None):
     candidates = [
@@ -60,7 +60,7 @@ def run_eroot_training(eroot_dir, validate_only=False):
 
     print("\nStarting memory database ingestion...")
     try:
-        init_db()
+        json_db.init_db()
     except Exception as e:
         print(f"Warning: Database initialization notice: {e}")
 

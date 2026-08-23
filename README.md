@@ -1,90 +1,75 @@
-# JARVIS AI — Personal AI Operating System
+﻿# LIA AI — Smart Assistant
 
-A local-first, self-hosted, multi-agent AI assistant with a **customisable on-screen character** that wakes up and greets you in your own language every time you log in.
+A Next.js + FastAPI AI assistant with JWT authentication and JSON-based database.
 
-Inspired by JARVIS from Iron Man. Runs fully offline once Ollama is installed; the web UI works even before that, on a built-in offline brain.
+## Setup
 
----
+### 1. Install Dependencies
 
-## The experience you asked for
-
-1. **First boot** → an onboarding wizard:
-   - Choose your AI's **character**: Male / Female
-   - Choose **skin tone** (5), **hair style** (6) + **hair color** (4), **suit accent** (4)
-   - Name your AI
-   - Pick one of **4 voices** (JARVIS, FRIDAY, NOVA, SAGE)
-   - Pick a **language mode** (Auto / English / English+Gujarati / English+Hindi / …)
-   - Create your commander account (your name + a secret word) → **Done**
-2. **Every login afterwards** → your character is asleep in its holo-pod, then **wakes up** (ring spins, scan-line, eyes open, a little wave) and **greets you out loud** in your chosen voice + language — e.g. *"Kem cho, Tony! Hu jaagi gayo chu — badhu ready che."*
-
----
-
-## Quick start
-
-```bash
-cd LIA
-python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
+`bash
 pip install -r requirements.txt
+cd frontend && npm install && cd ..
+`
+
+### 2. Start the Backend
+
+`bash
 python run.py
-```
+`
 
-Open **http://127.0.0.1:8000** in Chrome or Edge (needed for mic + best voices).
+Backend runs on **http://localhost:8001**
 
-### Turn on the full AI brain (optional)
-```bash
-# install Ollama from https://ollama.com, then:
-ollama serve
-ollama pull llama3.2     # chat / reasoning
-ollama pull llava        # vision (object & product intelligence)
-```
-JARVIS detects Ollama automatically and switches from the offline brain to the full LLM.
+### 3. Start the Frontend (in another terminal)
 
----
+`bash
+cd frontend
+npm run dev
+`
+
+Frontend runs on **http://localhost:3000**
 
 ## Architecture
 
-```
-Commander Agent (central brain)
-├── Language Agent   detect language, mixed-mode prompts (Gujlish/Hinglish)
-├── Memory Agent     long-term memory + conversation history (SQLite, ChromaDB-ready)
-├── Auth Agent       accounts, character profiles, sessions, RBAC
-├── Voice Agent      wake word, STT, TTS, voiceprint  (browser now; Whisper/Piper offline)
-├── Vision Agent     YOLO + LLaVA object/product intelligence
-├── OCR Agent        Tesseract text reading
-└── Device Agent     system stats / device control
-```
+### Backend (FastAPI on port 8001)
+- **Authentication**: JWT tokens (12-hour expiry)
+- **Database**: JSON files in data/ directory
+- **Key Routes**:
+  - POST /api/signup - Create account
+  - POST /api/login - Login (returns JWT token)
+  - GET /api/profile - Get user profile (requires Bearer token)
+  - POST /api/profile - Update profile
+  - WebSocket /api/ws - Real-time chat stream
 
-Model-agnostic: switch Ollama models in `config/settings.json` without code changes.
+### Frontend (Next.js on port 3000)
+- Character creator with customization
+- Chat interface with LIA AI
+- Productivity suite (Notes, Tasks, Calendar, Reminders)
+- Authentication via localStorage
 
-## Folder structure
-```
-jarvis-ai/
-├── run.py                  launcher
-├── requirements.txt
-├── config/                 JSON = config ONLY (settings, voices, languages, agents)
-├── core/                   config, database (14 tables), security
-├── agents/                 the 8 agents above
-├── api/                    FastAPI server (all routes)
-├── ui/static/              index.html, style.css, avatar.js, app.js
-└── data/                   jarvis.db (created on first run)
-```
+### Database (JSON Files)
+Located in data/:
+- users.json - User accounts
+- profiles.json - Character customization
+- memories.json - Long-term memory
+- tasks.json, notes.json - Productivity
+- calendar_events.json, reminders.json - Calendar
+- voice_settings.json - Voice preferences
 
-## Voices & language modes
-Defined in `config/voices.json` and `config/languages.json` — add more by editing JSON only.
-Language modes ship with English, English+Gujarati, +Hindi, +Marathi, +Tamil, +Bengali, and Auto-detect.
+## Authentication
 
-## Security
-Secret word hashed with PBKDF2-SHA256 (200k iterations). Session tokens, per-user data scoping, audit logging. Each user only ever sees their own data.
+1. Signup: POST /api/signup → returns JWT token
+2. Login: POST /api/login → returns JWT token  
+3. Use token: Authorization: Bearer <token> in all requests
+4. Token expires after 12 hours
 
-## Roadmap (per spec)
-- **Phase 1** ✅ auth, chat, memory, voice, **character system**
-- **Phase 2** vision, object detection, OCR (agents in place; install optional deps)
-- **Phase 3** LangGraph multi-agent graph
-- **Phase 4** device management + automation (Playwright/Paramiko)
-- **Phase 5** smart-glasses mode (real-time camera + hands-free)
-- **Phase 6** cross-platform packaging (Flet desktop/mobile)
+## Getting Started
 
-## Notes
-- The web UI uses the browser's Speech APIs so it works with zero audio installs. For fully offline server-side voice, uncomment the voice group in `requirements.txt`.
-- This is a working Phase-1 foundation with every later phase's agent stubbed and wired, ready to extend.
-"# LIA" 
+`bash
+# Terminal 1: Start backend
+python run.py
+
+# Terminal 2: Start frontend
+cd frontend && npm run dev
+`
+
+Then visit http://localhost:3000 and create your account!

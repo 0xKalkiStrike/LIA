@@ -1,15 +1,12 @@
-"""Vision Agent — YOLO detection + LLaVA explanation (Object Intelligence).
-
-Optional deps: ultralytics, opencv-python. The VLM call goes through Ollama
-(llava / qwen-vl) so a detected object becomes a full explanation:
-name, scientific name, category, facts, danger level, price estimate, etc.
-"""
+"""Vision Agent — Object Intelligence via Ollama Vision models."""
 import base64
 import json
+import time
+import uuid
 import urllib.request
 
 from core.config import setting
-from core.database import db, new_id, now
+from core import json_db
 
 try:
     from ultralytics import YOLO
@@ -17,8 +14,14 @@ try:
 except Exception:
     _yolo = None
 
+def _new_id() -> str:
+    return uuid.uuid4().hex
+
+def _now() -> float:
+    return time.time()
 
 def detect(image_path: str) -> list[dict]:
+    """Detect objects in image using YOLO."""
     if not _yolo:
         raise RuntimeError("Install ultralytics for object detection: pip install ultralytics")
     results = _yolo(image_path)[0]
@@ -31,11 +34,11 @@ def detect(image_path: str) -> list[dict]:
         })
     return out
 
-
 def explain(image_path: str, question: str, user_id: str | None = None) -> str:
-    """Object / Product Intelligence via local vision-language model."""
+    """Get vision explanation from local LLM."""
     with open(image_path, "rb") as f:
         img_b64 = base64.b64encode(f.read()).decode()
+
     prompt = (
         "You are JARVIS analysing what the commander is looking at. "
         "Identify it precisely. If it is an animal/bird/plant give: name, "
@@ -44,21 +47,35 @@ def explain(image_path: str, question: str, user_id: str | None = None) -> str:
         "specs, pros, cons, estimated price range. Keep it speakable. "
         f"Question: {question}"
     )
+
     payload = json.dumps({
         "model": setting("ollama_vision_model", "llava"),
         "messages": [{"role": "user", "content": prompt, "images": [img_b64]}],
         "stream": False,
     }).encode()
-    req = urllib.request.Request(setting("ollama_url") + "/api/chat",
-                                 data=payload, headers={"Content-Type": "application/json"})
+
+    req = urllib.request.Request(
+        setting("ollama_url") + "/api/chat",
+        data=payload,
+        headers={"Content-Type": "application/json"}
+    )
+
     try:
         with urllib.request.urlopen(req, timeout=300) as resp:
             answer = json.loads(resp.read()).get("message", {}).get("content", "")
     except Exception:
         answer = ("Vision model is offline. Run `ollama pull llava` and start "
                   "Ollama, then I can identify anything you show me.")
+
     if user_id:
-        with db() as conn:
-            conn.execute("INSERT INTO Detections VALUES (?,?,?,?,?,?,?)",
-                         (new_id(), user_id, "vlm", question[:80], 1.0, answer[:400], now()))
+        detection_doc = {
+            "user_id": user_id,
+            "kind": "vlm",
+            "label": question[:80],
+            "confidence": 1.0,
+            "meta": answer[:400],
+            "created_at": _now()
+        }
+        json_db.insert("detections", _new_id(), detection_doc)
+
     return answer

@@ -11,9 +11,10 @@ import json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents import memory_agent
-from core.database import init_db
+from core import json_db
 
 def load_and_train(file_path="train.json"):
+    json_db.init_db()
     if not os.path.exists(file_path):
         print(f"Error: The training file '{file_path}' was not found.")
         print("Please move your 'train.json' file to the root of the LIA directory and try again.")
