@@ -188,7 +188,7 @@ def detect_emotion(reply: str) -> str:
 
 # ---------------------------------------------------------------- Ollama ---
 def _ollama_chat(messages: list[dict]) -> str | None:
-    """Call local Ollama. Returns None if unreachable so caller can fall back."""
+    """Call local Ollama with timeout protection. Returns None if unreachable."""
     try:
         payload = json.dumps({
             "model": setting("ollama_model", "llama3.2"),
@@ -199,31 +199,48 @@ def _ollama_chat(messages: list[dict]) -> str | None:
             setting("ollama_url") + "/api/chat",
             data=payload, headers={"Content-Type": "application/json"},
         )
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        # Use shorter timeout to prevent hanging - 60 seconds is enough for most models
+        with urllib.request.urlopen(req, timeout=60) as resp:
             data = json.loads(resp.read())
-        return data.get("message", {}).get("content")
-    except Exception:
+        result = data.get("message", {}).get("content", "").strip()
+        # If empty, return None to trigger fallback
+        return result if result else None
+    except Exception as e:
+        print(f"[Commander] Ollama timeout or error: {str(e)[:50]}")
         return None
 
 
 def _ollama_chat_stream(messages: list[dict]):
-    """Call local Ollama streaming. Yields text tokens."""
-    payload = json.dumps({
-        "model": setting("ollama_model", "llama3.2"),
-        "messages": messages,
-        "stream": True,
-    }).encode()
-    req = urllib.request.Request(
-        setting("ollama_url") + "/api/chat",
-        data=payload, headers={"Content-Type": "application/json"},
-    )
-    with urllib.request.urlopen(req, timeout=120) as resp:
-        for line in resp:
-            if line:
-                data = json.loads(line.decode("utf-8"))
-                content = data.get("message", {}).get("content", "")
-                if content:
-                    yield content
+    """Call local Ollama streaming with timeout. Yields text tokens."""
+    try:
+        payload = json.dumps({
+            "model": setting("ollama_model", "llama3.2"),
+            "messages": messages,
+            "stream": True,
+        }).encode()
+        req = urllib.request.Request(
+            setting("ollama_url") + "/api/chat",
+            data=payload, headers={"Content-Type": "application/json"},
+        )
+        # Streaming timeout - 90 seconds total for the whole stream
+        with urllib.request.urlopen(req, timeout=90) as resp:
+            timeout_count = 0
+            for line in resp:
+                if line:
+                    try:
+                        data = json.loads(line.decode("utf-8"))
+                        content = data.get("message", {}).get("content", "")
+                        if content:
+                            timeout_count = 0  # Reset timeout on each message
+                            yield content
+                    except json.JSONDecodeError:
+                        pass  # Skip malformed JSON lines
+                timeout_count += 1
+                if timeout_count > 1000:  # Safety limit
+                    yield "\n[Response too long, truncating...]"
+                    break
+    except Exception as e:
+        yield f"\n[Stream interrupted: {str(e)[:50]}. Switching to offline mode...]"
 
 
 # ---------------------------------------------------------------- Gemini ---
