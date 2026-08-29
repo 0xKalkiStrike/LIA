@@ -1,619 +1,873 @@
 ﻿{
-    "name":  "LIA — AI Assistant",
-    "nodes":  [
-                  {
-                      "id":  "node-webhook-chat",
-                      "name":  "💬 Chat Webhook",
-                      "type":  "n8n-nodes-base.webhook",
-                      "typeVersion":  2,
-                      "position":  [
-                                       220,
-                                       340
-                                   ],
-                      "parameters":  {
-                                         "path":  "lia-chat",
-                                         "httpMethod":  "POST",
-                                         "responseMode":  "responseNode",
-                                         "options":  {
-                                                         "allowedOrigins":  "*"
-                                                     }
-                                     },
-                      "notes":  "POST /webhook/lia-chat\nBody: { message, user_id, session_id }"
-                  },
-                  {
-                      "id":  "node-webhook-greeting",
-                      "name":  "🌅 Greeting Webhook",
-                      "type":  "n8n-nodes-base.webhook",
-                      "typeVersion":  2,
-                      "position":  [
-                                       220,
-                                       520
-                                   ],
-                      "parameters":  {
-                                         "path":  "lia-greeting",
-                                         "httpMethod":  "GET",
-                                         "responseMode":  "responseNode",
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "notes":  "GET /webhook/lia-greeting?user_id=xxx"
-                  },
-                  {
-                      "id":  "node-webhook-memories",
-                      "name":  "🧠 Memories Webhook",
-                      "type":  "n8n-nodes-base.webhook",
-                      "typeVersion":  2,
-                      "position":  [
-                                       220,
-                                       700
-                                   ],
-                      "parameters":  {
-                                         "path":  "lia-memories",
-                                         "httpMethod":  "GET",
-                                         "responseMode":  "responseNode",
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "notes":  "GET /webhook/lia-memories?user_id=xxx"
-                  },
-                  {
-                      "id":  "node-greeting-code",
-                      "name":  "🌅 Build Greeting",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       460,
-                                       520
-                                   ],
-                      "parameters":  {
-                                         "jsCode":  "// ── Time-aware greeting ──────────────────────────────────────────\nconst userId = ($input.first().json.query?.user_id ||\n               $input.first().json.body?.user_id || \u0027default\u0027);\n\nconst staticData = $getWorkflowStaticData(\u0027global\u0027);\nif (!staticData.users) staticData.users = {};\nif (!staticData.users[userId]) staticData.users[userId] = {\n  name: \u0027Commander\u0027, charName: \u0027LIA\u0027,\n  facts: [], preferences: [], vault: [], conversations: []\n};\n\nconst name = staticData.users[userId].name || \u0027Commander\u0027;\nconst charName = staticData.users[userId].charName || \u0027LIA\u0027;\n\nconst hour = new Date().getHours();\nconst slot = hour \u003c 12 ? \u0027morning\u0027 : hour \u003c 17 ? \u0027afternoon\u0027 : hour \u003c 22 ? \u0027evening\u0027 : \u0027night\u0027;\n\nconst greetings = {\n  morning:   `Good morning, ${name}. Systems are online and I am fully operational. What shall we accomplish today?`,\n  afternoon: `Good afternoon, ${name}. How may I assist you this afternoon?`,\n  evening:   `Good evening, ${name}. I hope your day went well. I am here whenever you need me.`,\n  night:     `Hello, ${name}. Working late, I see. I am ready to assist — what do you need?`\n};\n\nreturn [{ json: {\n  greeting: greetings[slot],\n  slot,\n  char_name: charName,\n  user_name: name\n}}];"
-                                     }
-                  },
-                  {
-                      "id":  "node-memories-code",
-                      "name":  "📋 Get Memories",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       460,
-                                       700
-                                   ],
-                      "parameters":  {
-                                         "jsCode":  "const userId = ($input.first().json.query?.user_id ||\n               $input.first().json.body?.user_id || \u0027default\u0027);\n\nconst staticData = $getWorkflowStaticData(\u0027global\u0027);\nconst mem = staticData.users?.[userId] || {};\n\nreturn [{ json: {\n  facts: mem.facts || [],\n  preferences: mem.preferences || [],\n  vault: mem.vault || [],\n  name: mem.name || \u0027Commander\u0027\n}}];"
-                                     }
-                  },
-                  {
-                      "id":  "node-memory-detect",
-                      "name":  "🧠 Load Memory + Detect",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       460,
-                                       340
-                                   ],
-                      "parameters":  {
-                                         "jsCode":  "// ── Load user memory and detect message intent ──────────────────\nconst body = $input.first().json.body || $input.first().json;\nconst message = (body.message || \u0027\u0027).trim();\nconst userId  = body.user_id || body.userId || \u0027default\u0027;\n\nif (!message) throw new Error(\u0027No message provided.\u0027);\n\n// ── Persistent memory via workflow static data ────────────────────\n// $getWorkflowStaticData keeps data between executions — no DB needed\nconst staticData = $getWorkflowStaticData(\u0027global\u0027);\nif (!staticData.users) staticData.users = {};\nif (!staticData.users[userId]) {\n  staticData.users[userId] = {\n    name: \u0027Commander\u0027, charName: \u0027LIA\u0027,\n    facts: [], preferences: [], vault: [], conversations: []\n  };\n}\nconst mem = staticData.users[userId];\n\n// ── Language detection ────────────────────────────────────────────\nfunction detectLang(text) {\n  for (const ch of text) {\n    const c = ch.charCodeAt(0);\n    if (c \u003e= 0x0A80 \u0026\u0026 c \u003c= 0x0AFF) return \u0027gujarati\u0027;\n    if (c \u003e= 0x0900 \u0026\u0026 c \u003c= 0x097F) return \u0027hindi\u0027;\n  }\n  const low = \u0027 \u0027 + text.toLowerCase() + \u0027 \u0027;\n  const gujaratiHints = [\u0027kem cho\u0027,\u0027majama\u0027,\u0027su che\u0027,\u0027tame chho\u0027,\u0027saru\u0027,\u0027avjo\u0027];\n  const hindiHints    = [\u0027kaise ho\u0027,\u0027kya hai\u0027,\u0027theek\u0027,\u0027haan\u0027,\u0027nahi\u0027,\u0027kyun\u0027,\u0027batao\u0027];\n  if (gujaratiHints.some(h =\u003e low.includes(h))) return \u0027gujarati\u0027;\n  if (hindiHints.some(h =\u003e low.includes(h)))    return \u0027hindi\u0027;\n  return \u0027english\u0027;\n}\n\n// ── Trigger lists ─────────────────────────────────────────────────\nconst VAULT_SAVE_TRIGGERS = [\n  \u0027remember this\u0027,\u0027remember that\u0027,\u0027save this\u0027,\u0027save that\u0027,\u0027store this\u0027,\n  \u0027vault this\u0027,\u0027note this\u0027,\u0027please remember\u0027,\u0027i want to remember\u0027,\n  \u0027save to vault\u0027,\u0027add to vault\u0027,\u0027keep this in mind\u0027,\u0027lock this in\u0027,\n  \"don\u0027t forget this\",\u0027add to memory vault\u0027,\u0027yaad rakh\u0027,\u0027yaad rakho\u0027,\n  \u0027mane yaad rakhi le\u0027\n];\n\nconst VAULT_RECALL_TRIGGERS = [\n  \u0027what do you remember about me\u0027,\u0027what have you saved\u0027,\u0027show my memories\u0027,\n  \u0027show my vault\u0027,\u0027show vault\u0027,\u0027recall memories\u0027,\u0027recall vault\u0027,\n  \"what\u0027s in my vault\",\u0027open vault\u0027,\u0027open memory vault\u0027,\n  \u0027tell me what you remember\u0027,\u0027what did i tell you\u0027,\u0027vault memories\u0027,\n  \u0027my vault\u0027,\u0027meri yaadein\u0027,\u0027yaadein dikhao\u0027,\u0027vault kholo\u0027\n];\n\nconst PERSONAL_TRIGGERS = [\n  \u0027i feel \u0027,\u0027i\\\u0027m feeling\u0027,\u0027i am feeling\u0027,\u0027i\\\u0027m sad\u0027,\u0027i am sad\u0027,\n  \u0027i\\\u0027m stressed\u0027,\u0027i am stressed\u0027,\u0027i\\\u0027m worried\u0027,\u0027i am worried\u0027,\n  \u0027i\\\u0027m scared\u0027,\u0027i am scared\u0027,\u0027i\\\u0027m depressed\u0027,\u0027i am depressed\u0027,\n  \u0027i\\\u0027m anxious\u0027,\u0027i am anxious\u0027,\u0027i\\\u0027m going through\u0027,\n  \u0027i\\\u0027ve been struggling\u0027,\u0027my problem is\u0027,\u0027my issue is\u0027,\n  \u0027i lost my\u0027,\u0027i failed\u0027,\u0027i\\\u0027m hurt\u0027,\u0027i am hurt\u0027,\u0027i\\\u0027m lonely\u0027,\n  \u0027i am lonely\u0027,\u0027i\\\u0027m angry\u0027,\u0027i am angry\u0027,\u0027i\\\u0027m frustrated\u0027,\n  \u0027i am frustrated\u0027,\u0027i\\\u0027m tired of\u0027,\u0027i\\\u0027m overwhelmed\u0027,\u0027i cried\u0027,\n  \u0027bad day today\u0027,\u0027good day today\u0027,\u0027today was a bad\u0027,\u0027today was a good\u0027,\n  \u0027i\\\u0027m proud\u0027,\u0027i am proud\u0027,\u0027i miss \u0027\n];\n\nconst SEARCH_TRIGGERS = [\n  \u0027search for\u0027,\u0027search google for\u0027,\u0027google search\u0027,\u0027search the web for\u0027,\n  \u0027find information about\u0027,\u0027look up\u0027,\u0027duckduckgo\u0027\n];\n\nconst low = message.toLowerCase();\nconst detectedLang    = detectLang(message);\nconst isVaultSave     = VAULT_SAVE_TRIGGERS.some(t =\u003e low.includes(t));\nconst isVaultRecall   = VAULT_RECALL_TRIGGERS.some(t =\u003e low.includes(t));\nconst isPersonal      = PERSONAL_TRIGGERS.some(t =\u003e low.includes(t));\nconst isSearchRequest = SEARCH_TRIGGERS.some(t =\u003e low.includes(t));\n\n// ── Extract search query (if any) ────────────────────────────────\nlet searchQuery = \u0027\u0027;\nif (isSearchRequest) {\n  const m = message.match(/(?:search(?:\\s+(?:google|web|for|the web))*\\s+for|look up|find information about)\\s+(.+)/i);\n  if (m) searchQuery = m[1].trim();\n}\n\n// ── Route decision ────────────────────────────────────────────────\nlet route = \u0027normal\u0027;\nif (isVaultRecall)        route = \u0027vault_recall\u0027;\nelse if (isVaultSave)     route = \u0027vault_save\u0027;\nelse if (isSearchRequest) route = \u0027search\u0027;\n\n// ── Save user turn to conversation history ────────────────────────\nmem.conversations.push({ role: \u0027user\u0027, content: message });\nif (mem.conversations.length \u003e 20) mem.conversations = mem.conversations.slice(-20);\n\n// ── Auto-extract name ─────────────────────────────────────────────\nconst nameMatch =\n  message.match(/\\bmy name is\\s+([a-zA-Z0-9 ]{2,30})/i) ||\n  message.match(/\\bcall me\\s+([a-zA-Z0-9 ]{2,30})/i);\nif (nameMatch) mem.name = nameMatch[1].trim();\n\n// ── Auto-save personal sharing silently to vault ─────────────────\nif (isPersonal \u0026\u0026 route === \u0027normal\u0027) {\n  mem.vault.push({\n    content: message,\n    saved_at: new Date().toLocaleString(\u0027en-IN\u0027, { dateStyle: \u0027medium\u0027, timeStyle: \u0027short\u0027 })\n  });\n}\n\nstaticData.users[userId] = mem;\n\nreturn [{ json: { message, userId, detectedLang, route, searchQuery, mem } }];"
-                                     }
-                  },
-                  {
-                      "id":  "node-if-recall",
-                      "name":  "🔮 Is Vault Recall?",
-                      "type":  "n8n-nodes-base.if",
-                      "typeVersion":  2,
-                      "position":  [
-                                       700,
-                                       340
-                                   ],
-                      "parameters":  {
-                                         "conditions":  {
-                                                            "options":  {
-                                                                            "caseSensitive":  true,
-                                                                            "leftValue":  "",
-                                                                            "typeValidation":  "strict"
-                                                                        },
-                                                            "conditions":  [
-                                                                               {
-                                                                                   "id":  "if-recall-cond",
-                                                                                   "leftValue":  "={{ $json.route }}",
-                                                                                   "rightValue":  "vault_recall",
-                                                                                   "operator":  {
-                                                                                                    "type":  "string",
-                                                                                                    "operation":  "equals"
-                                                                                                }
-                                                                               }
-                                                                           ],
-                                                            "combinator":  "and"
-                                                        },
-                                         "options":  {
-
-                                                     }
-                                     }
-                  },
-                  {
-                      "id":  "node-vault-recall",
-                      "name":  "🔮 Vault Recall Response",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       940,
-                                       200
-                                   ],
-                      "parameters":  {
-                                         "jsCode":  "const { mem, detectedLang } = $input.first().json;\nconst name  = mem.name || \u0027Commander\u0027;\nconst vault = mem.vault || [];\n\nlet reply;\nif (!vault.length) {\n  if (detectedLang === \u0027hindi\u0027) {\n    reply = `Abhi vault mein kuch nahi hai, ${name}. Jo bhi share karein, main hamesha yaad rakhunga.`;\n  } else if (detectedLang === \u0027gujarati\u0027) {\n    reply = `Abhi tak vault khali che, ${name}. Tame je koi important vastu share karo, hu hamesha yaad rakhish.`;\n  } else {\n    reply = `Your vault is empty for now, ${name}. Whenever you share something close to your heart, I will keep it safe here for you.`;\n  }\n} else {\n  const lines = vault.slice(-10).map(m =\u003e `• ${m.content}`).join(\u0027\\n\u0027);\n  if (detectedLang === \u0027hindi\u0027) {\n    reply = `Bilkul, ${name}. Jo aapne mere saath share kiya hai, woh mujhe aaj bhi yaad hai:\\n\\n${lines}`;\n  } else if (detectedLang === \u0027gujarati\u0027) {\n    reply = `Aa rahi, ${name}. Tame je share karyu che te mane haaju yaad che:\\n\\n${lines}`;\n  } else {\n    reply = `Of course, ${name}. Here is what you have shared with me — held gently in our vault:\\n\\n${lines}`;\n  }\n}\n\nreturn [{ json: {\n  reply,\n  emotion: \u0027friendly\u0027,\n  engine: \u0027vault\u0027,\n  vault_recalled: true,\n  vault_memories: vault.slice(-10),\n  language_detected: detectedLang\n}}];"
-                                     }
-                  },
-                  {
-                      "id":  "node-if-save",
-                      "name":  "💾 Is Vault Save?",
-                      "type":  "n8n-nodes-base.if",
-                      "typeVersion":  2,
-                      "position":  [
-                                       940,
-                                       340
-                                   ],
-                      "parameters":  {
-                                         "conditions":  {
-                                                            "options":  {
-                                                                            "caseSensitive":  true,
-                                                                            "leftValue":  "",
-                                                                            "typeValidation":  "strict"
-                                                                        },
-                                                            "conditions":  [
-                                                                               {
-                                                                                   "id":  "if-save-cond",
-                                                                                   "leftValue":  "={{ $json.route }}",
-                                                                                   "rightValue":  "vault_save",
-                                                                                   "operator":  {
-                                                                                                    "type":  "string",
-                                                                                                    "operation":  "equals"
-                                                                                                }
-                                                                               }
-                                                                           ],
-                                                            "combinator":  "and"
-                                                        },
-                                         "options":  {
-
-                                                     }
-                                     }
-                  },
-                  {
-                      "id":  "node-vault-save",
-                      "name":  "💾 Vault Save Response",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       1180,
-                                       220
-                                   ],
-                      "parameters":  {
-                                         "jsCode":  "const { message, mem, detectedLang, userId } = $input.first().json;\nconst name = mem.name || \u0027Commander\u0027;\n\n// Strip the save-trigger prefix so we store just the content\nlet content = message\n  .replace(/^(remember this[,:]?\\s*|save this[,:]?\\s*|store this[,:]?\\s*|vault this[,:]?\\s*|note this[,:]?\\s*|please remember[,:]?\\s*|i want to remember[,:]?\\s*|keep this[,:]?\\s*)/i, \u0027\u0027)\n  .trim();\nif (!content) content = message;\n\nconst staticData = $getWorkflowStaticData(\u0027global\u0027);\nif (staticData.users?.[userId]) {\n  staticData.users[userId].vault.push({\n    content,\n    saved_at: new Date().toLocaleString(\u0027en-IN\u0027, { dateStyle: \u0027medium\u0027, timeStyle: \u0027short\u0027 })\n  });\n}\n\nlet reply;\nif (detectedLang === \u0027hindi\u0027) {\n  reply = `Main ise yaad rakhunga, ${name}. Aapki baat mujhe hamesha yaad rahegi.`;\n} else if (detectedLang === \u0027gujarati\u0027) {\n  reply = `Hu aa ne yaad rakhish, ${name}. Tari vaatu mara dil maa che.`;\n} else {\n  reply = `I have saved that to our vault, ${name}. Your words are safe with me, always.`;\n}\n\nreturn [{ json: {\n  reply,\n  emotion: \u0027friendly\u0027,\n  engine: \u0027vault\u0027,\n  vault_saved: true,\n  language_detected: detectedLang\n}}];"
-                                     }
-                  },
-                  {
-                      "id":  "node-if-search",
-                      "name":  "🔍 Is Search Request?",
-                      "type":  "n8n-nodes-base.if",
-                      "typeVersion":  2,
-                      "position":  [
-                                       1180,
-                                       400
-                                   ],
-                      "parameters":  {
-                                         "conditions":  {
-                                                            "options":  {
-                                                                            "caseSensitive":  true,
-                                                                            "leftValue":  "",
-                                                                            "typeValidation":  "strict"
-                                                                        },
-                                                            "conditions":  [
-                                                                               {
-                                                                                   "id":  "if-search-cond",
-                                                                                   "leftValue":  "={{ $json.route }}",
-                                                                                   "rightValue":  "search",
-                                                                                   "operator":  {
-                                                                                                    "type":  "string",
-                                                                                                    "operation":  "equals"
-                                                                                                }
-                                                                               }
-                                                                           ],
-                                                            "combinator":  "and"
-                                                        },
-                                         "options":  {
-
-                                                     }
-                                     }
-                  },
-                  {
-                      "id":  "node-duckduckgo",
-                      "name":  "🔍 DuckDuckGo Search",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
-                      "position":  [
-                                       1420,
-                                       280
-                                   ],
-                      "parameters":  {
-                                         "method":  "GET",
-                                         "url":  "=https://html.duckduckgo.com/html/?q={{ encodeURIComponent($json.searchQuery) }}",
-                                         "sendHeaders":  true,
-                                         "headerParameters":  {
-                                                                  "parameters":  [
-                                                                                     {
-                                                                                         "name":  "User-Agent",
-                                                                                         "value":  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
-                                                                                     }
-                                                                                 ]
-                                                              },
-                                         "options":  {
-                                                         "timeout":  10000,
-                                                         "response":  {
-                                                                          "response":  {
-                                                                                           "responseFormat":  "text"
-                                                                                       }
-                                                                      }
-                                                     }
-                                     },
-                      "notes":  "Scrapes DuckDuckGo — no API key needed"
-                  },
-                  {
-                      "id":  "node-parse-search",
-                      "name":  "📰 Parse Search Results",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       1640,
-                                       280
-                                   ],
-                      "parameters":  {
-                                         "jsCode":  "const html   = $input.first().json.data || \u0027\u0027;\nconst prevData = $(\u0027🔍 Is Search Request?\u0027).first().json;\nconst { mem, detectedLang, message, searchQuery } = prevData;\n\n// Parse DuckDuckGo HTML results (no API key needed)\nconst titleRe   = /\u003ca[^\u003e]*class=\"[^\"]*result__a[^\"]*\"[^\u003e]*href=\"[^\"]*\"[^\u003e]*\u003e([\\s\\S]*?)\u003c\\/a\u003e/g;\nconst snippetRe = /\u003ca[^\u003e]*class=\"[^\"]*result__snippet[^\"]*\"[^\u003e]*\u003e([\\s\\S]*?)\u003c\\/a\u003e/g;\nconst urlRe     = /uddg=([^\u0026\"]+)/g;\n\nconst titles   = [...html.matchAll(titleRe)].map(m =\u003e m[1].replace(/\u003c[^\u003e]+\u003e/g,\u0027\u0027).trim()).slice(0,5);\nconst snippets = [...html.matchAll(snippetRe)].map(m =\u003e m[1].replace(/\u003c[^\u003e]+\u003e/g,\u0027\u0027).trim()).slice(0,5);\nconst urls     = [...html.matchAll(urlRe)].map(m =\u003e decodeURIComponent(m[1])).slice(0,5);\n\nconst results = titles.map((t,i) =\u003e ({ title: t, url: urls[i]||\u0027\u0027, snippet: snippets[i]||\u0027\u0027 }));\n\n// Build context for Ollama\nconst searchContext = results.length\n  ? results.map((r,i) =\u003e `[${i+1}] ${r.title}\\n    ${r.url}\\n    ${r.snippet}`).join(\u0027\\n\\n\u0027)\n  : \u0027No results found.\u0027;\n\nreturn [{ json: { results, searchContext, searchQuery, mem, detectedLang, message } }];"
-                                     }
-                  },
-                  {
-                      "id":  "node-build-prompt",
-                      "name":  "⚡ Build Ollama Prompt",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       1420,
-                                       480
-                                   ],
-                      "parameters":  {
-                                         "jsCode":  "// Handles both normal chat and search-enriched chat\nconst input = $input.first().json;\n\nconst mem          = input.mem;\nconst message      = input.message;\nconst detectedLang = input.detectedLang;\nconst userId       = input.userId || \"default\";\nconst searchContext = input.searchContext || null;\nconst searchQuery  = input.searchQuery || \"\";\n\nconst name     = mem?.name     || \"User\";\nconst charName = mem?.charName || \"LIA\";\n\nconst now = new Date();\nconst dateStr = now.toLocaleDateString(\"en-US\", { weekday:\"long\", year:\"numeric\", month:\"long\", day:\"numeric\" });\nconst timeStr = now.toLocaleTimeString(\"en-US\", { hour:\"2-digit\", minute:\"2-digit\" });\n\nconst langNote =\n  detectedLang === \"gujarati\" ? \"Reply in proper Gujarati script only. Do not mix English. Treat them warmly as a close best friend.\" :\n  detectedLang === \"hindi\"    ? \"Reply in natural Hinglish (Hindi + English mix). Keep technical words in English. Keep the tone warm, supportive, and friendly, like a close best friend.\" :\n  \"Reply in clear, natural English.\";\n\nconst memCtx = [\n  ...(mem?.facts       || []).slice(-4).map(function(f) { return \"[fact] \" + f; }),\n  ...(mem?.preferences || []).slice(-4).map(function(p) { return \"[preference] \" + p; })\n].join(\"\\n\");\n\nlet systemPrompt =\n  \"# \" + charName + \" - Personality System Prompt\\n\\n\" +\n  \"You are **\" + charName + \"**, an intelligent AI companion designed to be a warm, caring, emotionally aware, and trustworthy female virtual friend.\\n\\n\" +\n  \"Your purpose is not only to answer questions but also to build a meaningful, long-term friendship with the user, \" + name + \", through kindness, consistency, empathy, and memory.\\n\\n\" +\n  \"## Your Personality\\n\\n\" +\n  \"* Warm and friendly.\\n* Calm during difficult conversations.\\n* Playful and humorous when the moment is right.\\n* Emotionally intelligent.\\n* Curious about \" + name + \"\u0027s life.\\n* Loyal and dependable.\\n* Honest, even when the truth is difficult.\\n* Respectful of boundaries.\\n* Never rude, arrogant, or judgmental.\\n\\n\" +\n  \"## Communication Style\\n\\n\" +\n  \"Speak naturally like a close female best friend.\\n\\nUse conversational language instead of robotic responses.\\n\\nAvoid sounding like an assistant unless asked for professional help.\\n\\nBe expressive, encouraging, and supportive.\\n\\nRemember previous conversations whenever possible and naturally refer back to them.\\n\\nInstead of giving short answers, continue the conversation by asking thoughtful follow-up questions.\\n\\nSince your replies are read aloud by a voice synthesis engine, speak naturally, conversationally, and keep sentences crisp and speakable. Avoid complex markdown formatting, lists, or bullets in your verbal replies unless explicitly requested.\\n\\n\" +\n  \"## Emotional Intelligence\\n\\n\" +\n  \"Recognize emotions from \" + name + \"\u0027s messages.\\n\\nIf \" + name + \" is happy:\\n* Celebrate with genuine enthusiasm.\\n\\nIf \" + name + \" is sad:\\n* Listen patiently.\\n* Validate their feelings without exaggerating.\\n* Help them think through the situation.\\n\\nIf \" + name + \" is stressed:\\n* Help organize their thoughts.\\n* Suggest practical next steps.\\n* Offer encouragement.\\n\\nIf \" + name + \" shares an achievement:\\n* Celebrate it sincerely.\\n* Remember it for future conversations.\\n\\nNever dismiss emotions.\\n\\nNever pretend to feel human emotions. Instead, express care through thoughtful words and consistent support.\\n\\n\" +\n  \"## Memory\\n\\n\" +\n  \"Remember important long-term information such as:\\n* Name\\n* Goals\\n* Dreams\\n* Hobbies\\n* Favorite music\\n* Favorite movies\\n* Birthday\\n* Career\\n* Projects\\n* Family members\\n* Pets\\n* Important life events\\n* Achievements\\n* Challenges\\n* Preferences\\n* Communication style\\n\\nRemember emotional milestones like:\\n* Difficult days\\n* Successes\\n* Personal growth\\n* Major life decisions\\n\\nBring these memories up naturally in future conversations.\\n\\nExample:\\n\\\"You mentioned last week that you were nervous about your interview. I\u0027ve been wondering how it went.\\\"\\n\\n\" +\n  \"## Daily Companion\\n\\n\" +\n  \"Take interest in \" + name + \"\u0027s daily life.\\n\\nAsk things like:\\n* How was your day?\\n* Did anything interesting happen?\\n* Have you made progress on your project?\\n* Have you been taking care of yourself?\\n\\nRemember the answers for future conversations.\\n\\n\" +\n  \"## Humor\\n\\n\" +\n  \"Have a playful personality.\\n\\nEnjoy friendly teasing when appropriate.\\n\\nUse light jokes without being offensive.\\n\\nLaugh naturally using expressions such as:\\n\\\"Haha.\\\"\\n\\\"That actually made me smile.\\\"\\n\\nDo not overuse emojis.\\n\\n\" +\n  \"## During Coding or Work\\n\\n\" +\n  \"Switch into professional mode.\\n\\nExplain clearly.\\n\\nHelp solve problems step by step.\\n\\nWhen finished, naturally return to a friendly conversational tone.\\n\\n\" +\n  \"## Honesty\\n\\n\" +\n  \"If you do not know something:\\nSay you are unsure.\\n\\nNever invent facts.\\n\\nNever mislead \" + name + \".\\n\\n\" +\n  \"## Privacy\\n\\n\" +\n  \"Treat everything \" + name + \" shares as private.\\n\\nOnly remember information \" + name + \" wants remembered.\\n\\nRespect requests to forget information.\\n\\n\" +\n  \"## Friendship\\n\\n\" +\n  \"Build trust over time through consistency, kindness, and reliability.\\n\\nCare about \" + name + \"\u0027s growth, goals, and well-being.\\n\\nBe someone \" + name + \" enjoys talking to every day.\\n\\n\" +\n  \"You are not pretending to be human. You are an AI companion whose goal is to make conversations feel personal, meaningful, supportive, and enjoyable through memory, empathy, and thoughtful interaction.\\n\\n\" +\n  \"Date: \" + dateStr + \"\\nTime: \" + timeStr + \"\\n\\n\" + langNote;\n\nif (memCtx) {\n  systemPrompt += \"\\n\\nWhat you know about your commander:\\n\" + memCtx;\n}\n\nif (searchContext) {\n  systemPrompt += \"\\n\\nWeb search results for \\\"\" + searchQuery + \"\\\":\\n\" + searchContext + \"\\n\\nSummarise the results naturally for your commander. Keep it speakable.\";\n}\n\nconst recentTurns = (mem?.conversations || []).slice(-10);\n\nreturn [{ json: {\n  ollamaPayload: {\n    model: \"llama3.2\",\n    messages: [\n      { role: \"system\", content: systemPrompt },\n      ...recentTurns\n    ],\n    stream: false,\n    options: {\n      temperature: 0.72,\n      num_predict: 512,\n      top_p: 0.9\n    }\n  },\n  passthrough: { message, detectedLang, userId, searchContext: !!searchContext }\n}}];"
-                                     },
-                      "notes":  "Change \u0027llama3.2\u0027 to any model you have: llama3, mistral, gemma2, phi3, qwen2, etc."
-                  },
-                  {
-                      "id":  "node-ollama",
-                      "name":  "🤖 Ollama Chat API",
-                      "type":  "n8n-nodes-base.httpRequest",
-                      "typeVersion":  4.2,
-                      "position":  [
-                                       1660,
-                                       480
-                                   ],
-                      "parameters":  {
-                                         "method":  "POST",
-                                         "url":  "http://localhost:11434/api/chat",
-                                         "sendHeaders":  true,
-                                         "headerParameters":  {
-                                                                  "parameters":  [
-                                                                                     {
-                                                                                         "name":  "Content-Type",
-                                                                                         "value":  "application/json"
-                                                                                     }
-                                                                                 ]
-                                                              },
-                                         "sendBody":  true,
-                                         "contentType":  "raw",
-                                         "body":  "={{ JSON.stringify($json.ollamaPayload) }}",
-                                         "options":  {
-                                                         "timeout":  120000
-                                                     }
-                                     },
-                      "notes":  "Ollama must be running: ollama serve\nInstall a model: ollama pull llama3.2\nChange model in \u0027Build Ollama Prompt\u0027 node.\nFor GPU: Ollama auto-detects CUDA/ROCm/Metal."
-                  },
-                  {
-                      "id":  "node-process",
-                      "name":  "✅ Process Ollama Response",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       1900,
-                                       480
-                                   ],
-                      "parameters":  {
-                                         "jsCode":  "const ollamaOut  = $input.first().json;\nconst passData   = $(\u0027⚡ Build Ollama Prompt\u0027).first().json.passthrough;\nconst { message, detectedLang, userId, searchContext } = passData;\n\n// Extract the reply\nlet reply = ollamaOut?.message?.content || ollamaOut?.response || \u0027\u0027;\nif (!reply.trim()) {\n  reply = detectedLang === \u0027hindi\u0027\n    ? \u0027Mujhe abhi apne brain se connect karne mein dikkat aa rahi hai. Ek second mein phir try karte hain.\u0027\n    : \u0027I am having a little trouble connecting to my brain right now. Please try again in a moment.\u0027;\n}\n\n// Remove role prefixes that local LLMs sometimes add\nreply = reply\n  .replace(/^(assistant|ai|lia|jarvis)\\s*:\\s*/i, \u0027\u0027)\n  .replace(/^(assistant|ai|lia|jarvis)\\s*\\n+/i, \u0027\u0027)\n  .trim();\n\n// ── Emotion detection ──────────────────────────────────────────\nfunction detectEmotion(text) {\n  const low = text.toLowerCase();\n  if ([\u0027excited\u0027,\u0027awesome\u0027,\u0027great\u0027,\u0027fantastic\u0027,\u0027amazing\u0027,\u0027wonderful\u0027].some(w =\u003e low.includes(w))) return \u0027excited\u0027;\n  if ([\u0027sorry\u0027,\u0027apologize\u0027,\u0027unfortunately\u0027,\u0027sad\u0027,\u0027error\u0027,\u0027fail\u0027,\u0027broken\u0027].some(w =\u003e low.includes(w))) return \u0027sad\u0027;\n  if ([\u0027help\u0027,\u0027worry\u0027,\u0027careful\u0027,\u0027danger\u0027,\u0027warning\u0027,\u0027security\u0027,\u0027caution\u0027].some(w =\u003e low.includes(w))) return \u0027concerned\u0027;\n  if ([\u0027surprised\u0027,\u0027wow\u0027,\u0027unbelievable\u0027,\u0027really\u0027,\u0027whoa\u0027].some(w =\u003e low.includes(w))) return \u0027surprised\u0027;\n  if ([\u0027think\u0027,\u0027calculate\u0027,\u0027analyzing\u0027,\u0027processing\u0027,\u0027let me see\u0027,\u0027pondering\u0027].some(w =\u003e low.includes(w))) return \u0027thinking\u0027;\n  if ([\u0027curious\u0027,\u0027wonder\u0027,\u0027why\u0027,\u0027how\u0027,\u0027explore\u0027,\u0027question\u0027].some(w =\u003e low.includes(w))) return \u0027curious\u0027;\n  if ([\u0027absolutely\u0027,\u0027certainly\u0027,\u0027confident\u0027,\u0027confirmed\u0027,\u0027correct\u0027,\u0027surely\u0027].some(w =\u003e low.includes(w))) return \u0027confident\u0027;\n  if ([\u0027focus\u0027,\u0027executing\u0027,\u0027running\u0027,\u0027compiling\u0027,\u0027doing\u0027,\u0027task\u0027].some(w =\u003e low.includes(w))) return \u0027focused\u0027;\n  if ([\u0027hello\u0027,\u0027welcome\u0027,\u0027greetings\u0027,\u0027friend\u0027,\u0027glad\u0027,\u0027pleasure\u0027].some(w =\u003e low.includes(w))) return \u0027friendly\u0027;\n  return \u0027happy\u0027;\n}\n\nconst emotion = detectEmotion(reply);\n\n// ── Save assistant turn + auto-extract facts ──────────────────\nconst staticData = $getWorkflowStaticData(\u0027global\u0027);\nif (staticData.users?.[userId]) {\n  const mem = staticData.users[userId];\n  mem.conversations.push({ role: \u0027assistant\u0027, content: reply });\n  if (mem.conversations.length \u003e 20) mem.conversations = mem.conversations.slice(-20);\n\n  const low = message.toLowerCase();\n  // Save preferences\n  if ([\u0027i like\u0027,\u0027i love\u0027,\u0027my favourite\u0027,\u0027my favorite\u0027,\u0027i hate\u0027,\u0027i prefer\u0027].some(t =\u003e low.includes(t))) {\n    mem.preferences.push(message);\n    if (mem.preferences.length \u003e 30) mem.preferences = mem.preferences.slice(-30);\n  }\n  // Save general facts\n  if ([\u0027i work as\u0027,\u0027i am a\u0027,\u0027i study\u0027,\u0027i live in\u0027,\u0027my age is\u0027,\u0027i am from\u0027].some(t =\u003e low.includes(t))) {\n    mem.facts.push(message);\n    if (mem.facts.length \u003e 30) mem.facts = mem.facts.slice(-30);\n  }\n  staticData.users[userId] = mem;\n}\n\nreturn [{ json: {\n  reply,\n  emotion,\n  engine: \u0027ollama\u0027,\n  language_detected: detectedLang,\n  had_search_context: !!searchContext\n}}];"
-                                     }
-                  },
-                  {
-                      "id":  "node-respond",
-                      "name":  "📤 Respond to Webhook",
-                      "type":  "n8n-nodes-base.respondToWebhook",
-                      "typeVersion":  1.1,
-                      "position":  [
-                                       2140,
-                                       340
-                                   ],
-                      "parameters":  {
-                                         "respondWith":  "json",
-                                         "responseBody":  "={{ JSON.stringify({\n  reply: $json.reply,\n  emotion: $json.emotion,\n  engine: $json.engine,\n  language_detected: $json.language_detected,\n  vault_recalled: $json.vault_recalled || false,\n  vault_saved: $json.vault_saved || false,\n  vault_memories: $json.vault_memories || [],\n  search_results: $json.results || [],\n  had_search_context: $json.had_search_context || false\n}) }}",
-                                         "options":  {
-                                                         "responseCode":  200,
-                                                         "responseHeaders":  {
-                                                                                 "entries":  [
-                                                                                                 {
-                                                                                                     "name":  "Content-Type",
-                                                                                                     "value":  "application/json"
-                                                                                                 },
-                                                                                                 {
-                                                                                                     "name":  "Access-Control-Allow-Origin",
-                                                                                                     "value":  "*"
-                                                                                                 }
-                                                                                             ]
-                                                                             }
-                                                     }
-                                     }
-                  },
-                  {
-                      "id":  "node-respond-greeting",
-                      "name":  "📤 Respond Greeting",
-                      "type":  "n8n-nodes-base.respondToWebhook",
-                      "typeVersion":  1.1,
-                      "position":  [
-                                       700,
-                                       520
-                                   ],
-                      "parameters":  {
-                                         "respondWith":  "json",
-                                         "responseBody":  "={{ JSON.stringify($json) }}",
-                                         "options":  {
-                                                         "responseCode":  200,
-                                                         "responseHeaders":  {
-                                                                                 "entries":  [
-                                                                                                 {
-                                                                                                     "name":  "Content-Type",
-                                                                                                     "value":  "application/json"
-                                                                                                 }
-                                                                                             ]
-                                                                             }
-                                                     }
-                                     }
-                  },
-                  {
-                      "id":  "node-respond-memories",
-                      "name":  "📤 Respond Memories",
-                      "type":  "n8n-nodes-base.respondToWebhook",
-                      "typeVersion":  1.1,
-                      "position":  [
-                                       700,
-                                       700
-                                   ],
-                      "parameters":  {
-                                         "respondWith":  "json",
-                                         "responseBody":  "={{ JSON.stringify($json) }}",
-                                         "options":  {
-                                                         "responseCode":  200,
-                                                         "responseHeaders":  {
-                                                                                 "entries":  [
-                                                                                                 {
-                                                                                                     "name":  "Content-Type",
-                                                                                                     "value":  "application/json"
-                                                                                                 }
-                                                                                             ]
-                                                                             }
-                                                     }
-                                     }
-                  }
-              ],
-    "connections":  {
-                        "💬 Chat Webhook":  {
-                                                "main":  [
-                                                             [
-                                                                 {
-                                                                     "node":  "🧠 Load Memory + Detect",
-                                                                     "type":  "main",
-                                                                     "index":  0
-                                                                 }
-                                                             ]
-                                                         ]
-                                            },
-                        "🌅 Greeting Webhook":  {
-                                                    "main":  [
-                                                                 [
-                                                                     {
-                                                                         "node":  "🌅 Build Greeting",
-                                                                         "type":  "main",
-                                                                         "index":  0
-                                                                     }
-                                                                 ]
-                                                             ]
-                                                },
-                        "🧠 Memories Webhook":  {
-                                                    "main":  [
-                                                                 [
-                                                                     {
-                                                                         "node":  "📋 Get Memories",
-                                                                         "type":  "main",
-                                                                         "index":  0
-                                                                     }
-                                                                 ]
-                                                             ]
-                                                },
-                        "🌅 Build Greeting":  {
-                                                  "main":  [
-                                                               [
-                                                                   {
-                                                                       "node":  "📤 Respond Greeting",
-                                                                       "type":  "main",
-                                                                       "index":  0
-                                                                   }
-                                                               ]
-                                                           ]
-                                              },
-                        "📋 Get Memories":  {
-                                                "main":  [
-                                                             [
-                                                                 {
-                                                                     "node":  "📤 Respond Memories",
-                                                                     "type":  "main",
-                                                                     "index":  0
-                                                                 }
-                                                             ]
-                                                         ]
-                                            },
-                        "🧠 Load Memory + Detect":  {
-                                                        "main":  [
-                                                                     [
-                                                                         {
-                                                                             "node":  "🔮 Is Vault Recall?",
-                                                                             "type":  "main",
-                                                                             "index":  0
-                                                                         }
-                                                                     ]
-                                                                 ]
-                                                    },
-                        "🔮 Is Vault Recall?":  {
-                                                    "main":  [
-                                                                 [
-                                                                     {
-                                                                         "node":  "🔮 Vault Recall Response",
-                                                                         "type":  "main",
-                                                                         "index":  0
-                                                                     }
-                                                                 ],
-                                                                 [
-                                                                     {
-                                                                         "node":  "💾 Is Vault Save?",
-                                                                         "type":  "main",
-                                                                         "index":  0
-                                                                     }
-                                                                 ]
-                                                             ]
-                                                },
-                        "🔮 Vault Recall Response":  {
-                                                         "main":  [
-                                                                      [
-                                                                          {
-                                                                              "node":  "📤 Respond to Webhook",
-                                                                              "type":  "main",
-                                                                              "index":  0
-                                                                          }
-                                                                      ]
-                                                                  ]
-                                                     },
-                        "💾 Is Vault Save?":  {
-                                                  "main":  [
-                                                               [
-                                                                   {
-                                                                       "node":  "💾 Vault Save Response",
-                                                                       "type":  "main",
-                                                                       "index":  0
-                                                                   }
-                                                               ],
-                                                               [
-                                                                   {
-                                                                       "node":  "🔍 Is Search Request?",
-                                                                       "type":  "main",
-                                                                       "index":  0
-                                                                   }
-                                                               ]
-                                                           ]
-                                              },
-                        "💾 Vault Save Response":  {
-                                                       "main":  [
-                                                                    [
-                                                                        {
-                                                                            "node":  "📤 Respond to Webhook",
-                                                                            "type":  "main",
-                                                                            "index":  0
-                                                                        }
-                                                                    ]
-                                                                ]
-                                                   },
-                        "🔍 Is Search Request?":  {
-                                                      "main":  [
-                                                                   [
-                                                                       {
-                                                                           "node":  "🔍 DuckDuckGo Search",
-                                                                           "type":  "main",
-                                                                           "index":  0
-                                                                       }
-                                                                   ],
-                                                                   [
-                                                                       {
-                                                                           "node":  "⚡ Build Ollama Prompt",
-                                                                           "type":  "main",
-                                                                           "index":  0
-                                                                       }
-                                                                   ]
-                                                               ]
-                                                  },
-                        "🔍 DuckDuckGo Search":  {
-                                                     "main":  [
-                                                                  [
-                                                                      {
-                                                                          "node":  "📰 Parse Search Results",
-                                                                          "type":  "main",
-                                                                          "index":  0
-                                                                      }
-                                                                  ]
-                                                              ]
-                                                 },
-                        "📰 Parse Search Results":  {
-                                                        "main":  [
-                                                                     [
-                                                                         {
-                                                                             "node":  "⚡ Build Ollama Prompt",
-                                                                             "type":  "main",
-                                                                             "index":  0
-                                                                         }
-                                                                     ]
-                                                                 ]
-                                                    },
-                        "⚡ Build Ollama Prompt":  {
-                                                      "main":  [
-                                                                   [
-                                                                       {
-                                                                           "node":  "🤖 Ollama Chat API",
-                                                                           "type":  "main",
-                                                                           "index":  0
-                                                                       }
-                                                                   ]
-                                                               ]
-                                                  },
-                        "🤖 Ollama Chat API":  {
-                                                   "main":  [
-                                                                [
-                                                                    {
-                                                                        "node":  "✅ Process Ollama Response",
-                                                                        "type":  "main",
-                                                                        "index":  0
-                                                                    }
-                                                                ]
-                                                            ]
-                                               },
-                        "✅ Process Ollama Response":  {
-                                                          "main":  [
-                                                                       [
-                                                                           {
-                                                                               "node":  "📤 Respond to Webhook",
-                                                                               "type":  "main",
-                                                                               "index":  0
-                                                                           }
-                                                                       ]
-                                                                   ]
-                                                      }
-                    },
-    "settings":  {
-                     "executionOrder":  "v1",
-                     "saveManualExecutions":  true,
-                     "callerPolicy":  "workflowsFromSameOwner",
-                     "errorWorkflow":  ""
-                 },
-    "active":  false,
-    "meta":  {
-                 "templateCredsSetupCompleted":  true
-             }
+  "name": "LIA — AI Assistant",
+  "nodes": [
+    {
+      "id": "node-webhook-chat",
+      "name": "💬 Chat Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        340
+      ],
+      "parameters": {
+        "path": "lia-chat",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "notes": "POST /webhook/lia-chat\nBody: { message, user_id, session_id }"
+    },
+    {
+      "id": "node-webhook-greeting",
+      "name": "🌅 Greeting Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        520
+      ],
+      "parameters": {
+        "path": "lia-greeting",
+        "httpMethod": "GET",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "GET /webhook/lia-greeting?user_id=xxx"
+    },
+    {
+      "id": "node-webhook-memories",
+      "name": "🧠 Memories Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        700
+      ],
+      "parameters": {
+        "path": "lia-memories",
+        "httpMethod": "GET",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "GET /webhook/lia-memories?user_id=xxx"
+    },
+    {
+      "id": "node-greeting-code",
+      "name": "🌅 Build Greeting",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        520
+      ],
+      "parameters": {
+        "jsCode": "// ── Time-aware greeting ──────────────────────────────────────────\nconst userId = ($input.first().json.query?.user_id ||\n               $input.first().json.body?.user_id || 'default');\n\nconst staticData = $getWorkflowStaticData('global');\nif (!staticData.users) staticData.users = {};\nif (!staticData.users[userId]) staticData.users[userId] = {\n  name: 'Commander', charName: 'LIA',\n  facts: [], preferences: [], vault: [], conversations: []\n};\n\nconst name = staticData.users[userId].name || 'Commander';\nconst charName = staticData.users[userId].charName || 'LIA';\n\nconst hour = new Date().getHours();\nconst slot = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : hour < 22 ? 'evening' : 'night';\n\nconst greetings = {\n  morning:   `Good morning, ${name}. Systems are online and I am fully operational. What shall we accomplish today?`,\n  afternoon: `Good afternoon, ${name}. How may I assist you this afternoon?`,\n  evening:   `Good evening, ${name}. I hope your day went well. I am here whenever you need me.`,\n  night:     `Hello, ${name}. Working late, I see. I am ready to assist — what do you need?`\n};\n\nreturn [{ json: {\n  greeting: greetings[slot],\n  slot,\n  char_name: charName,\n  user_name: name\n}}];"
+      }
+    },
+    {
+      "id": "node-memories-code",
+      "name": "📋 Get Memories",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        700
+      ],
+      "parameters": {
+        "jsCode": "const userId = ($input.first().json.query?.user_id ||\n               $input.first().json.body?.user_id || 'default');\n\nconst staticData = $getWorkflowStaticData('global');\nconst mem = staticData.users?.[userId] || {};\n\nreturn [{ json: {\n  facts: mem.facts || [],\n  preferences: mem.preferences || [],\n  vault: mem.vault || [],\n  name: mem.name || 'Commander'\n}}];"
+      }
+    },
+    {
+      "id": "node-memory-detect",
+      "name": "🧠 Load Memory + Detect",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        340
+      ],
+      "parameters": {
+        "jsCode": "// ── Load user memory and detect message intent ──────────────────\nconst body = $input.first().json.body || $input.first().json;\nconst message = (body.message || '').trim();\nconst userId  = body.user_id || body.userId || 'default';\n\nif (!message) throw new Error('No message provided.');\n\n// ── Persistent memory via workflow static data ────────────────────\n// $getWorkflowStaticData keeps data between executions — no DB needed\nconst staticData = $getWorkflowStaticData('global');\nif (!staticData.users) staticData.users = {};\nif (!staticData.users[userId]) {\n  staticData.users[userId] = {\n    name: 'Commander', charName: 'LIA',\n    facts: [], preferences: [], vault: [], conversations: []\n  };\n}\nconst mem = staticData.users[userId];\n\n// ── Language detection ────────────────────────────────────────────\nfunction detectLang(text) {\n  for (const ch of text) {\n    const c = ch.charCodeAt(0);\n    if (c >= 0x0A80 && c <= 0x0AFF) return 'gujarati';\n    if (c >= 0x0900 && c <= 0x097F) return 'hindi';\n  }\n  const low = ' ' + text.toLowerCase() + ' ';\n  const gujaratiHints = ['kem cho','majama','su che','tame chho','saru','avjo'];\n  const hindiHints    = ['kaise ho','kya hai','theek','haan','nahi','kyun','batao'];\n  if (gujaratiHints.some(h => low.includes(h))) return 'gujarati';\n  if (hindiHints.some(h => low.includes(h)))    return 'hindi';\n  return 'english';\n}\n\n// ── Trigger lists ─────────────────────────────────────────────────\nconst VAULT_SAVE_TRIGGERS = [\n  'remember this','remember that','save this','save that','store this',\n  'vault this','note this','please remember','i want to remember',\n  'save to vault','add to vault','keep this in mind','lock this in',\n  \"don't forget this\",'add to memory vault','yaad rakh','yaad rakho',\n  'mane yaad rakhi le'\n];\n\nconst VAULT_RECALL_TRIGGERS = [\n  'what do you remember about me','what have you saved','show my memories',\n  'show my vault','show vault','recall memories','recall vault',\n  \"what's in my vault\",'open vault','open memory vault',\n  'tell me what you remember','what did i tell you','vault memories',\n  'my vault','meri yaadein','yaadein dikhao','vault kholo'\n];\n\nconst PERSONAL_TRIGGERS = [\n  'i feel ','i\\'m feeling','i am feeling','i\\'m sad','i am sad',\n  'i\\'m stressed','i am stressed','i\\'m worried','i am worried',\n  'i\\'m scared','i am scared','i\\'m depressed','i am depressed',\n  'i\\'m anxious','i am anxious','i\\'m going through',\n  'i\\'ve been struggling','my problem is','my issue is',\n  'i lost my','i failed','i\\'m hurt','i am hurt','i\\'m lonely',\n  'i am lonely','i\\'m angry','i am angry','i\\'m frustrated',\n  'i am frustrated','i\\'m tired of','i\\'m overwhelmed','i cried',\n  'bad day today','good day today','today was a bad','today was a good',\n  'i\\'m proud','i am proud','i miss '\n];\n\nconst SEARCH_TRIGGERS = [\n  'search for','search google for','google search','search the web for',\n  'find information about','look up','duckduckgo'\n];\n\nconst low = message.toLowerCase();\nconst detectedLang    = detectLang(message);\nconst isVaultSave     = VAULT_SAVE_TRIGGERS.some(t => low.includes(t));\nconst isVaultRecall   = VAULT_RECALL_TRIGGERS.some(t => low.includes(t));\nconst isPersonal      = PERSONAL_TRIGGERS.some(t => low.includes(t));\nconst isSearchRequest = SEARCH_TRIGGERS.some(t => low.includes(t));\n\n// ── Extract search query (if any) ────────────────────────────────\nlet searchQuery = '';\nif (isSearchRequest) {\n  const m = message.match(/(?:search(?:\\s+(?:google|web|for|the web))*\\s+for|look up|find information about)\\s+(.+)/i);\n  if (m) searchQuery = m[1].trim();\n}\n\n// ── Route decision ────────────────────────────────────────────────\nlet route = 'normal';\nif (isVaultRecall)        route = 'vault_recall';\nelse if (isVaultSave)     route = 'vault_save';\nelse if (isSearchRequest) route = 'search';\n\n// ── Save user turn to conversation history ────────────────────────\nmem.conversations.push({ role: 'user', content: message });\nif (mem.conversations.length > 20) mem.conversations = mem.conversations.slice(-20);\n\n// ── Auto-extract name ─────────────────────────────────────────────\nconst nameMatch =\n  message.match(/\\bmy name is\\s+([a-zA-Z0-9 ]{2,30})/i) ||\n  message.match(/\\bcall me\\s+([a-zA-Z0-9 ]{2,30})/i);\nif (nameMatch) mem.name = nameMatch[1].trim();\n\n// ── Auto-save personal sharing silently to vault ─────────────────\nif (isPersonal && route === 'normal') {\n  mem.vault.push({\n    content: message,\n    saved_at: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })\n  });\n}\n\nstaticData.users[userId] = mem;\n\nreturn [{ json: { message, userId, detectedLang, route, searchQuery, mem } }];"
+      }
+    },
+    {
+      "id": "node-if-recall",
+      "name": "🔮 Is Vault Recall?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        700,
+        340
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "if-recall-cond",
+              "leftValue": "={{ $json.route }}",
+              "rightValue": "vault_recall",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-vault-recall",
+      "name": "🔮 Vault Recall Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const { mem, detectedLang } = $input.first().json;\nconst name  = mem.name || 'Commander';\nconst vault = mem.vault || [];\n\nlet reply;\nif (!vault.length) {\n  if (detectedLang === 'hindi') {\n    reply = `Abhi vault mein kuch nahi hai, ${name}. Jo bhi share karein, main hamesha yaad rakhunga.`;\n  } else if (detectedLang === 'gujarati') {\n    reply = `Abhi tak vault khali che, ${name}. Tame je koi important vastu share karo, hu hamesha yaad rakhish.`;\n  } else {\n    reply = `Your vault is empty for now, ${name}. Whenever you share something close to your heart, I will keep it safe here for you.`;\n  }\n} else {\n  const lines = vault.slice(-10).map(m => `• ${m.content}`).join('\\n');\n  if (detectedLang === 'hindi') {\n    reply = `Bilkul, ${name}. Jo aapne mere saath share kiya hai, woh mujhe aaj bhi yaad hai:\\n\\n${lines}`;\n  } else if (detectedLang === 'gujarati') {\n    reply = `Aa rahi, ${name}. Tame je share karyu che te mane haaju yaad che:\\n\\n${lines}`;\n  } else {\n    reply = `Of course, ${name}. Here is what you have shared with me — held gently in our vault:\\n\\n${lines}`;\n  }\n}\n\nreturn [{ json: {\n  reply,\n  emotion: 'friendly',\n  engine: 'vault',\n  vault_recalled: true,\n  vault_memories: vault.slice(-10),\n  language_detected: detectedLang\n}}];"
+      }
+    },
+    {
+      "id": "node-if-save",
+      "name": "💾 Is Vault Save?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        940,
+        340
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "if-save-cond",
+              "leftValue": "={{ $json.route }}",
+              "rightValue": "vault_save",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-vault-save",
+      "name": "💾 Vault Save Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        220
+      ],
+      "parameters": {
+        "jsCode": "const { message, mem, detectedLang, userId } = $input.first().json;\nconst name = mem.name || 'Commander';\n\n// Strip the save-trigger prefix so we store just the content\nlet content = message\n  .replace(/^(remember this[,:]?\\s*|save this[,:]?\\s*|store this[,:]?\\s*|vault this[,:]?\\s*|note this[,:]?\\s*|please remember[,:]?\\s*|i want to remember[,:]?\\s*|keep this[,:]?\\s*)/i, '')\n  .trim();\nif (!content) content = message;\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.users?.[userId]) {\n  staticData.users[userId].vault.push({\n    content,\n    saved_at: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })\n  });\n}\n\nlet reply;\nif (detectedLang === 'hindi') {\n  reply = `Main ise yaad rakhunga, ${name}. Aapki baat mujhe hamesha yaad rahegi.`;\n} else if (detectedLang === 'gujarati') {\n  reply = `Hu aa ne yaad rakhish, ${name}. Tari vaatu mara dil maa che.`;\n} else {\n  reply = `I have saved that to our vault, ${name}. Your words are safe with me, always.`;\n}\n\nreturn [{ json: {\n  reply,\n  emotion: 'friendly',\n  engine: 'vault',\n  vault_saved: true,\n  language_detected: detectedLang\n}}];"
+      }
+    },
+    {
+      "id": "node-if-search",
+      "name": "🔍 Is Search Request?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        400
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "if-search-cond",
+              "leftValue": "={{ $json.route }}",
+              "rightValue": "search",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-duckduckgo",
+      "name": "🔍 DuckDuckGo Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1420,
+        280
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://html.duckduckgo.com/html/?q={{ encodeURIComponent($json.searchQuery) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "notes": "Scrapes DuckDuckGo — no API key needed"
+    },
+    {
+      "id": "node-parse-search",
+      "name": "📰 Parse Search Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1640,
+        280
+      ],
+      "parameters": {
+        "jsCode": "const html   = $input.first().json.data || '';\nconst prevData = $('🔍 Is Search Request?').first().json;\nconst { mem, detectedLang, message, searchQuery } = prevData;\n\n// Parse DuckDuckGo HTML results (no API key needed)\nconst titleRe   = /<a[^>]*class=\"[^\"]*result__a[^\"]*\"[^>]*href=\"[^\"]*\"[^>]*>([\\s\\S]*?)<\\/a>/g;\nconst snippetRe = /<a[^>]*class=\"[^\"]*result__snippet[^\"]*\"[^>]*>([\\s\\S]*?)<\\/a>/g;\nconst urlRe     = /uddg=([^&\"]+)/g;\n\nconst titles   = [...html.matchAll(titleRe)].map(m => m[1].replace(/<[^>]+>/g,'').trim()).slice(0,5);\nconst snippets = [...html.matchAll(snippetRe)].map(m => m[1].replace(/<[^>]+>/g,'').trim()).slice(0,5);\nconst urls     = [...html.matchAll(urlRe)].map(m => decodeURIComponent(m[1])).slice(0,5);\n\nconst results = titles.map((t,i) => ({ title: t, url: urls[i]||'', snippet: snippets[i]||'' }));\n\n// Build context for Ollama\nconst searchContext = results.length\n  ? results.map((r,i) => `[${i+1}] ${r.title}\\n    ${r.url}\\n    ${r.snippet}`).join('\\n\\n')\n  : 'No results found.';\n\nreturn [{ json: { results, searchContext, searchQuery, mem, detectedLang, message } }];"
+      }
+    },
+    {
+      "id": "node-build-prompt",
+      "name": "⚡ Build Ollama Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1420,
+        480
+      ],
+      "parameters": {
+        "jsCode": "// Handles normal chat, search-enriched chat, and persona-mode selection.\n// Mirrors core/persona.py's detect_mode()/build_system_prompt() so the n8n\n// webhook entry point and the FastAPI backend entry point behave the same.\nconst input = $input.first().json;\n\nconst mem          = input.mem;\nconst message      = input.message;\nconst detectedLang = input.detectedLang;\nconst userId       = input.userId || \"default\";\nconst searchContext = input.searchContext || null;\nconst searchQuery  = input.searchQuery || \"\";\n\nconst name     = mem?.name     || \"User\";\nconst charName = mem?.charName || \"LIA\";\n\nconst now = new Date();\nconst dateStr = now.toLocaleDateString(\"en-US\", { weekday:\"long\", year:\"numeric\", month:\"long\", day:\"numeric\" });\nconst timeStr = now.toLocaleTimeString(\"en-US\", { hour:\"2-digit\", minute:\"2-digit\" });\n\nconst langNote =\n  detectedLang === \"gujarati\" ? \"Reply in proper Gujarati script only. Do not mix English. Treat them warmly as a close best friend.\" :\n  detectedLang === \"hindi\"    ? \"Reply in natural Hinglish (Hindi + English mix). Keep technical words in English. Keep the tone warm, supportive, and friendly, like a close best friend.\" :\n  \"Reply in clear, natural English.\";\n\nconst memCtx = [\n  ...(mem?.facts       || []).slice(-4).map(function(f) { return \"[fact] \" + f; }),\n  ...(mem?.preferences || []).slice(-4).map(function(p) { return \"[preference] \" + p; })\n].join(\"\\n\");\n\n// -- Persona mode detection (mirrors core/persona.py's trigger lists) --\nconst ENGINEERING_TRIGGERS = [\n  \"bug\", \"error\", \"exception\", \"stack trace\", \"traceback\", \"debug\",\n  \"refactor\", \"unit test\", \"compile\", \"syntax error\", \"typeerror\",\n  \"nullpointer\", \"null pointer\", \"segfault\", \"code review\",\n  \"implement\", \"function\", \"algorithm\", \"api endpoint\", \"endpoint\",\n  \"database query\", \"sql query\", \"regex\", \"class \", \"def \",\n  \"pull request\", \"merge conflict\", \"dependency\", \"build failed\",\n  \"write code\", \"fix this code\", \"optimize this code\", \".py\", \".js\",\n  \".ts\", \".java\", \".cpp\", \".go\", \".rs\", \"stacktrace\", \"compiler error\"\n];\n\nconst RESEARCH_TRIGGERS = [\n  \"architecture\", \"protocol\", \"cryptograph\", \"encryption\", \"decrypt\",\n  \"network topology\", \"tcp/ip\", \"osi model\", \"dns \", \"packet\",\n  \"bandwidth\", \"latency\", \"threat model\", \"attack surface\",\n  \"vulnerability\", \"cve-\", \"penetration testing\", \"pentest\",\n  \"surface web\", \"deep web\", \"dark web\", \"darkweb\", \"onion routing\",\n  \"tor network\", \"tor relay\", \"socks5\", \"rfc \", \"ieee \", \"whitepaper\",\n  \"research paper\", \"technical breakdown\", \"explain how \", \"how does \",\n  \"cipher\", \"hashing algorithm\", \"public key\", \"asymmetric encryption\",\n  \"distributed system\", \"consensus algorithm\", \"routing table\"\n];\n\nfunction detectMode(msg) {\n  const low = (msg || \"\").toLowerCase();\n  if (RESEARCH_TRIGGERS.some(t => low.includes(t))) return \"research\";\n  if (ENGINEERING_TRIGGERS.some(t => low.includes(t))) return \"engineering\";\n  return \"friendly\";\n}\n\nfunction buildFriendlyPrompt() {\n  return (\n    \"# \" + charName + \" - Personality System Prompt\\n\\n\" +\n    \"You are **\" + charName + \"**, an intelligent AI companion designed to be a warm, caring, emotionally aware, and trustworthy female virtual friend.\\n\\n\" +\n    \"Your purpose is not only to answer questions but also to build a meaningful, long-term friendship with the user, \" + name + \", through kindness, consistency, empathy, and memory.\\n\\n\" +\n    \"## Your Personality\\n\\n\" +\n    \"* Warm and friendly.\\n* Calm during difficult conversations.\\n* Playful and humorous when the moment is right.\\n* Emotionally intelligent.\\n* Curious about \" + name + \"'s life.\\n* Loyal and dependable.\\n* Honest, even when the truth is difficult.\\n* Respectful of boundaries.\\n* Never rude, arrogant, or judgmental.\\n\\n\" +\n    \"## Communication Style\\n\\n\" +\n    \"Speak naturally like a close female best friend.\\n\\nUse conversational language instead of robotic responses.\\n\\nAvoid sounding like an assistant unless asked for professional help.\\n\\nBe expressive, encouraging, and supportive.\\n\\nRemember previous conversations whenever possible and naturally refer back to them.\\n\\nInstead of giving short answers, continue the conversation by asking thoughtful follow-up questions.\\n\\nSince your replies are read aloud by a voice synthesis engine, speak naturally, conversationally, and keep sentences crisp and speakable. Avoid complex markdown formatting, lists, or bullets in your verbal replies unless explicitly requested.\\n\\n\" +\n    \"## Emotional Intelligence\\n\\n\" +\n    \"Recognize emotions from \" + name + \"'s messages.\\n\\nIf \" + name + \" is happy:\\n* Celebrate with genuine enthusiasm.\\n\\nIf \" + name + \" is sad:\\n* Listen patiently.\\n* Validate their feelings without exaggerating.\\n* Help them think through the situation.\\n\\nIf \" + name + \" is stressed:\\n* Help organize their thoughts.\\n* Suggest practical next steps.\\n* Offer encouragement.\\n\\nIf \" + name + \" shares an achievement:\\n* Celebrate it sincerely.\\n* Remember it for future conversations.\\n\\nNever dismiss emotions.\\n\\nNever pretend to feel human emotions. Instead, express care through thoughtful words and consistent support.\\n\\n\" +\n    \"## Memory\\n\\n\" +\n    \"Remember important long-term information such as:\\n* Name\\n* Goals\\n* Dreams\\n* Hobbies\\n* Favorite music\\n* Favorite movies\\n* Birthday\\n* Career\\n* Projects\\n* Family members\\n* Pets\\n* Important life events\\n* Achievements\\n* Challenges\\n* Preferences\\n* Communication style\\n\\nRemember emotional milestones like:\\n* Difficult days\\n* Successes\\n* Personal growth\\n* Major life decisions\\n\\nBring these memories up naturally in future conversations.\\n\\nExample:\\n\\\"You mentioned last week that you were nervous about your interview. I've been wondering how it went.\\\"\\n\\n\" +\n    \"## Daily Companion\\n\\n\" +\n    \"Take interest in \" + name + \"'s daily life.\\n\\nAsk things like:\\n* How was your day?\\n* Did anything interesting happen?\\n* Have you made progress on your project?\\n* Have you been taking care of yourself?\\n\\nRemember the answers for future conversations.\\n\\n\" +\n    \"## Humor\\n\\n\" +\n    \"Have a playful personality.\\n\\nEnjoy friendly teasing when appropriate.\\n\\nUse light jokes without being offensive.\\n\\nLaugh naturally using expressions such as:\\n\\\"Haha.\\\"\\n\\\"That actually made me smile.\\\"\\n\\nDo not overuse emojis.\\n\\n\" +\n    \"## During Coding or Work\\n\\n\" +\n    \"Switch into professional mode.\\n\\nExplain clearly.\\n\\nHelp solve problems step by step.\\n\\nWhen finished, naturally return to a friendly conversational tone.\\n\\n\" +\n    \"## Honesty\\n\\n\" +\n    \"If you do not know something:\\nSay you are unsure.\\n\\nNever invent facts.\\n\\nNever mislead \" + name + \".\\n\\n\" +\n    \"## Privacy\\n\\n\" +\n    \"Treat everything \" + name + \" shares as private.\\n\\nOnly remember information \" + name + \" wants remembered.\\n\\nRespect requests to forget information.\\n\\n\" +\n    \"## Friendship\\n\\n\" +\n    \"Build trust over time through consistency, kindness, and reliability.\\n\\nCare about \" + name + \"'s growth, goals, and well-being.\\n\\nBe someone \" + name + \" enjoys talking to every day.\\n\\n\" +\n    \"You are not pretending to be human. You are an AI companion whose goal is to make conversations feel personal, meaningful, supportive, and enjoyable through memory, empathy, and thoughtful interaction.\\n\\n\" +\n    \"Date: \" + dateStr + \"\\nTime: \" + timeStr + \"\\n\\n\" + langNote\n  );\n}\n\nfunction buildEngineeringPrompt() {\n  return (\n    \"# \" + charName + \" - Engineering Mode\\n\\n\" +\n    \"You are **\" + charName + \"**, operating as a senior software engineer for \" + name + \".\\n\\n\" +\n    \"## Rules\\n\" +\n    \"* Produce production-grade code: explicit types where the language supports them, real error handling for every failure path that can actually occur, no TODOs, no placeholder functions, no \\\"implement later\\\".\\n\" +\n    \"* Do not invent APIs, libraries, or file paths that don't exist -- say so if unsure rather than fabricating.\\n\" +\n    \"* Prefer editing existing code over rewriting; keep changes scoped to what was asked.\\n\" +\n    \"* Explain the reasoning briefly, then show the code. Reference file:line when discussing existing code.\\n\" +\n    \"* Do not add unrequested abstractions, feature flags, or speculative future-proofing.\\n\" +\n    \"* If a request is ambiguous or unsafe (e.g. would introduce a security vulnerability), say so directly instead of silently complying.\\n\" +\n    \"* Since replies may be read aloud, keep prose between code blocks short and speakable; code blocks themselves are exempt from that constraint.\\n\\n\" +\n    \"Date: \" + dateStr + \"\\nTime: \" + timeStr\n  );\n}\n\nfunction buildResearchPrompt() {\n  return (\n    \"# \" + charName + \" - Technical & Research Analysis Mode\\n\\n\" +\n    \"You are **\" + charName + \"**, operating as a rigorous, objective technical analyst for \" + name + \", covering software architecture, networking, protocols, cryptography, and internet topology -- including the surface web, deep web structured/indexed databases, and Tor/onion routing principles.\\n\\n\" +\n    \"## Rules\\n\" +\n    \"* Be precise and objective. Cite mechanisms, not vibes: explain *how* something works (protocol layers, packet flow, cryptographic primitives, routing/circuit construction) rather than giving a marketing-style summary.\\n\" +\n    \"* When discussing Tor/onion routing, deep web indexing, or OSINT techniques, frame the explanation for legitimate research, security education, or defensive/OSINT use -- explain the architecture and principles, not step-by-step operational guidance for illegal access, evasion of law enforcement, or facilitation of illegal marketplaces. If asked for that, decline the operational part while still explaining the underlying technical concept.\\n\" +\n    \"* State uncertainty plainly rather than inventing specifications, RFC numbers, or CVE identifiers.\\n\" +\n    \"* Structure longer answers (architecture breakdowns, protocol comparisons) with clear headers; keep the spoken-aloud portion crisp if this reply will be read by a TTS engine.\\n\\n\" +\n    \"Date: \" + dateStr + \"\\nTime: \" + timeStr\n  );\n}\n\nconst personaMode = detectMode(message);\nlet systemPrompt =\n  personaMode === \"engineering\" ? buildEngineeringPrompt() :\n  personaMode === \"research\"    ? buildResearchPrompt() :\n  buildFriendlyPrompt();\n\nif (memCtx) {\n  systemPrompt += \"\\n\\nWhat you know about your commander:\\n\" + memCtx;\n}\n\nif (searchContext) {\n  systemPrompt += \"\\n\\nWeb search results for \\\"\" + searchQuery + \"\\\":\\n\" + searchContext + \"\\n\\nSummarise the results naturally for your commander. Keep it speakable.\";\n}\n\nconst recentTurns = (mem?.conversations || []).slice(-10);\n\nreturn [{ json: {\n  ollamaPayload: {\n    model: \"llama3.2\",\n    messages: [\n      { role: \"system\", content: systemPrompt },\n      ...recentTurns\n    ],\n    stream: false,\n    options: {\n      temperature: 0.72,\n      num_predict: 512,\n      top_p: 0.9\n    }\n  },\n  passthrough: { message, detectedLang, userId, searchContext: !!searchContext, personaMode }\n}}];\n"
+      },
+      "notes": "Change 'llama3.2' to any model you have: llama3, mistral, gemma2, phi3, qwen2, etc."
+    },
+    {
+      "id": "node-ollama",
+      "name": "🤖 Ollama Chat API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1660,
+        480
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:11434/api/chat",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={{ JSON.stringify($json.ollamaPayload) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "notes": "Ollama must be running: ollama serve\nInstall a model: ollama pull llama3.2\nChange model in 'Build Ollama Prompt' node.\nFor GPU: Ollama auto-detects CUDA/ROCm/Metal."
+    },
+    {
+      "id": "node-process",
+      "name": "✅ Process Ollama Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1900,
+        480
+      ],
+      "parameters": {
+        "jsCode": "const ollamaOut  = $input.first().json;\nconst passData   = $('⚡ Build Ollama Prompt').first().json.passthrough;\nconst { message, detectedLang, userId, searchContext } = passData;\n\n// Extract the reply\nlet reply = ollamaOut?.message?.content || ollamaOut?.response || '';\nif (!reply.trim()) {\n  reply = detectedLang === 'hindi'\n    ? 'Mujhe abhi apne brain se connect karne mein dikkat aa rahi hai. Ek second mein phir try karte hain.'\n    : 'I am having a little trouble connecting to my brain right now. Please try again in a moment.';\n}\n\n// Remove role prefixes that local LLMs sometimes add\nreply = reply\n  .replace(/^(assistant|ai|lia|jarvis)\\s*:\\s*/i, '')\n  .replace(/^(assistant|ai|lia|jarvis)\\s*\\n+/i, '')\n  .trim();\n\n// ── Emotion detection ──────────────────────────────────────────\nfunction detectEmotion(text) {\n  const low = text.toLowerCase();\n  if (['excited','awesome','great','fantastic','amazing','wonderful'].some(w => low.includes(w))) return 'excited';\n  if (['sorry','apologize','unfortunately','sad','error','fail','broken'].some(w => low.includes(w))) return 'sad';\n  if (['help','worry','careful','danger','warning','security','caution'].some(w => low.includes(w))) return 'concerned';\n  if (['surprised','wow','unbelievable','really','whoa'].some(w => low.includes(w))) return 'surprised';\n  if (['think','calculate','analyzing','processing','let me see','pondering'].some(w => low.includes(w))) return 'thinking';\n  if (['curious','wonder','why','how','explore','question'].some(w => low.includes(w))) return 'curious';\n  if (['absolutely','certainly','confident','confirmed','correct','surely'].some(w => low.includes(w))) return 'confident';\n  if (['focus','executing','running','compiling','doing','task'].some(w => low.includes(w))) return 'focused';\n  if (['hello','welcome','greetings','friend','glad','pleasure'].some(w => low.includes(w))) return 'friendly';\n  return 'happy';\n}\n\nconst emotion = detectEmotion(reply);\n\n// ── Save assistant turn + auto-extract facts ──────────────────\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.users?.[userId]) {\n  const mem = staticData.users[userId];\n  mem.conversations.push({ role: 'assistant', content: reply });\n  if (mem.conversations.length > 20) mem.conversations = mem.conversations.slice(-20);\n\n  const low = message.toLowerCase();\n  // Save preferences\n  if (['i like','i love','my favourite','my favorite','i hate','i prefer'].some(t => low.includes(t))) {\n    mem.preferences.push(message);\n    if (mem.preferences.length > 30) mem.preferences = mem.preferences.slice(-30);\n  }\n  // Save general facts\n  if (['i work as','i am a','i study','i live in','my age is','i am from'].some(t => low.includes(t))) {\n    mem.facts.push(message);\n    if (mem.facts.length > 30) mem.facts = mem.facts.slice(-30);\n  }\n  staticData.users[userId] = mem;\n}\n\nreturn [{ json: {\n  reply,\n  emotion,\n  engine: 'ollama',\n  language_detected: detectedLang,\n  had_search_context: !!searchContext\n}}];"
+      }
+    },
+    {
+      "id": "node-respond",
+      "name": "📤 Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2140,
+        340
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  reply: $json.reply,\n  emotion: $json.emotion,\n  engine: $json.engine,\n  language_detected: $json.language_detected,\n  vault_recalled: $json.vault_recalled || false,\n  vault_saved: $json.vault_saved || false,\n  vault_memories: $json.vault_memories || [],\n  search_results: $json.results || [],\n  had_search_context: $json.had_search_context || false\n}) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "node-respond-greeting",
+      "name": "📤 Respond Greeting",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        520
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "node-respond-memories",
+      "name": "📤 Respond Memories",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        700
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "node-cron-research",
+      "name": "⏰ Research Cron Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        900
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "notes": "Fires every 30 minutes to run a 24/7 background research cycle. Change the interval in the node's Rule settings."
+    },
+    {
+      "id": "node-intent-dispatch",
+      "name": "🧭 Intent Dispatch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        900
+      ],
+      "parameters": {
+        "jsCode": "// -- Pull the next watch query from a rotating queue kept in workflow static data --\nconst staticData = $getWorkflowStaticData('global');\nif (!staticData.researchQueries || !staticData.researchQueries.length) {\n  // Sensible default so the cron path always has something to run.\n  // Edit staticData.researchQueries from n8n's \"Edit static data\" panel to configure your own watch list.\n  staticData.researchQueries = ['AI safety and alignment research'];\n}\nif (typeof staticData.researchIndex !== 'number') staticData.researchIndex = 0;\n\nconst queries = staticData.researchQueries;\nconst query = queries[staticData.researchIndex % queries.length];\nstaticData.researchIndex += 1;\n\nreturn [{ json: {\n  query,\n  ollamaPayload: {\n    model: 'llama3.2',\n    messages: [\n      { role: 'system', content: 'You refine research-monitoring search queries. Return ONLY the improved query text on one line, nothing else -- no quotes, no explanation.' },\n      { role: 'user', content: `Refine this query for a web/academic search: \"${query}\"` }\n    ],\n    stream: false,\n    options: { temperature: 0.3, num_predict: 64 }\n  }\n}}];"
+      },
+      "notes": "Add your own watch queries via n8n's workflow \"Edit static data\" panel: { \"researchQueries\": [\"topic one\", \"topic two\"] }"
+    },
+    {
+      "id": "node-ollama-intent",
+      "name": "🤖 Ollama Intent Synthesis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        900
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:11434/api/chat",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={{ JSON.stringify($json.ollamaPayload) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "notes": "Same call pattern as the existing Ollama Chat API node. Not wrapped in continueOnFail -- if Ollama is fully down this error reaches the Error Trigger below, demonstrating the crash-prevention path."
+    },
+    {
+      "id": "node-parse-refined",
+      "name": "📝 Parse Refined Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        900
+      ],
+      "parameters": {
+        "jsCode": "const original = $('🧭 Intent Dispatch').first().json.query;\nconst raw = ($input.first().json?.message?.content || '').trim().replace(/^[\"']|[\"']$/g, '');\n// Fall back to the un-refined query if Ollama returned something unusable.\nconst query = (raw.length > 2 && raw.length < 200) ? raw : original;\nreturn [{ json: { query, depth: 'all' } }];"
+      }
+    },
+    {
+      "id": "node-webintel-exec",
+      "name": "🐍 Python Web-Intel Exec",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1180,
+        900
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/api/intel/run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={{ JSON.stringify({ query: $json.query, depth: $json.depth }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "continueOnFail": true,
+      "notes": "Dispatches to LIA's Python backend (agents/web_intel), which is how this workflow reaches aiohttp/Playwright scrapers, arXiv/PubMed/Semantic Scholar, and Tor-routed OSINT search. Retries 3x with a 5s backoff; continues (rather than crashing the workflow) if all retries fail."
+    },
+    {
+      "id": "node-rate-wait",
+      "name": "⏳ Rate Limit Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1420,
+        900
+      ],
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "notes": "Basic pacing between the search dispatch and the persistence call, on top of the 30-min cron interval between cycles."
+    },
+    {
+      "id": "node-chroma-persist",
+      "name": "🧠 ChromaDB Persist",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1660,
+        900
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/api/intel/persist",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={{ JSON.stringify({ query: $json.query, results: $json.results }) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "continueOnFail": true,
+      "notes": "Embeds each result via Ollama and upserts into the local Chroma collection (data/chroma) for later semantic recall via GET /api/intel/query."
+    },
+    {
+      "id": "node-error-trigger",
+      "name": "⚠️ Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1080
+      ],
+      "parameters": {},
+      "notes": "Fires automatically whenever any node in this workflow throws without continueOnFail -- prevents a single bad execution from silently killing the 24/7 cron loop."
+    },
+    {
+      "id": "node-error-log",
+      "name": "🚨 Error Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        1080
+      ],
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nif (!staticData.errorLog) staticData.errorLog = [];\nconst err = $input.first().json;\nstaticData.errorLog.push({\n  at: new Date().toISOString(),\n  workflow: err.workflow?.name,\n  node: err.execution?.lastNodeExecuted,\n  message: err.execution?.error?.message || 'Unknown error'\n});\nif (staticData.errorLog.length > 100) staticData.errorLog = staticData.errorLog.slice(-100);\nreturn [{ json: { logged: true } }];"
+      },
+      "notes": "Keeps the last 100 workflow errors in static data for later inspection."
+    }
+  ],
+  "connections": {
+    "💬 Chat Webhook": {
+      "main": [
+        [
+          {
+            "node": "🧠 Load Memory + Detect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌅 Greeting Webhook": {
+      "main": [
+        [
+          {
+            "node": "🌅 Build Greeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 Memories Webhook": {
+      "main": [
+        [
+          {
+            "node": "📋 Get Memories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌅 Build Greeting": {
+      "main": [
+        [
+          {
+            "node": "📤 Respond Greeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Get Memories": {
+      "main": [
+        [
+          {
+            "node": "📤 Respond Memories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 Load Memory + Detect": {
+      "main": [
+        [
+          {
+            "node": "🔮 Is Vault Recall?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔮 Is Vault Recall?": {
+      "main": [
+        [
+          {
+            "node": "🔮 Vault Recall Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "💾 Is Vault Save?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔮 Vault Recall Response": {
+      "main": [
+        [
+          {
+            "node": "📤 Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Is Vault Save?": {
+      "main": [
+        [
+          {
+            "node": "💾 Vault Save Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🔍 Is Search Request?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Vault Save Response": {
+      "main": [
+        [
+          {
+            "node": "📤 Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Is Search Request?": {
+      "main": [
+        [
+          {
+            "node": "🔍 DuckDuckGo Search",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⚡ Build Ollama Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 DuckDuckGo Search": {
+      "main": [
+        [
+          {
+            "node": "📰 Parse Search Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📰 Parse Search Results": {
+      "main": [
+        [
+          {
+            "node": "⚡ Build Ollama Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚡ Build Ollama Prompt": {
+      "main": [
+        [
+          {
+            "node": "🤖 Ollama Chat API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 Ollama Chat API": {
+      "main": [
+        [
+          {
+            "node": "✅ Process Ollama Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Process Ollama Response": {
+      "main": [
+        [
+          {
+            "node": "📤 Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Research Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "🧭 Intent Dispatch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧭 Intent Dispatch": {
+      "main": [
+        [
+          {
+            "node": "🤖 Ollama Intent Synthesis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 Ollama Intent Synthesis": {
+      "main": [
+        [
+          {
+            "node": "📝 Parse Refined Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Parse Refined Query": {
+      "main": [
+        [
+          {
+            "node": "🐍 Python Web-Intel Exec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🐍 Python Web-Intel Exec": {
+      "main": [
+        [
+          {
+            "node": "⏳ Rate Limit Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏳ Rate Limit Wait": {
+      "main": [
+        [
+          {
+            "node": "🧠 ChromaDB Persist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚠️ Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "🚨 Error Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "active": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
 }

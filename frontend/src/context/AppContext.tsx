@@ -244,6 +244,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Wraps fetch with the auth header; a 401 means the stored token is stale
+  // or expired, so clear it and drop back to the login screen instead of
+  // leaving the app stuck in a half-authenticated state.
+  const authFetch = async (url: string, opts: RequestInit = {}) => {
+    const headers: Record<string, string> = { ...(opts.headers as Record<string, string> || {}) };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}${url}`, { ...opts, headers });
+    if (res.status === 401) {
+      setToken(null);
+    }
+    return res;
+  };
+
   useEffect(() => {
     const saved = localStorage.getItem("lia_token");
     if (saved) setTokenState(saved);
@@ -287,9 +300,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fetchProfile = async () => {
     if (!token) return;
     try {
-      const res = await fetch(`${API_BASE}/api/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await authFetch("/api/profile");
       if (res.ok) {
         const d = await res.json();
         setProfile(d);
@@ -302,16 +313,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fetchSystemStats = async () => {
     if (!token) return;
     try {
-      const res = await fetch(`${API_BASE}/api/device`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await authFetch("/api/device");
       if (res.ok) {
         const d = await res.json();
         setSystemStats(d);
       }
-      const pRes = await fetch(`${API_BASE}/api/device/processes`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const pRes = await authFetch("/api/device/processes");
       if (pRes.ok) {
         const pd = await pRes.json();
         setProcesses(pd.processes || []);
@@ -325,9 +332,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!token) return;
     const targetPath = path || currentPath;
     try {
-      const res = await fetch(`${API_BASE}/api/desktop/files?path=${encodeURIComponent(targetPath)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await authFetch(`/api/desktop/files?path=${encodeURIComponent(targetPath)}`);
       if (res.ok) {
         const d = await res.json();
         setFiles(d.files || []);
@@ -341,12 +346,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const executeCommand = async (command: string) => {
     if (!token) return;
     try {
-      const res = await fetch(`${API_BASE}/api/desktop/execute`, {
+      const res = await authFetch("/api/desktop/execute", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ task_type: "execute_command", target: command })
       });
       if (res.ok) {
@@ -641,12 +643,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const approveTask = async (approved: boolean) => {
     if (!activeTaskToApprove || !token) return;
     try {
-      const res = await fetch(`${API_BASE}/api/desktop/execute`, {
+      const res = await authFetch("/api/desktop/execute", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           task_type: activeTaskToApprove.type === "launch_app" ? "launch_app" : "execute_command",
           target: activeTaskToApprove.app || activeTaskToApprove.command
@@ -699,12 +698,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateProfile = async (changes: Partial<Profile>) => {
     if (!token) return;
-    const res = await fetch(`${API_BASE}/api/profile`, {
+    const res = await authFetch("/api/profile", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(changes)
     });
     if (res.ok) {
@@ -716,12 +712,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const runTelemetryTrigger = async (event: string) => {
     if (!token) return;
     try {
-      const res = await fetch(`${API_BASE}/api/vision/telemetry`, {
+      const res = await authFetch("/api/vision/telemetry", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event })
       });
       if (res.ok) {
@@ -747,8 +740,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       "Content-Type": "application/json",
       ...(opts.headers || {})
     };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const res = await fetch(`${API_BASE}${url}`, { ...opts, headers });
+    const res = await authFetch(url, { ...opts, headers });
+    if (res.status === 401) return null;
     return await res.json();
   };
 
@@ -830,9 +823,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const fd = new FormData();
     fd.append("file", file);
     fd.append("legal_authorized", "true");
-    const res = await fetch(`${API_BASE}/api/voice/upload`, {
+    const res = await authFetch("/api/voice/upload", {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
       body: fd
     });
     const d = await res.json();
@@ -843,9 +835,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const uploadCustomVrm = async (file: File): Promise<string> => {
     const fd = new FormData();
     fd.append("file", file);
-    const res = await fetch(`${API_BASE}/api/avatar/upload`, {
+    const res = await authFetch("/api/avatar/upload", {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
       body: fd
     });
     const d = await res.json();
@@ -855,9 +846,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteCustomVrm = async () => {
-    const res = await fetch(`${API_BASE}/api/avatar/custom`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
+    const res = await authFetch("/api/avatar/custom", {
+      method: "DELETE"
     });
     const d = await res.json();
     if (!res.ok) throw new Error(d.detail || "Failed to remove custom VRM");

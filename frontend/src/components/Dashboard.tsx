@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { ThreeCanvas } from "./ThreeCanvas";
+import { Button, IconButton, Panel, StatusDot, TextInput, ChatBubble, Badge } from "./ui";
 import {
   LogOut,
   Send,
   Sliders,
   Database,
   Cpu,
-  FolderOpen,
   Check,
   X,
   Activity,
@@ -17,8 +17,6 @@ import {
   Phone,
   PhoneOff,
   Mic,
-  ChevronDown,
-  ChevronUp,
   Code2,
   Presentation,
 } from "lucide-react";
@@ -79,10 +77,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const isStreaming = chatHistory.length > 0 && chatHistory[chatHistory.length - 1].isStreaming;
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
   return (
     <div className="w-full h-screen flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
       {/* ─── Header ─── */}
@@ -90,7 +84,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="flex items-center space-x-3">
           <div className="relative">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center font-bold text-sm shadow-lg shadow-cyan-950/30 animate-breathe">L</div>
-            <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-900 ${wsConnected ? "bg-emerald-400" : "bg-red-400"}`} />
+            <StatusDot
+              state={wsConnected ? "online" : "offline"}
+              pulse={false}
+              className="absolute -bottom-0.5 -right-0.5 border-2 border-slate-900"
+            />
           </div>
           <div>
             <h1 className="text-sm font-semibold tracking-wide bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">{profile?.char_name || "LIA"} AI</h1>
@@ -99,27 +97,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         <div className="flex items-center space-x-1.5">
-          {/* Diagnostics toggle */}
-          <button
+          <IconButton
+            icon={<Cpu />}
+            label="System Diagnostics"
+            active={showDiagnostics}
             onClick={() => setShowDiagnostics(!showDiagnostics)}
-            className="p-2 hover:bg-slate-800/60 rounded-lg transition-all text-slate-500 hover:text-slate-300"
-            title="System Diagnostics"
-          >
-            <Cpu className="w-4 h-4" />
-          </button>
-          <button onClick={onOpenCreator} className="p-2 hover:bg-slate-800/60 rounded-lg transition-all text-slate-500 hover:text-slate-300" title="Appearance">
-            <Sliders className="w-4 h-4" />
-          </button>
-          <button onClick={onOpenVoice} className="p-2 hover:bg-slate-800/60 rounded-lg transition-all text-slate-500 hover:text-slate-300" title="Voice">
-            <Activity className="w-4 h-4" />
-          </button>
-          <button onClick={onOpenMemory} className="p-2 hover:bg-slate-800/60 rounded-lg transition-all text-slate-500 hover:text-slate-300" title="Memory">
-            <Database className="w-4 h-4" />
-          </button>
+          />
+          <IconButton icon={<Sliders />} label="Appearance" onClick={onOpenCreator} />
+          <IconButton icon={<Activity />} label="Voice" onClick={onOpenVoice} />
+          <IconButton icon={<Database />} label="Memory" onClick={onOpenMemory} />
           <div className="w-[1px] h-5 bg-slate-800 mx-1" />
-          <button onClick={logout} className="p-2 hover:bg-red-950/30 hover:text-red-400 rounded-lg transition-all text-slate-500" title="Sign out">
-            <LogOut className="w-4 h-4" />
-          </button>
+          <IconButton icon={<LogOut />} label="Sign out" tone="danger" onClick={logout} />
         </div>
       </header>
 
@@ -140,7 +128,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
           {isSpeaking && (
             <div className="flex items-center space-x-1.5 ml-auto">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <StatusDot state="speaking" />
               <span className="text-emerald-400 font-semibold">Speaking</span>
             </div>
           )}
@@ -149,10 +137,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* ─── Main 2-Column Layout ─── */}
       <main className="flex-1 flex overflow-hidden min-h-0 bg-[radial-gradient(ellipse_at_top_left,rgba(6,182,212,0.04),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(139,92,246,0.04),transparent_50%)]">
-        
+
         {/* ─── Left: Avatar Pod ─── */}
         <section className="w-72 desktop-only flex flex-col flex-shrink-0 p-3 space-y-2">
-          <div className="flex-1 relative rounded-2xl border border-slate-800/60 bg-slate-900/20 backdrop-blur-md overflow-hidden shadow-2xl animate-border-glow">
+          <Panel glow className="flex-1 relative overflow-hidden">
             {/* Status tag */}
             <div className="absolute top-3 left-4 text-[10px] font-bold text-cyan-400/80 tracking-widest flex items-center space-x-1.5 z-10">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
@@ -173,7 +161,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
               </div>
             )}
-            
+
             {/* VRM WebGL */}
             <ThreeCanvas
               profile={profile}
@@ -182,50 +170,33 @@ export const Dashboard: React.FC<DashboardProps> = ({
               spokenText={spokenText || getLastMessage()}
               asleep={profile?.greeting_style === "asleep"}
             />
-            
+
             {/* Quick Actions */}
             <div className="absolute bottom-3 left-0 right-0 flex justify-center space-x-2 px-4 z-10">
-              <button
-                className="px-3 py-1.5 text-[10px] font-medium bg-slate-900/80 hover:bg-slate-800 border border-slate-700/30 rounded-lg transition-all backdrop-blur-sm hover:border-slate-600/50"
-                onClick={() => runTelemetryTrigger("hand_wave")}
-              >
+              <Button variant="secondary" size="sm" onClick={() => runTelemetryTrigger("hand_wave")}>
                 👋 Wave
-              </button>
-              <button
-                className="px-3 py-1.5 text-[10px] font-medium bg-slate-900/80 hover:bg-slate-800 border border-slate-700/30 rounded-lg transition-all backdrop-blur-sm hover:border-slate-600/50"
-                onClick={() => runTelemetryTrigger("smile")}
-              >
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => runTelemetryTrigger("smile")}>
                 😊 Smile
-              </button>
+              </Button>
             </div>
-          </div>
+          </Panel>
 
           {/* ─── Live Call Button ─── */}
-          <button
-            className={`live-call-btn w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center space-x-2 transition-all ${
-              liveCallActive
-                ? "active bg-gradient-to-r from-red-500/90 to-rose-600/90 text-white"
-                : "bg-gradient-to-r from-cyan-500/90 to-violet-600/90 text-white hover:shadow-lg hover:shadow-cyan-950/30"
-            }`}
+          <Button
+            variant={liveCallActive ? "danger" : "primary"}
+            fullWidth
+            className="live-call-btn py-3 rounded-xl"
+            icon={liveCallActive ? <PhoneOff /> : <Phone />}
             onClick={() => setLiveCallActive(!liveCallActive)}
           >
-            {liveCallActive ? (
-              <>
-                <PhoneOff className="w-4 h-4" />
-                <span>End Call</span>
-              </>
-            ) : (
-              <>
-                <Phone className="w-4 h-4" />
-                <span>Live Call</span>
-              </>
-            )}
-          </button>
+            {liveCallActive ? "End Call" : "Live Call"}
+          </Button>
         </section>
 
         {/* ─── Right: Chat ─── */}
         <section className="flex-1 flex flex-col min-w-0 border-l border-slate-800/40">
-          
+
           {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {chatHistory.length === 0 ? (
@@ -239,41 +210,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
               </div>
             ) : (
-              chatHistory.map((msg, idx) => (
-                <div
+              chatHistory.map((msg) => (
+                <ChatBubble
                   key={msg.id}
-                  className={`flex flex-col space-y-0.5 max-w-[80%] ${
-                    msg.sender === "user"
-                      ? "ml-auto items-end msg-user"
-                      : "mr-auto items-start msg-assistant"
-                  }`}
+                  sender={msg.sender}
+                  senderLabel={msg.sender === "user" ? "You" : profile?.char_name || "LIA"}
+                  text={msg.text}
+                  emotion={msg.emotion}
+                  streaming={msg.isStreaming}
                 >
-                  {/* Sender + timestamp */}
-                  <div className="flex items-center space-x-2 px-1">
-                    <span className="text-[9px] text-slate-500 capitalize font-medium">{msg.sender === "user" ? "You" : profile?.char_name || "LIA"}</span>
-                    {msg.emotion && msg.sender === "assistant" && (
-                      <span className="text-[8px] text-cyan-500/60 bg-cyan-500/5 px-1.5 py-0.5 rounded-full border border-cyan-500/10">{msg.emotion}</span>
-                    )}
-                  </div>
-
-                  {/* Message bubble */}
-                  <div
-                    className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                      msg.sender === "user"
-                        ? "bg-gradient-to-br from-cyan-600 to-cyan-700 text-white rounded-tr-md shadow-lg shadow-cyan-950/15"
-                        : "bg-slate-800/50 border border-slate-700/30 text-slate-200 rounded-tl-md shadow-md"
-                    }`}
-                  >
-                    {msg.text}
-                    {msg.isStreaming && (
-                      <span className="inline-flex ml-1.5 space-x-0.5 align-middle">
-                        <span className="typing-dot" />
-                        <span className="typing-dot" />
-                        <span className="typing-dot" />
-                      </span>
-                    )}
-                  </div>
-                  
                   {/* Task approval */}
                   {msg.task && (
                     <div className="mt-1.5 p-3 bg-slate-800/40 border border-slate-700/30 rounded-xl flex items-center justify-between space-x-4 animate-fade-in">
@@ -288,12 +233,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         </span>
                       ) : (
                         <div className="flex space-x-1">
-                          <button className="p-1.5 hover:bg-emerald-500/15 hover:text-emerald-400 rounded-lg transition-all text-slate-500">
-                            <Check className="w-3.5 h-3.5" />
-                          </button>
-                          <button className="p-1.5 hover:bg-red-500/15 hover:text-red-400 rounded-lg transition-all text-slate-500">
-                            <X className="w-3.5 h-3.5" />
-                          </button>
+                          <IconButton icon={<Check className="w-3.5 h-3.5" />} label="Approve" className="hover:bg-emerald-500/15 hover:text-emerald-400" />
+                          <IconButton icon={<X className="w-3.5 h-3.5" />} label="Reject" tone="danger" />
                         </div>
                       )}
                     </div>
@@ -301,9 +242,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                   {/* Search */}
                   {msg.searchQuery && (
-                    <span className="text-[9px] text-cyan-400/70 font-medium mt-0.5 block px-1">
+                    <Badge tone="cyan" className="mt-0.5 px-0">
                       🔍 "{msg.searchQuery}" ({msg.searchResults?.length || 0} results)
-                    </span>
+                    </Badge>
                   )}
 
                   {/* Web App IDE Action Button */}
@@ -316,12 +257,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           <p className="text-[10px] text-slate-400">Web Application Project</p>
                         </div>
                       </div>
-                      <button
-                        onClick={() => openCodeWorkspace(msg.webApp!.app_id)}
-                        className="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs rounded-lg transition-all shadow-md flex items-center space-x-1 flex-shrink-0"
-                      >
-                        <span>Open in Code IDE</span>
-                      </button>
+                      <Button variant="primary" size="sm" onClick={() => openCodeWorkspace(msg.webApp!.app_id)}>
+                        Open in Code IDE
+                      </Button>
                     </div>
                   )}
 
@@ -335,15 +273,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           <p className="text-[10px] text-slate-400">{msg.presentation.total_slides} Slides Presentation</p>
                         </div>
                       </div>
-                      <button
-                        onClick={() => openPresentationWorkspace(msg.presentation!.presentation_id)}
-                        className="px-3 py-1.5 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500 text-white font-bold text-xs rounded-lg transition-all shadow-md flex items-center space-x-1 flex-shrink-0"
-                      >
-                        <span>Open Slide Editor</span>
-                      </button>
+                      <Button variant="secondary" size="sm" onClick={() => openPresentationWorkspace(msg.presentation!.presentation_id)}>
+                        Open Slide Editor
+                      </Button>
                     </div>
                   )}
-                </div>
+                </ChatBubble>
               ))
             )}
             <div ref={chatEndRef} />
@@ -378,20 +313,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             {/* Input + Send */}
             <div className="flex space-x-2">
-              <input
-                type="text"
+              <TextInput
                 placeholder={`Message ${profile?.char_name || "LIA"}...`}
-                className="flex-1 bg-slate-800/40 border border-slate-700/40 rounded-xl px-4 py-2.5 text-sm text-white focus:border-cyan-500/50 transition-all placeholder:text-slate-600"
+                className="flex-1"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                onEnter={handleSend}
               />
-              <button
-                className="p-3 bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-400 hover:to-violet-500 text-white rounded-xl shadow-lg hover:shadow-cyan-500/15 active:scale-[0.97] transition-all"
-                onClick={handleSend}
-              >
+              <Button variant="primary" className="!rounded-xl !px-3" onClick={handleSend}>
                 <Send className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
         </section>

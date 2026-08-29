@@ -24,6 +24,7 @@ COLLECTIONS = {
     "voice_settings": DATA_DIR / "voice_settings.json",
     "logs": DATA_DIR / "logs.json",
     "detections": DATA_DIR / "detections.json",
+    "video_projects": DATA_DIR / "video_projects.json",
 }
 
 def _load_collection(collection: str) -> Dict[str, Any]:

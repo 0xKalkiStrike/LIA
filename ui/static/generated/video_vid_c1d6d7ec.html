@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Video — Car In Which It Will</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #050811; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .player-card { width: 100%; max-width: 960px; background: #0b1120; border: 1px solid rgba(0, 242, 254, 0.3); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+    .player-header { padding: 18px 24px; background: rgba(15, 23, 42, 0.9); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .player-title { font-size: 18px; font-weight: 700; color: #00f2fe; display: flex; align-items: center; gap: 10px; }
+    .viewport { position: relative; width: 100%; height: 500px; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .viewport video, .viewport-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.85); transition: opacity 0.5s ease, transform 10s ease; }
+    .viewport-img.playing { transform: scale(1.15); }
+    .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 40%, rgba(0,0,0,0.85) 100%); pointer-events: none; }
+    .overlay * { pointer-events: auto; }
+    .play-btn { align-self: center; width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #00f2fe, #4facfe); border: none; color: #000; font-size: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(0,242,254,0.6); transition: transform 0.2s, box-shadow 0.2s; }
+    .play-btn:hover { transform: scale(1.1); box-shadow: 0 0 40px rgba(0,242,254,0.8); }
+    .caption-box { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); padding: 14px 24px; border-radius: 12px; color: #fff; font-size: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.15); line-height: 1.5; max-height: 100px; overflow-y: auto; max-width: 860px; margin: 0 auto; }
+    .progress-bar-wrap { width: 100%; height: 6px; background: rgba(255,255,255,0.15); cursor: pointer; }
+    .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); transition: width 0.1s linear; }
+    .controls-bar { padding: 16px 24px; background: #0f172a; display: flex; gap: 12px; overflow-x: auto; align-items: center; justify-content: space-between; }
+    .chip { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.2s; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+    .chip.active, .chip:hover { background: rgba(0,242,254,0.15); border-color: #00f2fe; color: #00f2fe; }
+    .btn-dl { background: linear-gradient(135deg, #00f2fe, #4facfe); color: #000; font-weight: 700; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 16px rgba(0,242,254,0.4); }
+  </style>
+</head>
+<body>
+  <div class="player-card">
+    <div class="player-header">
+      <div class="player-title">📹 2K AI MP4 Video Player — Car In Which It Will</div>
+      <div style="font-size: 13px; color: #94a3b8;">Duration: 00:18 | 2K QHD (2560x1440)</div>
+    </div>
+    
+    <div class="viewport" id="viewport">
+      <video id='main-vid' controls autoplay loop muted playsinline poster='/static/generated/video_vid_c1d6d7ec_s1.jpg'><source src="/static/generated/video_vid_c1d6d7ec.mp4" type="video/mp4"></video>
+    </div>
+    <div class="progress-bar-wrap" id="prog-wrap"><div class="progress-bar" id="v-prog"></div></div>
+    
+    <div class="controls-bar">
+      <div id="v-chips" style="display:flex; gap:8px; overflow-x:auto;"></div>
+      <a href="/static/generated/video_vid_c1d6d7ec.mp4" download class="btn-dl">📥 Download MP4 Video File</a>
+    </div>
+  </div>
+
+  <script>
+    const scenes = [{"scene": 1, "title": "Opening View", "visual": "Cinematic wide establishing shot showing Car In Which It Will with glowing particle effects, 2k QHD resolution.", "duration": "00:06", "audio": "Welcome to the video presentation of Car In Which It Will. Let's step into this visual experience.", "image_url": "/static/generated/video_vid_c1d6d7ec_s1.jpg"}, {"scene": 2, "title": "Main Highlight", "visual": "Dynamic camera zoom into key details of Car In Which It Will, smooth panning across vivid surroundings.", "duration": "00:07", "audio": "Exploring the main visual details and fine features of Car In Which It Will.", "image_url": "/static/generated/video_vid_c1d6d7ec_s2.jpg"}, {"scene": 3, "title": "Cinematic Conclusion", "visual": "Futuristic cinematic closing shot of Car In Which It Will, lighting up with dramatic atmosphere.", "duration": "00:07", "audio": "This completes our visual presentation of Car In Which It Will.", "image_url": "/static/generated/video_vid_c1d6d7ec_s3.jpg"}];
+    let curIdx = 0, isPlaying = false, timer = null;
+    const vImg = document.getElementById('v-img');
+    const vTag = document.getElementById('v-tag');
+    const vCap = document.getElementById('v-caption');
+    const vProg = document.getElementById('v-prog');
+    const vPlay = document.getElementById('v-play');
+    const vChips = document.getElementById('v-chips');
+
+    function renderChips() {
+      if (!vChips) return;
+      vChips.innerHTML = scenes.map((s, i) => `
+        <button class="chip ${i === curIdx ? 'active' : ''}" onclick="jumpScene(${i})" title="${s.title}">
+          🎬 Scene ${s.scene}: ${s.title}
+        </button>
+      `).join('');
+    }
+
+    function jumpScene(idx) {
+      curIdx = idx;
+      const s = scenes[curIdx];
+      if (vTag) vTag.textContent = `Scene ${s.scene}: ${s.title}`;
+      if (vCap) vCap.textContent = s.audio;
+      if (vImg && s.image_url) {
+        vImg.src = s.image_url;
+      }
+      if (vProg) vProg.style.width = `${((curIdx + 1) / scenes.length) * 100}%`;
+      renderChips();
+      if ('speechSynthesis' in window) {
+        speechSynthesis.cancel();
+        if (isPlaying && s.audio) {
+          const ut = new SpeechSynthesisUtterance(s.audio);
+          speechSynthesis.speak(ut);
+        }
+      }
+    }
+
+    if (vPlay) {
+      vPlay.onclick = () => {
+        isPlaying = !isPlaying;
+        vPlay.textContent = isPlaying ? '⏸' : '▶';
+        if (vImg) vImg.classList.toggle('playing', isPlaying);
+        if (isPlaying) {
+          jumpScene(curIdx);
+          let step = 0;
+          clearInterval(timer);
+          timer = setInterval(() => {
+            step += 1;
+            if (vProg) vProg.style.width = `${Math.min(100, ((curIdx * 20 + step) / (scenes.length * 20)) * 100)}%`;
+            if (step >= 20) {
+              step = 0;
+              curIdx = (curIdx + 1) % scenes.length;
+              jumpScene(curIdx);
+            }
+          }, 400);
+        } else {
+          clearInterval(timer);
+          if ('speechSynthesis' in window) speechSynthesis.cancel();
+        }
+      };
+    }
+
+    renderChips();
+  </script>
+</body>
+</html>

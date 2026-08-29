@@ -210,8 +210,95 @@ def invoke_agent(body: AgentInvokeBody, authorization: str | None = Header(defau
     elif agent in ("image", "art"):
         from agents import image_agent
         return image_agent.generate_and_save(prompt, user_id)
+    elif agent in ("longform_video", "longform", "movie", "production"):
+        from agents import longform_video_agent
+        return longform_video_agent.create_project(prompt, user_id)
     else:
         raise HTTPException(400, f"Unknown agent: {agent}")
+
+
+# ------------------------------------------------------------- longform video
+@app.get("/api/video/longform/{project_id}")
+def longform_video_status(project_id: str, authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import longform_video_agent
+    return longform_video_agent.get_project_status(project_id)
+
+
+@app.post("/api/video/longform/{project_id}/resume")
+def longform_video_resume(project_id: str, authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from agents import longform_video_agent
+    return longform_video_agent.resume_project(project_id)
+
+
+# -------------------------------------------------------------- web intel
+class IntelRunBody(BaseModel):
+    query: str
+    depth: str = "surface"  # surface | deep | tor | all
+
+
+@app.post("/api/intel/run")
+async def intel_run(body: IntelRunBody):
+    """Dispatch target for n8n's Python-exec node -- runs the web
+    intelligence layer (agents.web_intel) and returns normalized results.
+    No end-user auth: this carries no user-specific data, it's an internal
+    automation endpoint for the (localhost-only) n8n workflow and
+    lia_orchestrator.py, same trust boundary as the direct-to-Ollama calls
+    n8n already makes elsewhere in this backend."""
+    query = body.query.strip()
+    if not query:
+        raise HTTPException(400, "Empty query.")
+    if body.depth not in ("surface", "deep", "tor", "all"):
+        raise HTTPException(400, f"Invalid depth: {body.depth}")
+
+    from agents.web_intel import unified_search
+    return await unified_search(query, depth=body.depth)
+
+
+class IntelPersistBody(BaseModel):
+    query: str
+    results: list[dict]
+
+
+@app.post("/api/intel/persist")
+async def intel_persist(body: IntelPersistBody):
+    """Embeds each result via Ollama and upserts it into the local Chroma
+    collection -- the memory/vector persistence dispatch target for n8n."""
+    from fastapi.concurrency import run_in_threadpool
+    from core import intel_store
+    import asyncio
+
+    if not body.results:
+        return {"persisted": 0}
+
+    try:
+        embeddings = await asyncio.gather(
+            *[intel_store.embed(f"{r.get('title', '')}\n{r.get('snippet', '')}") for r in body.results]
+        )
+    except Exception as e:
+        raise HTTPException(502, f"Embedding failed (is Ollama running with the embedding model pulled?): {str(e)[:200]}")
+
+    count = await run_in_threadpool(intel_store.persist_sync, body.query, body.results, embeddings)
+    return {"persisted": count}
+
+
+@app.get("/api/intel/query")
+async def intel_query(q: str, n_results: int = 5):
+    """Semantic search over previously persisted web-intel findings."""
+    from fastapi.concurrency import run_in_threadpool
+    from core import intel_store
+
+    if not q.strip():
+        raise HTTPException(400, "Empty query.")
+
+    try:
+        embedding = await intel_store.embed(q.strip())
+    except Exception as e:
+        raise HTTPException(502, f"Embedding failed: {str(e)[:200]}")
+
+    results = await run_in_threadpool(intel_store.query_sync, embedding, n_results)
+    return {"query": q, "results": results}
 
 
 # ------------------------------------------------------------------ memory

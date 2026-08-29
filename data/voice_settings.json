@@ -1,1 +1,26 @@
-{}
+{
+  "e5f687870e294d3d836f8afc0924317f": {
+    "user_id": "e5f687870e294d3d836f8afc0924317f",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1787571903.5526402
+  },
+  "5df8a5e6f6e94e68a8e25a8329fcafd5": {
+    "user_id": "5df8a5e6f6e94e68a8e25a8329fcafd5",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1787573999.7837694
+  }
+}

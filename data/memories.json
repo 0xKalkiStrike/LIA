@@ -1,1 +1,16 @@
-{}
+{
+  "05e3fa2787424e04b8d6c23328d93c4b": {
+    "user_id": "70253a30ebae49e083760bc91d8a77d7",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1787571903.3567376
+  },
+  "b8fb6103e1f440ffb97a280736ee3f7f": {
+    "user_id": "514bd3132efe4eeab64b645d8ce5422e",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1787573999.587406
+  }
+}

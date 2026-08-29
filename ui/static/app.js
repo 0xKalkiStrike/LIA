@@ -1681,6 +1681,79 @@ async function sendMessage(text, speakResponse = false) {
           $('#chat-log').scrollTop = 1e9;
         }
 
+        // ── Long-Form Video Production: background progress card ──
+        if (res.engine === 'longform_video' && res.status === 'processing' && res.project_id) {
+          const pid = res.project_id;
+          const prog = document.createElement('div');
+          prog.className = 'agent-card longform-progress-card';
+          prog.style.cssText = 'background:#0b1120; border:1px solid rgba(0,242,254,0.3); border-radius:12px; padding:16px; margin-top:12px; margin-bottom:12px; box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+          prog.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="color:#00f2fe; font-weight:700; font-size:15px;">🎬 Producing: ${(res.topic || 'Video Project')}</span>
+              <span id="lf-pct-${pid}" style="color:#94a3b8; font-size:12px;">0%</span>
+            </div>
+            <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden; margin-bottom:8px;">
+              <div id="lf-bar-${pid}" style="width:0%; height:100%; background:linear-gradient(90deg,#00f2fe,#4facfe); transition:width 0.4s ease;"></div>
+            </div>
+            <div id="lf-status-${pid}" style="font-size:12px; color:#94a3b8;">Target: ${res.target_duration || ''} · ${res.estimated_scenes || '?'} scenes · queued…</div>
+          `;
+          $('#chat-log').appendChild(prog);
+          $('#chat-log').scrollTop = 1e9;
+
+          const poll = async () => {
+            let st;
+            try {
+              st = await api(res.poll_url || `/api/video/longform/${pid}`);
+            } catch (e) {
+              setTimeout(poll, 6000);
+              return;
+            }
+            const bar = $(`#lf-bar-${pid}`), pct = $(`#lf-pct-${pid}`), statusEl = $(`#lf-status-${pid}`);
+            if (bar) bar.style.width = `${st.progress_percent || 0}%`;
+            if (pct) pct.textContent = `${st.progress_percent || 0}%`;
+            if (statusEl) statusEl.textContent = `${st.scenes_done || 0}/${st.scenes_total || '?'} scenes · ${st.checkpoint || st.status}`;
+
+            if (st.status === 'done') {
+              prog.remove();
+              const scenes = st.scenes || [];
+              const done = document.createElement('div');
+              done.className = 'agent-card video-player-card';
+              done.style.cssText = 'background:#0b1120; border:1px solid rgba(0,242,254,0.3); border-radius:12px; padding:16px; margin-top:12px; margin-bottom:12px; box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+              const failedNote = (st.qc && st.qc.scenes_failed && st.qc.scenes_failed.length)
+                ? `<div style="color:#fbbf24; font-size:12px; margin-top:8px;">⚠ ${st.qc.scenes_failed.length} of ${st.qc.scenes_total} scenes could not be generated and were skipped.</div>`
+                : '';
+              done.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span style="color:#00f2fe; font-weight:700; font-size:15px;">📹 ${(st.topic || 'Video').toUpperCase()} — Production Complete</span>
+                  <span style="background:rgba(0,242,254,0.15); color:#00f2fe; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600;">⏱ ${st.total_duration || ''}</span>
+                </div>
+                <div style="width:100%; border-radius:8px; overflow:hidden; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);">
+                  <video controls style="width:100%; max-height:420px; background:#000;" poster="${st.thumbnail || ''}">
+                    <source src="${st.mp4_url || st.video_url}" type="video/mp4">
+                  </video>
+                </div>
+                <div style="display:flex; gap:6px; overflow-x:auto; margin-bottom:12px;">
+                  ${scenes.map(s => `<img src="${s.image_url}" title="${s.title}" style="height:60px; border-radius:4px; border:1px solid rgba(255,255,255,0.1);" />`).join('')}
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                  <a href="${st.mp4_url || st.video_url}" download class="btn solid sm" style="background:linear-gradient(135deg,#00f2fe,#4facfe); color:#000; font-weight:700; text-decoration:none;">📥 Download MP4</a>
+                  ${st.srt_url ? `<a href="${st.srt_url}" download class="btn ghost sm" style="text-decoration:none; color:#00f2fe; border-color:rgba(0,242,254,0.4);">📝 Download Subtitles</a>` : ''}
+                </div>
+                ${failedNote}
+              `;
+              $('#chat-log').appendChild(done);
+              $('#chat-log').scrollTop = 1e9;
+              return;
+            }
+            if (st.status === 'failed') {
+              if (statusEl) statusEl.textContent = `Failed: ${st.error || 'unknown error'}`;
+              return;
+            }
+            setTimeout(poll, 6000);
+          };
+          setTimeout(poll, 6000);
+        }
+
         // ── Video Agent Interactive Playable Card ──
         if (res.engine === 'video' || res.video_id || res.scenes) {
           const vidId = res.video_id || ('vid_' + Math.random().toString(36).substring(2, 8));
@@ -2453,9 +2526,12 @@ $('#btn-add-vault').onclick = async () => {
 async function loadDevice() {
   const d = await api('/api/device').catch(() => null);
   if (!d) return;
-  $('#hud-cpu').textContent = (d.cpu_percent ?? '--') + '%';
-  $('#hud-ram').textContent = (d.ram_percent ?? '--') + '%';
-  $('#hud-bat').textContent = d.battery != null ? d.battery + '%' : '--';
+  const cpuTxt = (d.cpu_percent ?? '--') + '%';
+  const ramTxt = (d.ram_percent ?? '--') + '%';
+  const batTxt = d.battery != null ? d.battery + '%' : '--';
+  ['hud-cpu', 'hud-cpu-top', 'hud-cpu-ctx'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = cpuTxt; });
+  ['hud-ram', 'hud-ram-top', 'hud-ram-ctx'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = ramTxt; });
+  ['hud-bat', 'hud-bat-ctx'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = batTxt; });
   const grid = $('#device-grid');
   if (!grid) return;
   grid.innerHTML = Object.entries(d).map(([k, v]) =>

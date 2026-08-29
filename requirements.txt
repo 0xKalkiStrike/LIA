@@ -18,3 +18,14 @@ websockets>=12.0
 
 # ── Presentation Export ───────────────────────────────────────────────
 python-pptx>=0.6.23
+
+# ── Web Intelligence layer (agents/web_intel) ─────────────────────────
+aiohttp>=3.9              # async surface/deep search
+aiohttp-socks>=0.8        # routes aiohttp through the Tor SOCKS5 proxy
+stem>=1.8.2                # Tor control-port circuit renewal (NEWNYM)
+chromadb>=0.5              # vector persistence for /api/intel/persist
+
+# Optional: only needed for agents.web_intel.surface.render_js_page (JS-rendered
+# page fetching). Lazy-imported -- everything else works without it.
+# pip install playwright && playwright install chromium
+# playwright>=1.44

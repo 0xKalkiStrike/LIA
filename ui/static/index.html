@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%23060A13' stroke='%2353D7F0' stroke-width='2'/><text x='16' y='22' text-anchor='middle' font-size='16' font-family='sans-serif' fill='%2353D7F0'>⚡</text></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/static/style.css?v=2.2.2"/><!-- CDN imports for WebGL, MediaPipe, Chart.js & Marked -->
+<link rel="stylesheet" href="/static/style.css?v=3.0.0"/><!-- CDN imports for WebGL, MediaPipe, Chart.js & Marked -->
 <script type="importmap">
   {
     "imports": {
@@ -193,31 +193,53 @@
   </div>
 </section>
 
-<!-- ════════════════ DASHBOARD (CYBERPUNK AI COMMAND CENTER) ════════════════ -->
+<!-- ════════════════ DASHBOARD (LIA AI COMMAND CENTER) ════════════════ -->
 <section id="screen-dash" class="screen">
-  
-  <!-- LEFT COLUMN: LIA Viewport, Voice Visualizer, System HUD -->
+
+  <!-- TOP BAR: brand, sidebar toggle, workspace tabs, system status -->
+  <nav class="dash-nav">
+    <div class="brand"><span class="brand-mark">⚡</span><span class="brand-text">LIA</span></div>
+    <button class="btn ghost icon-only sm" id="btn-sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar">☰</button>
+    <button class="tab active" data-tab="chat">Chat &amp; Agents</button>
+    <button class="tab" data-tab="files">Files &amp; Shell</button>
+    <button class="tab" data-tab="memory">Memory Vault</button>
+    <button class="tab" data-tab="activity">Activity Feed</button>
+    <button class="tab" data-tab="device">Control Center</button>
+    <button class="tab" data-tab="settings">Settings</button>
+    <span class="spacer"></span>
+    <div class="topbar-status">
+      <span class="status-chip status-chip-primary"><span class="dot" id="engine-dot"></span><span id="engine-status">Local · ready</span></span>
+      <span class="status-chip">CPU <b id="hud-cpu-top">--%</b></span>
+      <span class="status-chip">RAM <b id="hud-ram-top">--%</b></span>
+      <span class="kbd-hint" id="btn-open-cmdk" title="Command palette">⌘K</span>
+    </div>
+    <span class="commander-tag" id="commander-tag"></span>
+    <button class="btn ghost sm" id="btn-toggle-sensors-panel" title="Vision panel">👁 Vision</button>
+    <button class="btn solid sm" id="btn-live-call" style="background: linear-gradient(180deg, #10B981, #059669); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);">📞 Live Call</button>
+    <button class="btn ghost sm" id="btn-logout">Log out</button>
+  </nav>
+
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+  <div class="shell-body">
+  <!-- LEFT SIDEBAR: LIA identity, quick actions, agent monitor -->
   <aside class="dash-left">
-    <!-- LIA Avatar Viewport -->
-    <div class="holo-pod" id="dash-pod">
-      <div class="pod-ring"></div>
-      <div class="pod-scan"></div>
-      <div id="dash-avatar" class="avatar-slot"></div>
+    <div class="identity-block">
+      <div class="holo-pod" id="dash-pod">
+        <div class="pod-ring"></div>
+        <div class="pod-scan"></div>
+        <div id="dash-avatar" class="avatar-slot"></div>
+      </div>
+      <div class="greet-bubble" id="greet-bubble" hidden>
+        <p id="greet-text"></p>
+      </div>
+      <p class="pod-caption" id="dash-charname"></p>
+      <div class="status-line">
+        <span class="dot ok"></span>
+        <span>Personal AI System</span>
+      </div>
     </div>
 
-    <!-- Greeting Bubble -->
-    <div class="greet-bubble" id="greet-bubble" hidden>
-      <p id="greet-text"></p>
-    </div>
-
-    <!-- LIA Name + Status -->
-    <p class="pod-caption" id="dash-charname"></p>
-    <div class="status-line">
-      <span class="dot ok"></span>
-      <span id="engine-status">Local · ready</span>
-    </div>
-
-    <!-- Voice Visualizer (driven by Piper audio or mic) -->
     <div class="voice-visualizer glass" id="voice-visualizer">
       <div class="vv-label">VOICE OUTPUT</div>
       <div class="vv-bars">
@@ -230,60 +252,64 @@
       </div>
     </div>
 
-    <!-- Mini Gauges in HUD -->
-    <div class="mini-hud-gauges glass">
-      <div class="gauge-card">
-        <div class="gauge-val" id="hud-cpu">--%</div>
-        <div class="gauge-lbl">CPU</div>
-      </div>
-      <div class="gauge-card">
-        <div class="gauge-val" id="hud-ram">--%</div>
-        <div class="gauge-lbl">RAM</div>
-      </div>
-      <div class="gauge-card">
-        <div class="gauge-val" id="hud-bat">--%</div>
-        <div class="gauge-lbl">BATT</div>
-      </div>
+    <!-- hidden but present so loadDevice() keeps working regardless of sidebar state -->
+    <div class="mini-hud-gauges" style="display:none;">
+      <div class="gauge-card"><div class="gauge-val" id="hud-cpu">--%</div><div class="gauge-lbl">CPU</div></div>
+      <div class="gauge-card"><div class="gauge-val" id="hud-ram">--%</div><div class="gauge-lbl">RAM</div></div>
+      <div class="gauge-card"><div class="gauge-val" id="hud-bat">--%</div><div class="gauge-lbl">BATT</div></div>
     </div>
 
-    <!-- Agent Monitor -->
-    <div class="agent-monitor glass">
-      <div class="am-header">AGENT MONITOR</div>
+    <div class="sidebar-section-label">Quick Actions</div>
+    <div class="quick-actions">
+      <button class="qa-btn" data-qa="new-chat" title="New conversation"><span class="qa-icon">✚</span><span>New Conversation</span></button>
+      <button class="qa-btn" data-qa="tab:memory" title="Search memory"><span class="qa-icon">🔎</span><span>Search Memory</span></button>
+      <button class="qa-btn" data-qa="tab:files" title="Open files"><span class="qa-icon">📁</span><span>Files</span></button>
+      <button class="qa-btn" data-qa="tab:activity" title="Open activity feed"><span class="qa-icon">🗂</span><span>Tasks</span></button>
+    </div>
+
+    <div class="sidebar-section-label">Agents</div>
+    <div class="agent-monitor">
       <div class="am-agents" id="agent-monitor-list">
-        <div class="am-agent"><span class="am-dot active"></span>Commander</div>
-        <div class="am-agent"><span class="am-dot active"></span>Coder</div>
-        <div class="am-agent"><span class="am-dot active"></span>Scraper</div>
-        <div class="am-agent"><span class="am-dot active"></span>Analytics</div>
-        <div class="am-agent"><span class="am-dot active"></span>Media Gen</div>
-        <div class="am-agent"><span class="am-dot active"></span>Automation</div>
+        <div class="am-agent"><span class="am-dot active"></span><span>Commander</span></div>
+        <div class="am-agent"><span class="am-dot active"></span><span>Coder</span></div>
+        <div class="am-agent"><span class="am-dot active"></span><span>Scraper</span></div>
+        <div class="am-agent"><span class="am-dot active"></span><span>Analytics</span></div>
+        <div class="am-agent"><span class="am-dot active"></span><span>Media Gen</span></div>
+        <div class="am-agent"><span class="am-dot active"></span><span>Automation</span></div>
       </div>
     </div>
   </aside>
 
-  <!-- CENTER COLUMN: Workspace / Panels -->
-  <main class="dash-main glass">
-    <nav class="dash-nav">
-      <button class="tab active" data-tab="chat">Chat & Agents</button>
-      <button class="tab" data-tab="files">Files & Shell</button>
-      <button class="tab" data-tab="memory">Memory Vault</button>
-      <button class="tab" data-tab="activity">Activity Feed</button>
-      <button class="tab" data-tab="device">Control Center</button>
-      <button class="tab" data-tab="settings">Settings</button>
-      <span class="spacer"></span>
-      <span class="commander-tag" id="commander-tag"></span>
-      <button class="btn ghost sm" id="btn-toggle-sensors-panel" style="margin-right: 12px; border-color: var(--arc); color: var(--arc);">👁 Vision</button>
-      <button class="btn solid sm" id="btn-live-call" style="margin-right: 12px; background: linear-gradient(180deg, #10B981, #059669); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);">📞 Live Call</button>
-      <button class="btn ghost sm" id="btn-logout">Log out</button>
-    </nav>
+  <!-- CENTER: Workspace / Panels -->
+  <main class="dash-main">
 
     <!-- CHAT PANEL -->
     <div class="tab-panel active" data-panel="chat">
-      <div class="chat-log" id="chat-log"></div>
+      <div class="chat-workspace">
+        <div class="chat-log" id="chat-log"></div>
 
-      <div class="chat-bar">
-        <button id="btn-mic" class="mic-btn" title="Hold to speak">🎤</button>
-        <input id="chat-input" class="text-input grow" placeholder="Ask LIA to code apps, create images, videos, presentations, blogs, or analyze data…"/>
-        <button id="btn-send" class="btn solid">Send</button>
+        <div class="chat-empty-state" id="chat-empty-state">
+          <div class="ces-avatar">✨</div>
+          <h2 id="ces-greeting">Good evening.</h2>
+          <p class="ces-sub">What would you like me to do?</p>
+          <div class="ces-cards">
+            <button class="ces-card" data-ces="Let's talk — what's on your mind?"><span class="ces-icon">💬</span><span class="ces-title">Ask Anything</span><span class="ces-desc">Chat, brainstorm, get answers</span></button>
+            <button class="ces-card" data-ces-tab="files"><span class="ces-icon">📁</span><span class="ces-title">Analyze Files</span><span class="ces-desc">Browse and inspect your workspace</span></button>
+            <button class="ces-card" data-ces="Write a Python script that "><span class="ces-icon">💻</span><span class="ces-title">Write Code</span><span class="ces-desc">Generate or refactor code</span></button>
+            <button class="ces-card" data-ces="Research the web for "><span class="ces-icon">🌐</span><span class="ces-title">Research Web</span><span class="ces-desc">Live web search &amp; synthesis</span></button>
+            <button class="ces-card" data-ces-tab="device"><span class="ces-icon">🛰</span><span class="ces-title">Control Center</span><span class="ces-desc">System &amp; service status</span></button>
+            <button class="ces-card" data-ces-tab="memory"><span class="ces-icon">🧠</span><span class="ces-title">View Memory</span><span class="ces-desc">What LIA remembers about you</span></button>
+          </div>
+        </div>
+
+        <div class="chat-bar">
+          <div class="chat-input-shell">
+            <button id="btn-mic" class="mic-btn" title="Hold to speak">🎤</button>
+            <input id="chat-input" class="text-input grow" placeholder="Ask LIA anything — code apps, create images, videos, presentations, research…"/>
+            <button id="btn-send" class="btn solid">Send</button>
+          </div>
+          <div class="chat-bar-hint">Enter to send · Shift+Enter for a new line · <kbd>Ctrl</kbd>+<kbd>K</kbd> for commands</div>
+        </div>
       </div>
     </div>
 
@@ -387,68 +413,126 @@
 
     <!-- SETTINGS PANEL -->
     <div class="tab-panel" data-panel="settings">
-      <h3>Voice</h3>
-      <div class="pick-row wrap voice-row" data-key="voice_persona" id="settings-voices"></div>
-      <h3>Language mode</h3>
-      <div class="pick-row wrap lang-row" data-key="language_mode" id="settings-langs"></div>
-      <h3>Character Customization</h3>
-      <p class="hint">Change your AI's appearance, then press Update to save.</p>
-      <button class="btn solid" id="btn-edit-char">✏️ Edit Character</button>
-      <div class="char-editor" id="char-editor" style="display:none;">
-        <div id="char-editor-body">
-          <div class="settings-char" id="settings-char"></div>
-        </div>
-        <div class="char-editor-actions">
-          <button class="btn solid" id="btn-update-char">✓ Update Character</button>
-          <button class="btn ghost" id="btn-cancel-char">Cancel</button>
-          <span class="char-editor-status" id="char-editor-status"></span>
+      <div class="settings-grid">
+        <nav class="settings-nav">
+          <button class="settings-nav-item active" data-settings-jump="settings-sec-voice">Voice</button>
+          <button class="settings-nav-item" data-settings-jump="settings-sec-lang">Language</button>
+          <button class="settings-nav-item" data-settings-jump="settings-sec-char">Appearance</button>
+        </nav>
+        <div class="settings-content">
+          <section id="settings-sec-voice">
+            <h3>Voice</h3>
+            <div class="pick-row wrap voice-row" data-key="voice_persona" id="settings-voices"></div>
+          </section>
+          <section id="settings-sec-lang" style="margin-top: 28px;">
+            <h3>Language mode</h3>
+            <div class="pick-row wrap lang-row" data-key="language_mode" id="settings-langs"></div>
+          </section>
+          <section id="settings-sec-char" style="margin-top: 28px;">
+            <h3>Character Customization</h3>
+            <p class="hint">Change your AI's appearance, then press Update to save.</p>
+            <button class="btn solid" id="btn-edit-char">✏️ Edit Character</button>
+            <div class="char-editor" id="char-editor" style="display:none;">
+              <div id="char-editor-body">
+                <div class="settings-char" id="settings-char"></div>
+              </div>
+              <div class="char-editor-actions">
+                <button class="btn solid" id="btn-update-char">✓ Update Character</button>
+                <button class="btn ghost" id="btn-cancel-char">Cancel</button>
+                <span class="char-editor-status" id="char-editor-status"></span>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- RIGHT COLUMN: Webcam Stream & Telemetry Overlay -->
-  <aside class="dash-right glass" id="dash-right-sidebar">
+  <!-- RIGHT: dynamic Context Panel (Vision / System) -->
+  <aside class="dash-right" id="dash-right-sidebar">
     <div class="sidebar-header-mobile" style="display: none;">
-      <button class="btn ghost sm" id="btn-close-sensors-panel" style="width: 100%; border-color: var(--err); color: var(--err); margin-bottom: 8px;">✕ Close Sensory View</button>
+      <button class="btn ghost sm" id="btn-close-sensors-panel" style="width: 100%; border-color: var(--err); color: var(--err); margin: 8px 8px 0;">✕ Close panel</button>
     </div>
-    <div class="webcam-box">
-      <h3>Sensory Stream</h3>
-      <div class="video-container">
-        <video id="webcam-video" autoplay playsinline muted></video>
-        <canvas id="webcam-overlay"></canvas>
-        <div class="webcam-off-overlay" id="webcam-placeholder">Vision Sensors Inactive</div>
+    <div class="context-tabs">
+      <button class="ctx-tab active" data-ctx="vision">Vision</button>
+      <button class="ctx-tab" data-ctx="system">System</button>
+      <button class="btn ghost icon-only sm" id="btn-context-collapse" title="Collapse panel" aria-label="Collapse context panel">›</button>
+    </div>
+
+    <div class="context-pane active" data-ctx-pane="vision">
+      <div class="webcam-box">
+        <h3>Sensory Stream</h3>
+        <div class="video-container">
+          <video id="webcam-video" autoplay playsinline muted></video>
+          <canvas id="webcam-overlay"></canvas>
+          <div class="webcam-off-overlay" id="webcam-placeholder">Vision Sensors Inactive</div>
+        </div>
+        <div class="webcam-controls">
+          <button class="btn solid sm" id="btn-toggle-webcam">Engage Vision Sensors</button>
+        </div>
       </div>
-      <div class="webcam-controls">
-        <button class="btn solid sm" id="btn-toggle-webcam">Engage Vision Sensors</button>
+
+      <div class="telemetry-box">
+        <h3>Vision Telemetry</h3>
+        <div class="telemetry-grid">
+          <div class="tel-card"><div class="label">PRESENCE</div><div class="value" id="tel-presence">Offline</div></div>
+          <div class="tel-card"><div class="label">ATTENTION</div><div class="value" id="tel-attention">--</div></div>
+          <div class="tel-card"><div class="label">EXPRESSION</div><div class="value" id="tel-expression">--</div></div>
+          <div class="tel-card"><div class="label">HAND GESTURE</div><div class="value" id="tel-gesture">--</div></div>
+        </div>
       </div>
     </div>
-    
-    <div class="telemetry-box">
-      <h3>Vision Telemetry</h3>
-    
-      <div class="telemetry-grid">
-        <div class="tel-card">
-          <div class="label">PRESENCE</div>
-          <div class="value" id="tel-presence">Offline</div>
-        </div>
-        <div class="tel-card">
-          <div class="label">ATTENTION</div>
-          <div class="value" id="tel-attention">--</div>
-        </div>
-        <div class="tel-card">
-          <div class="label">EXPRESSION</div>
-          <div class="value" id="tel-expression">--</div>
-        </div>
-        <div class="tel-card">
-          <div class="label">HAND GESTURE</div>
-          <div class="value" id="tel-gesture">--</div>
-        </div>
+
+    <div class="context-pane" data-ctx-pane="system">
+      <h3>Live Readouts</h3>
+      <div class="mini-hud-gauges glass" style="display:grid;">
+        <div class="gauge-card"><div class="gauge-val" id="hud-cpu-ctx">--%</div><div class="gauge-lbl">CPU</div></div>
+        <div class="gauge-card"><div class="gauge-val" id="hud-ram-ctx">--%</div><div class="gauge-lbl">RAM</div></div>
+        <div class="gauge-card"><div class="gauge-val" id="hud-bat-ctx">--%</div><div class="gauge-lbl">BATT</div></div>
       </div>
-    </div><!-- /telemetry-box -->
+      <div class="sidebar-section-label">Jump to</div>
+      <div class="ctx-nav-link" data-ces-tab="device"><span>Control Center</span><span class="arrow">→</span></div>
+      <div class="ctx-nav-link" data-ces-tab="activity"><span>Activity Feed</span><span class="arrow">→</span></div>
+    </div>
   </aside><!-- /dash-right -->
 
+  </div><!-- /shell-body -->
+
 </section><!-- /screen-dash -->
+
+<!-- ════════════════ MOBILE BOTTOM NAVIGATION ════════════════ -->
+<nav class="mobile-nav" id="mobile-nav">
+  <button class="mnav-btn active" data-mtab="chat"><span class="mnav-icon">💬</span>Chat</button>
+  <button class="mnav-btn" data-mtab="files"><span class="mnav-icon">📁</span>Files</button>
+  <button class="mnav-btn" data-mtab="memory"><span class="mnav-icon">🧠</span>Memory</button>
+  <button class="mnav-btn" data-mtab="activity"><span class="mnav-icon">🗂</span>Activity</button>
+  <button class="mnav-btn" id="btn-mobile-more"><span class="mnav-icon">⋯</span>More</button>
+</nav>
+
+<div class="mobile-sheet-overlay" id="mobile-sheet-overlay">
+  <div class="mobile-sheet">
+    <div class="mobile-sheet-handle"></div>
+    <div class="mobile-sheet-item" data-mtab="device">🛰 Control Center</div>
+    <div class="mobile-sheet-item" data-mtab="settings">⚙️ Settings</div>
+    <div class="mobile-sheet-item" id="mobile-sheet-vision">👁 Vision Sensors</div>
+    <div class="mobile-sheet-item" id="mobile-sheet-call">📞 Live Call</div>
+    <div class="mobile-sheet-item" id="mobile-sheet-logout">↩ Log out</div>
+  </div>
+</div>
+
+<!-- ════════════════ COMMAND PALETTE (Ctrl/Cmd+K) ════════════════ -->
+<div class="cmdk-overlay" id="cmdk-overlay">
+  <div class="cmdk-panel">
+    <div class="cmdk-input-row">
+      <span class="cmdk-icon">⌘</span>
+      <input id="cmdk-input" placeholder="Type a command or search…" autocomplete="off"/>
+      <span class="kbd-hint">Esc</span>
+    </div>
+    <div class="cmdk-list" id="cmdk-list"></div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
 
 <!-- ════════════════ LIVE CALL FULL-SCREEN OVERLAY ════════════════ -->
 <div id="live-call-overlay" class="call-overlay">
@@ -528,6 +612,7 @@
 <!-- NOTE: dash-right closing and telemetry grid are in the main section above -->
 
 <!-- ════════════════ SCRIPTS ════════════════ -->
-<script type="module" src="/static/app.js?v=4.3.7"></script>
+<script type="module" src="/static/app.js?v=4.3.8"></script>
+<script type="module" src="/static/ui_enhance.js?v=1.0.0"></script>
 </body>
 </html>

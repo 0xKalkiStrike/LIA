@@ -1,0 +1,202 @@
+[
+  {
+    "instruction": "Hyper-realistic futuristic cyberpunk city street at night, neon reflections on wet asphalt, cinematic lighting, 8k resolution, photorealistic",
+    "input": "",
+    "output": "{\n  \"model\": \"Flux.1-Dev\",\n  \"parameters\": {\n    \"steps\": 30,\n    \"cfg_scale\": 7.0,\n    \"sampler\": \"euler_ancestral\",\n    \"aspect_ratio\": \"16:9\",\n    \"width\": 1280,\n    \"height\": 720,\n    \"seed\": 42918237\n  },\n  \"style_tags\": [\n    \"cyberpunk\",\n    \"photorealistic\",\n    \"cinematic\",\n    \"octane_render\",\n    \"raytracing\"\n  ],\n  \"negative_prompt\": \"blurry, low quality, distorted, oversaturated, deformed hands, extra limbs, bad anatomy, text, watermark\"\n}"
+  },
+  {
+    "instruction": "Create an anime-style character portrait of a female wizard casting a blue elemental spell",
+    "input": "",
+    "output": "{\n  \"style_preset\": \"Makoto Shinkai / Studio Ghibli Fusion\",\n  \"enhanced_prompt\": \"Masterpiece anime illustration of a young female wizard with silver hair and glowing blue eyes, casting a swirling ice and blue aura spell, vibrant colors, detailed magical runes, dramatic atmospheric depth, artstation trending\",\n  \"recommended_lora\": \"anime_vibrant_v2.safetensors\",\n  \"lora_weight\": 0.75\n}"
+  },
+  {
+    "instruction": "What are the best camera and lighting settings for dramatic portrait photography in image generation prompts?",
+    "input": "",
+    "output": "{\n  \"lens_keywords\": [\n    \"85mm f/1.4 lens\",\n    \"shallow depth of field\",\n    \"bokeh background\",\n    \"bokeh circles\",\n    \"sharp focus on eyes\"\n  ],\n  \"lighting_keywords\": [\n    \"rembrandt lighting\",\n    \"volumetric lighting\",\n    \"god rays\",\n    \"dramatic side lighting\",\n    \"softbox fill light\",\n    \"rim light glow\"\n  ],\n  \"composition\": [\n    \"rule of thirds\",\n    \"golden ratio\",\n    \"close-up portrait\",\n    \"low angle shot\"\n  ]\n}"
+  },
+  {
+    "instruction": "Generate a ComfyUI pipeline JSON structure for text-to-image with SDXL base and refiner",
+    "input": "",
+    "output": "{\n  \"workflow_type\": \"SDXL_Base_Refiner_Cascade\",\n  \"nodes\": [\n    {\n      \"id\": 1,\n      \"type\": \"KSamplerAdvanced\",\n      \"title\": \"Base KSampler\",\n      \"start_step\": 0,\n      \"end_step\": 20\n    },\n    {\n      \"id\": 2,\n      \"type\": \"KSamplerAdvanced\",\n      \"title\": \"Refiner KSampler\",\n      \"start_step\": 20,\n      \"end_step\": 30\n    },\n    {\n      \"id\": 3,\n      \"type\": \"VAEDecode\",\n      \"title\": \"VAE Output Decoder\"\n    },\n    {\n      \"id\": 4,\n      \"type\": \"SaveImage\",\n      \"title\": \"Export Image\"\n    }\n  ]\n}"
+  },
+  {
+    "instruction": "List essential LoRA trigger words and categories for realistic character modeling",
+    "input": "",
+    "output": "{\n  \"categories\": {\n    \"skin_texture\": [\n      \"micro-skin texture\",\n      \"pore detail\",\n      \"subsurface scattering\",\n      \"natural skin imperfections\"\n    ],\n    \"expression\": [\n      \"subtle smile\",\n      \"intense gaze\",\n      \"thoughtful expression\"\n    ],\n    \"fashion\": [\n      \"haute couture\",\n      \"cybernetic suit\",\n      \"tactical gear\",\n      \"vintage silk dress\"\n    ]\n  }\n}"
+  },
+  {
+    "instruction": "Cinematic slow-motion shot of a futuristic drone navigating through a foggy pine forest at sunrise, 4k 60fps",
+    "input": "",
+    "output": "{\n  \"engine\": \"AnimateDiff_v3 / HunyuanVideo\",\n  \"fps\": 24,\n  \"duration_seconds\": 4.0,\n  \"motion_bucket_id\": 127,\n  \"camera_motion\": {\n    \"pan\": \"forward_slow\",\n    \"zoom\": \"in\",\n    \"tilt\": \"slightly_down\",\n    \"rotation\": 0.0\n  },\n  \"negative_prompt\": \"choppy movement, flickering, morphing limbs, static camera, noise artifacts, frame dropping\"\n}"
+  },
+  {
+    "instruction": "Animate a static image of water cascading down a mountain waterfall with realistic mist effect",
+    "input": "",
+    "output": "{\n  \"method\": \"Image-to-Video Motion Vector Guided Diffusion\",\n  \"motion_strength\": 0.65,\n  \"denoise_strength\": 0.7,\n  \"masking\": \"fluid_dynamics_mask\",\n  \"guidance_scale\": 8.5\n}"
+  },
+  {
+    "instruction": "Explain camera movement parameters for high-end cinematic video generation",
+    "input": "",
+    "output": "{\n  \"camera_moves\": {\n    \"dolly_zoom\": \"simultaneous zoom in and backward movement for vertigo effect\",\n    \"orbit_around\": \"360-degree smooth rotational camera sweep around target subject\",\n    \"truck_left_right\": \"horizontal lateral camera tracking shot\",\n    \"crane_up\": \"vertical elevation shot exposing wide landscape\"\n  }\n}"
+  },
+  {
+    "instruction": "How to configure audio-driven avatar lip sync for video generation using SadTalker or Wav2Lip",
+    "input": "",
+    "output": "{\n  \"pipeline\": \"Wav2Lip_GAN / SadTalker_v0.0.2\",\n  \"audio_sample_rate\": 16000,\n  \"face_detector\": \"retinaface\",\n  \"expression_scale\": 1.1,\n  \"pose_style\": 0,\n  \"post_processing\": [\n    \"GFPGAN_face_enhancer\",\n    \"codeformer_restoration\"\n  ]\n}"
+  },
+  {
+    "instruction": "Workflow for taking a 512x512 low fps video and upscaling it to 4K 60fps smooth video",
+    "input": "",
+    "output": "{\n  \"steps\": [\n    \"Step 1: Frame interpolation using RIFE / Real-CSI to increase framerate from 15fps to 60fps\",\n    \"Step 2: Spatial AI upscaling using Real-ESRGAN / SeedVR to 4K resolution\",\n    \"Step 3: Temporal smoothing filter to eliminate inter-frame flicker\",\n    \"Step 4: H.265 / AV1 encoding with CRF 18\"\n  ]\n}"
+  },
+  {
+    "instruction": "Create an asynchronous FastAPI backend service with JWT authentication and Pydantic v2 schemas",
+    "input": "",
+    "output": "{\n  \"architecture\": \"FastAPI Async Router Pattern\",\n  \"code_snippet\": \"from fastapi import FastAPI, Depends, HTTPException, status\\nfrom fastapi.security import OAuth2PasswordBearer\\nfrom pydantic import BaseModel, EmailStr\\nimport jwt\\n\\napp = FastAPI(title='LIA Enterprise API', version='1.0.0')\\n\\nclass UserRegister(BaseModel):\\n    username: str\\n    email: EmailStr\\n    password: str\\n\\n@app.post('/api/v1/auth/register', status_code=status.HTTP_201_CREATED)\\nasync def register_user(user: UserRegister):\\n    return {'status': 'success', 'user': user.username}\"\n}"
+  },
+  {
+    "instruction": "How to structure a Next.js App Router project with Tailwind CSS and Zustand state management",
+    "input": "",
+    "output": "{\n  \"directory_layout\": {\n    \"src/app\": [\n      \"page.tsx\",\n      \"layout.tsx\",\n      \"providers.tsx\",\n      \"globals.css\"\n    ],\n    \"src/components\": [\n      \"ui/Button.tsx\",\n      \"ui/Modal.tsx\",\n      \"chat/ChatBox.tsx\"\n    ],\n    \"src/store\": [\n      \"useChatStore.ts\",\n      \"useAuthStore.ts\"\n    ],\n    \"src/lib\": [\n      \"apiClient.ts\",\n      \"utils.ts\"\n    ]\n  },\n  \"state_management_pattern\": \"Zustand slices with persist middleware\"\n}"
+  },
+  {
+    "instruction": "Design an optimized PostgreSQL schema for a multi-tenant chat application with vector search capabilities",
+    "input": "",
+    "output": "{\n  \"extensions\": [\n    \"pgvector\",\n    \"uuid-ossp\"\n  ],\n  \"schema_sql\": \"CREATE EXTENSION IF NOT EXISTS vector;\\nCREATE TABLE users (\\n  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\\n  email VARCHAR(255) UNIQUE NOT NULL,\\n  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\\n);\\nCREATE TABLE embeddings (\\n  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\\n  user_id UUID REFERENCES users(id) ON DELETE CASCADE,\\n  content TEXT NOT NULL,\\n  embedding vector(1536)\\n);\\nCREATE INDEX idx_embeddings_vector ON embeddings USING hnsw (embedding vector_cosine_ops);\"\n}"
+  },
+  {
+    "instruction": "Write a multi-stage Dockerfile for a Python FastAPI application with UV package manager",
+    "input": "",
+    "output": "{\n  \"dockerfile\": \"FROM python:3.11-slim as builder\\nWORKDIR /app\\nRUN pip install uv\\nCOPY requirements.txt .\\nRUN uv pip install --system --no-cache -r requirements.txt\\n\\nFROM python:3.11-slim as runner\\nWORKDIR /app\\nCOPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages\\nCOPY . .\\nEXPOSE 8000\\nCMD [\\\"python\\\", \\\"run.py\\\"]\"\n}"
+  },
+  {
+    "instruction": "Write an asynchronous Python Playwright scraper to extract product details from dynamic e-commerce web pages",
+    "input": "",
+    "output": "{\n  \"framework\": \"Playwright Python Async\",\n  \"code_snippet\": \"import asyncio\\nfrom playwright.async_api import async_playwright\\n\\nasync def scrape_products(url):\\n    async with async_playwright() as p:\\n        browser = await p.chromium.launch(headless=True)\\n        page = await browser.new_page()\\n        await page.goto(url, wait_until='networkidle')\\n        products = []\\n        elements = await page.query_selector_all('.product-card')\\n        for el in elements:\\n            title = await el.query_selector_eval('.title', 'e => e.innerText')\\n            price = await el.query_selector_eval('.price', 'e => e.innerText')\\n            products.append({'title': title.strip(), 'price': price.strip()})\\n        await browser.close()\\n        return products\"\n}"
+  },
+  {
+    "instruction": "How to bypass Cloudflare, Akamai, and Bot Detection mechanisms during automated web scraping?",
+    "input": "",
+    "output": "{\n  \"techniques\": [\n    \"Use Playwright-stealth / Undetected-Chromium drivers to mask navigator.webdriver flags\",\n    \"Rotate User-Agent strings with realistic browser fingerprint parameters (Sec-CH-UA, Accept-Language)\",\n    \"Implement residential proxy pools with automatic IP rotation per request batch\",\n    \"Add human-like randomized interaction delays (mouse jitter, smooth scroll, random pause)\",\n    \"Bypass Cloudflare turnstile using browser subagents or automated solver APIs\"\n  ]\n}"
+  },
+  {
+    "instruction": "Extract JSON-LD and microdata schemas from web pages using BeautifulSoup and extruct",
+    "input": "",
+    "output": "{\n  \"parser\": \"BeautifulSoup4 + extruct\",\n  \"code_snippet\": \"from bs4 import BeautifulSoup\\nimport json\\n\\ndef parse_json_ld(html_content):\\n    soup = BeautifulSoup(html_content, 'html.parser')\\n    scripts = soup.find_all('script', type='application/ld+json')\\n    extracted = []\\n    for s in scripts:\\n        try:\\n            data = json.loads(s.string)\\n            extracted.append(data)\\n        except Exception:\\n            continue\\n    return extracted\"\n}"
+  },
+  {
+    "instruction": "Provide a complete Python automated Exploratory Data Analysis (EDA) script using Pandas and Seaborn",
+    "input": "",
+    "output": "{\n  \"libraries\": [\n    \"pandas\",\n    \"numpy\",\n    \"seaborn\",\n    \"matplotlib.pyplot\"\n  ],\n  \"code_snippet\": \"import pandas as pd\\nimport numpy as np\\nimport seaborn as sns\\nimport matplotlib.pyplot as plt\\n\\ndef perform_eda(df):\\n    summary = {\\n        'shape': df.shape,\\n        'missing_values': df.isnull().sum().to_dict(),\\n        'data_types': df.dtypes.astype(str).to_dict(),\\n        'numeric_stats': df.describe().to_dict()\\n    }\\n    numeric_df = df.select_dtypes(include=[np.number])\\n    corr_matrix = numeric_df.corr()\\n    return summary, corr_matrix\"\n}"
+  },
+  {
+    "instruction": "How to execute A/B test hypothesis testing using SciPy stats (t-test and Chi-square test)",
+    "input": "",
+    "output": "{\n  \"methodology\": \"Two-sample independent t-test for continuous metrics, Chi-square for conversion rates\",\n  \"code_snippet\": \"from scipy import stats\\n\\ndef evaluate_ab_test(control_group, treatment_group, alpha=0.05):\\n    t_stat, p_val = stats.ttest_ind(control_group, treatment_group)\\n    significant = p_val < alpha\\n    return {'t_statistic': t_stat, 'p_value': p_val, 'statistically_significant': significant}\"\n}"
+  },
+  {
+    "instruction": "Build an end-to-end XGBoost classification pipeline with hyperparameter tuning and cross-validation",
+    "input": "",
+    "output": "{\n  \"pipeline\": \"Scikit-Learn Pipeline + XGBClassifier + GridSearchCV\",\n  \"steps\": [\n    \"1. SimpleImputer for handling missing numeric values\",\n    \"2. OneHotEncoder / TargetEncoder for categorical features\",\n    \"3. StandardScaler for feature normalization\",\n    \"4. XGBClassifier with binary:logistic objective\",\n    \"5. 5-Fold Stratified K-Fold Cross Validation\",\n    \"6. Evaluation via ROC-AUC score and confusion matrix\"\n  ]\n}"
+  },
+  {
+    "instruction": "Generate a high-authority technical article outline and content strategy on Artificial Intelligence and Autonomous Agents",
+    "input": "",
+    "output": "{\n  \"title\": \"The Evolution of Autonomous AI Agents: From Reactive Models to Goal-Driven Systems\",\n  \"structure\": [\n    {\n      \"section\": \"Introduction\",\n      \"focus\": \"Hook reader, define AI agents vs static LLMs, set thesis\"\n    },\n    {\n      \"section\": \"Core Architecture\",\n      \"focus\": \"Reasoning loops, planning engines, memory vector stores, tool execution\"\n    },\n    {\n      \"section\": \"Real-World Applications\",\n      \"focus\": \"Code assistance, automated research, device control, video synthesis\"\n    },\n    {\n      \"section\": \"Challenges & Security\",\n      \"focus\": \"Hallucination mitigation, prompt injection defense, sandbox safety\"\n    },\n    {\n      \"section\": \"Conclusion\",\n      \"focus\": \"Summary of future trajectory and strategic implications\"\n    }\n  ],\n  \"target_word_count\": 2500,\n  \"reading_grade_level\": \"College / Professional\"\n}"
+  },
+  {
+    "instruction": "What are the key SEO optimization directives for technical blog articles?",
+    "input": "",
+    "output": "{\n  \"seo_directives\": {\n    \"primary_keyword_density\": \"1.5% to 2.5% natural inclusion\",\n    \"h1_title\": \"Includes primary keyword within first 60 characters\",\n    \"meta_description\": \"150-160 characters with compelling call to action and keyword\",\n    \"subheadings\": \"H2 and H3 tags containing LSI keywords\",\n    \"internal_linking\": \"Minimum 3-5 relevant contextual internal hyperlinks\",\n    \"readability\": \"Short paragraphs (2-4 sentences max), bullet points, and high scannability\"\n  }\n}"
+  },
+  {
+    "instruction": "Demonstrate the PAS (Problem-Agitate-Solve) and AIDA (Attention-Interest-Desire-Action) copywriting frameworks",
+    "input": "",
+    "output": "{\n  \"pas_framework\": {\n    \"problem\": \"Manual data extraction takes hours of tedious copy-pasting every day.\",\n    \"agitate\": \"Errors slip into your reports, deadlines get missed, and your team burns out on repetitive grunt work.\",\n    \"solve\": \"LIA Automated Scraping & Analysis Agent automates end-to-end data workflows in seconds with 99.9% accuracy.\"\n  },\n  \"aida_framework\": {\n    \"attention\": \"Stop Wasting Time on Manual Content Generation!\",\n    \"interest\": \"AI-powered agents can write, design, and analyze 10x faster than traditional methods.\",\n    \"desire\": \"Imagine generating complete, polished presentations and articles in under 30 seconds.\",\n    \"action\": \"Deploy LIA AI today and transform your workflow.\"\n  }\n}"
+  },
+  {
+    "instruction": "Create a 10-slide executive presentation outline for a corporate AI Strategy launch",
+    "input": "",
+    "output": "{\n  \"presentation_title\": \"Enterprise AI Transformation Strategy 2026\",\n  \"theme\": \"Modern Dark Glassmorphism / Cyber Teal Accent\",\n  \"slides\": [\n    {\n      \"slide_number\": 1,\n      \"layout\": \"Title Slide\",\n      \"headline\": \"Enterprise AI Transformation Strategy\"\n    },\n    {\n      \"slide_number\": 2,\n      \"layout\": \"Executive Summary\",\n      \"headline\": \"Strategic Vision & Goals\"\n    },\n    {\n      \"slide_number\": 3,\n      \"layout\": \"Market Analysis\",\n      \"headline\": \"The AI Imperative\"\n    },\n    {\n      \"slide_number\": 4,\n      \"layout\": \"Architecture Blueprint\",\n      \"headline\": \"LIA Multi-Agent Ecosystem\"\n    },\n    {\n      \"slide_number\": 5,\n      \"layout\": \"Implementation Roadmap\",\n      \"headline\": \"4-Phase Rollout Plan\"\n    },\n    {\n      \"slide_number\": 6,\n      \"layout\": \"ROI & Impact\",\n      \"headline\": \"Expected Business Outcomes\"\n    },\n    {\n      \"slide_number\": 7,\n      \"layout\": \"Risk & Security\",\n      \"headline\": \"Governance & Safety\"\n    },\n    {\n      \"slide_number\": 8,\n      \"layout\": \"Team & Resources\",\n      \"headline\": \"Core Execution Team\"\n    },\n    {\n      \"slide_number\": 9,\n      \"layout\": \"Financial Budget\",\n      \"headline\": \"Resource Allocation\"\n    },\n    {\n      \"slide_number\": 10,\n      \"layout\": \"Call to Action\",\n      \"headline\": \"Next Steps & Discussion\"\n    }\n  ]\n}"
+  },
+  {
+    "instruction": "Write a Python script using `python-pptx` to programmatically build custom formatted PowerPoint slides",
+    "input": "",
+    "output": "{\n  \"library\": \"python-pptx\",\n  \"code_snippet\": \"from pptx import Presentation\\nfrom pptx.util import Inches, Pt\\nfrom pptx.dml.color import RGBColor\\n\\ndef generate_deck(title_text, subtitle_text, output_path='presentation.pptx'):\\n    prs = Presentation()\\n    prs.slide_width = Inches(13.333)\\n    prs.slide_height = Inches(7.5)\\n    slide = prs.slides.add_slide(prs.slide_layouts[6])\\n    tx_box = slide.shapes.add_textbox(Inches(1.0), Inches(2.0), Inches(11.333), Inches(2.0))\\n    tf = tx_box.text_frame\\n    p = tf.paragraphs[0]\\n    p.text = title_text\\n    p.font.size = Pt(44)\\n    p.font.bold = True\\n    p.font.color.rgb = RGBColor(15, 23, 42)\\n    prs.save(output_path)\\n    return output_path\"\n}"
+  },
+  {
+    "instruction": "Synthesize key scientific literature on Retrieval-Augmented Generation (RAG) vs Long-Context Window LLMs",
+    "input": "",
+    "output": "{\n  \"topic\": \"RAG vs Long-Context Windows in LLMs\",\n  \"synthesis\": \"While extreme long-context windows allow processing full books or codebases in a single prompt, RAG architectures remain superior in cost efficiency, dynamic knowledge updating, precise source attribution, and latency reduction.\",\n  \"key_citations\": [\n    {\n      \"author\": \"Lewis et al.\",\n      \"year\": 2020,\n      \"title\": \"Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks\"\n    },\n    {\n      \"author\": \"Gao et al.\",\n      \"year\": 2023,\n      \"title\": \"Retrieval-Augmented Generation for Large Language Models: A Survey\"\n    }\n  ]\n}"
+  },
+  {
+    "instruction": "How to construct precise boolean search queries for arXiv and PubMed APIs",
+    "input": "",
+    "output": "{\n  \"arxiv_query\": \"cat:q-bio.BM OR cat:cs.AI AND ti:\\\"AlphaFold\\\" OR abs:\\\"protein structure prediction\\\"\",\n  \"pubmed_eutilities_query\": \"((\\\"artificial intelligence\\\"[MeSH Terms] OR \\\"deep learning\\\"[All Fields]) AND (\\\"drug discovery\\\"[All Fields]))\"\n}"
+  },
+  {
+    "instruction": "Provide standard BibTeX entry parsing and generation rules for scientific publishing",
+    "input": "",
+    "output": "{\n  \"bibtex_template\": \"@article{lia_agent_2026,\\n  author = {LIA AI Research Group},\\n  title = {Universal Multi-Agent System for Autonomous Task Execution},\\n  journal = {Journal of Artificial Intelligence Research},\\n  year = {2026}\\n}\"\n}"
+  },
+  {
+    "instruction": "Configure Piper TTS for fast local speech generation with high clarity ONNX voice models",
+    "input": "",
+    "output": "{\n  \"engine\": \"Piper ONNX C++ / Python\",\n  \"voice_model\": \"en_US-lessac-high.onnx\",\n  \"parameters\": {\n    \"length_scale\": 1.0,\n    \"noise_scale\": 0.667,\n    \"noise_w\": 0.8,\n    \"sample_rate\": 22050,\n    \"output_format\": \"wav_pcm_16bit\"\n  }\n}"
+  },
+  {
+    "instruction": "How to run faster-whisper locally with GPU acceleration for real-time speech-to-text",
+    "input": "",
+    "output": "{\n  \"library\": \"faster-whisper (CTranslate2)\",\n  \"code_snippet\": \"from faster_whisper import WhisperModel\\nmodel = WhisperModel('medium.en', device='cuda', compute_type='float16')\\nsegments, info = model.transcribe('audio.wav', beam_size=5, vad_filter=True)\"\n}"
+  },
+  {
+    "instruction": "Voice cloning training setup parameters using XTTS-v2",
+    "input": "",
+    "output": "{\n  \"model\": \"XTTS-v2 Coqui\",\n  \"requirements\": {\n    \"sample_audio_length\": \"6 to 10 seconds\",\n    \"audio_format\": \"22050Hz Mono WAV\",\n    \"temperature\": 0.75\n  }\n}"
+  },
+  {
+    "instruction": "Configure YOLOv8 for real-time webcam object detection and tracking in Python",
+    "input": "",
+    "output": "{\n  \"framework\": \"Ultralytics YOLOv8\",\n  \"code_snippet\": \"from ultralytics import YOLO\\nmodel = YOLO('yolov8n.pt')\\nresults = model.track(source=0, show=True, tracker='bytetrack.yaml')\"\n}"
+  },
+  {
+    "instruction": "Image preprocessing techniques to boost OCR accuracy using OpenCV and Tesseract",
+    "input": "",
+    "output": "{\n  \"preprocessing_pipeline\": [\n    \"1. Convert to grayscale\",\n    \"2. GaussianBlur\",\n    \"3. Otsu thresholding\",\n    \"4. Deskew\",\n    \"5. Run Tesseract PSM 6\"\n  ]\n}"
+  },
+  {
+    "instruction": "How to structure multimodal prompt requests for VLM models",
+    "input": "",
+    "output": "{\n  \"prompt_format\": {\n    \"system_instruction\": \"Identify all text elements and UI components in screenshot.\",\n    \"image_input\": \"base64\"\n  }\n}"
+  },
+  {
+    "instruction": "Write a PowerShell script to audit running processes and RAM usage",
+    "input": "",
+    "output": "{\n  \"script\": \"Get-Process | Sort-Object WorkingSet64 -Descending | Select-Object -First 10 ProcessName, ID\"\n}"
+  },
+  {
+    "instruction": "How to safely perform GUI automation using PyAutoGUI",
+    "input": "",
+    "output": "{\n  \"failsafe_config\": \"import pyautogui\\npyautogui.FAILSAFE = True\"\n}"
+  },
+  {
+    "instruction": "Blueprint for an n8n webhook automation triggering AI task execution",
+    "input": "",
+    "output": "{\n  \"nodes\": [\n    {\n      \"name\": \"Webhook Trigger\",\n      \"type\": \"n8n-nodes-base.webhook\"\n    }\n  ]\n}"
+  },
+  {
+    "instruction": "How to query ChromaDB for semantic similarity search with metadata filtering in Python",
+    "input": "",
+    "output": "{\n  \"code_snippet\": \"import chromadb\\nclient = chromadb.PersistentClient(path='./data/chroma')\\ncollection = client.get_or_create_collection('lia_memory')\\nresults = collection.query(query_texts=['AnimateDiff video generation'], n_results=5)\"\n}"
+  },
+  {
+    "instruction": "Provide a standard Chain-of-Thought (CoT) reasoning template",
+    "input": "",
+    "output": "{\n  \"cot_template\": [\n    \"1. Understand goal\",\n    \"2. Deconstruct sub-tasks\",\n    \"3. Identify constraints\",\n    \"4. Execute step-by-step\",\n    \"5. Validate\"\n  ]\n}"
+  },
+  {
+    "instruction": "Define the self-reflection loop mechanism for AI agents upon encountering runtime execution errors",
+    "input": "",
+    "output": "{\n  \"reflection_loop\": [\n    \"Capture error\",\n    \"Identify root cause\",\n    \"Formulate targeted remedy\",\n    \"Re-run verification\"\n  ]\n}"
+  }
+]

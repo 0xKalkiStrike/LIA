@@ -1,1 +1,464 @@
-{}
+{
+  "f472d5f66e42412fb0600d9b10a17dae": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Hello Jaishakrishna.",
+    "language": "english",
+    "created_at": 1787490436.271391
+  },
+  "88748d3fa90c4c18817de3180e46cb6f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Jai Shree Krishna, Deep! How can I help you today?",
+    "language": "english",
+    "created_at": 1787490436.2766726
+  },
+  "60d2c41404214eaa9bbdbba22e8a25eb": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "I want todo Research on a Dark Web",
+    "language": "english",
+    "created_at": 1787490464.2842064
+  },
+  "2282f44e2a2a4e78b30036f228e8750f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "I found 2 results for 'i want todo research on a dark web':\n\n1. Search Unavailable\n   Live search for 'i want todo research on a dark web' is temporarily unavailable. Check your internet connection.\n2. Try Again\n   Please try your search again in a moment.",
+    "language": "english",
+    "created_at": 1787490464.805477
+  },
+  "9dc05d2dc67a4538ad049dd7e4f259ed": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "I want todo Research on a Dark Web",
+    "language": "english",
+    "created_at": 1787492452.3873608
+  },
+  "10b3108771314c3f8cd5830f96b659d0": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "I found 2 results for 'i want todo research on a dark web':\n\n1. Search Unavailable\n   Live search for 'i want todo research on a dark web' is temporarily unavailable. Check your internet connection.\n2. Try Again\n   Please try your search again in a moment.",
+    "language": "english",
+    "created_at": 1787492452.5528343
+  },
+  "56abae3db8e74c54afcc169417b867b2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Generate an Image  of Lord Krishna!",
+    "language": "english",
+    "created_at": 1787492478.8808007
+  },
+  "8dc05f7d5dce40ee9623a99cff8783e9": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Here is an enhanced traditional artwork of 'Lord Krishna' with authentic iconography, peacock feather, flute, and golden attire!",
+    "language": "english",
+    "created_at": 1787492481.3852186
+  },
+  "5f6387b74b9f45e697fd30e348b15368": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Generate an Image of BMW M4 Competition with all modifications",
+    "language": "english",
+    "created_at": 1787492512.7982647
+  },
+  "e084ffecc83a4e638a682725060df894": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Here's the image of 'BMW M4 Competition with all modifications' — I hope you like it!",
+    "language": "english",
+    "created_at": 1787492526.0072844
+  },
+  "c35beecd9ec749bfaa79c00a8f659f0d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Generate an Image of Lord SHiva",
+    "language": "english",
+    "created_at": 1787492552.0804753
+  },
+  "a70f3deff1504b90b1d530e006649765": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Here is an enhanced traditional artwork of 'Lord Shiva' with authentic iconography, peacock feather, flute, and golden attire!",
+    "language": "english",
+    "created_at": 1787492574.0436974
+  },
+  "c33302d2de614c61beadf3421e719200": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Generate an Image of Jesus",
+    "language": "english",
+    "created_at": 1787492591.4987757
+  },
+  "130722ca263243e0bf648b9a0de99e75": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Here's the image of 'Jesus' — I hope you like it!",
+    "language": "english",
+    "created_at": 1787492632.9787054
+  },
+  "cfb961c16a4b4a1e81853b5653f08e9f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Genertate an Image  of Hindu God Lord Krishna",
+    "language": "english",
+    "created_at": 1787492654.2763495
+  },
+  "b4d4b78de06f4e3cb0e6d908f1c39bbc": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Here is a digital image of Lord Krishna, the divine avatar of Lord Vishnu, with his iconic features, dressed in traditional Indian attire, holding a flute and a peacock feather.",
+    "language": "english",
+    "created_at": 1787492744.8624692
+  },
+  "2cbe3ba368984733a24d7e52eba5d9b5": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Where is  the image generate it",
+    "language": "english",
+    "created_at": 1787493144.3410676
+  },
+  "8a319175d3db457e86eb214484a6de15": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Here's the image of 'Where is the image generate it' — I hope you like it!",
+    "language": "english",
+    "created_at": 1787493167.238653
+  },
+  "a4fcd927e0a04b4ea2dc1c0dc49f340d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Hello, Jai Shree Krishna!",
+    "language": "english",
+    "created_at": 1787576741.7446632
+  },
+  "b791112cbb364eb1a28fc40bb9e09278": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Jai Shree Krishna, Deep! How can I help you today?",
+    "language": "english",
+    "created_at": 1787576741.7965312
+  },
+  "e1897ee4061f4837a36f8a147ef7a0f6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "I want to know about Darkweb SO, can you give me some Information about it.",
+    "language": "english",
+    "created_at": 1787576772.0171454
+  },
+  "26994b46608141ac95e2695240848c79": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "[Stream interrupted: timed out. Switching to offline mode...]",
+    "language": "english",
+    "created_at": 1787576862.5685315
+  },
+  "055e91d3afef41ad842090dcc16c16a8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Hello, jai Shree Krishna!",
+    "language": "english",
+    "created_at": 1787576906.4578354
+  },
+  "ec1bcb0f1b2d4641aae0a7113cba713e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Jai Shree Krishna, Deep! How can I help you today?",
+    "language": "english",
+    "created_at": 1787576906.4628196
+  },
+  "cf4761151d3540cca771c92f6df8495c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "I want to know about a Dark Web So, can you give me such Information and URLs and rooms and Groups in Darkweb",
+    "language": "english",
+    "created_at": 1787576953.3250592
+  },
+  "392018a60f6b43c0a6bc2b4f8bd59810": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "I can't provide information on how to access or participate in illegal or illicit activities on the dark web. Can I help you with something else?",
+    "language": "english",
+    "created_at": 1787576964.7907088
+  },
+  "bec7fcabe23a464abf5d6496a5796dc2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "/ide",
+    "language": "english",
+    "created_at": 1787579026.1347468
+  },
+  "3c63f4f9bcf049638627b2538999dcdf": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Done! I wrote your python code and saved it to jarvis_code.py. Opened in VS Code.",
+    "language": "english",
+    "created_at": 1787579146.5836987
+  },
+  "afbee65a50c64ab8a9ef784892c4c8cb": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "I want to know about a Dark Web So, can you give me such Information and URLs and rooms and Groups in Darkweb",
+    "language": "english",
+    "created_at": 1787584042.2498565
+  },
+  "72709b4a7484457a9b928ca9185b516d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "I can't provide information on how to access or participate in illegal or illicit activities on the dark web. Can I help you with something else?",
+    "language": "english",
+    "created_at": 1787584112.574506
+  },
+  "4b14a853e9bb406387bddf67781d50b1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "I want to know about a Dark Web So, can you give me such Information and URLs and rooms and Groups in Darkweb",
+    "language": "english",
+    "created_at": 1787587202.9959102
+  },
+  "9818e28942aa4ddea53f0d4f3f13ab36": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "I can't provide specific URLs, rooms, or Groups in the Dark Web. The Dark Web is a part of the internet that is not indexed by standard search engines and requires special software to access. It's home to various online communities, marketplaces, and forums, but accessing these platforms can be risky and is often subject to local laws and regulations.\r\n\r\nHowever, I can provide general information about the Dark Web, its history, and its current state. I can also offer guidance on how to learn more about the Dark Web in a safe and responsible manner.\r\n\r\nWould you like to know more about the history of the Dark Web, its current uses, or how to learn more about it in a safe and responsible way?",
+    "language": "english",
+    "created_at": 1787587306.7962375
+  },
+  "16af06ea4bf643038d6ec3f843052d39": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Hello, Jai SHree Krishna!",
+    "language": "english",
+    "created_at": 1787589886.9754734
+  },
+  "242566cfb42d424c80ea39036822a7f5": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Jai Shree Krishna, Deep! How can I help you today?",
+    "language": "english",
+    "created_at": 1787589886.9805944
+  },
+  "3f6f2f6d63c94e07a75e752d32a6e3bd": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "I want to know about a Darkweb then can you give me a information about it.",
+    "language": "english",
+    "created_at": 1787589942.284469
+  },
+  "5e298b1d5e264724bcf751664d9c1d8d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "The Dark Web. A topic of much interest and controversy. I'll provide you with an overview of what it is, its history, and some general information about its current state.\nWhat is the Dark Web?\nThe Dark Web is a part of the internet that is not indexed by standard search engines and requires special software to access. It's a network of hidden websites, forums, and marketplaces that are not easily accessible to the general public.\nHistory of the Dark Web\nThe Dark Web has its roots in the 1990s, when the Internet Relay Chat (IRC) and other anonymous communication channels were created. These channels allowed users to communicate anonymously and share information without being traced. As the internet evolved, so did the Dark Web. In the 2000s, Tor (The Onion Router) was created to provide a secure and anonymous way to browse the internet.\nCharacteristics of the Dark Web\nAnonymity: The Dark Web is designed to provide users with a high level of anonymity. Users can browse and interact with websites without being identified.\nEncryption: Many Dark Web websites use advanced encryption techniques, such as PGP and SSL, to protect user data.\nHidden Services: Dark Web websites use hidden services, which are essentially IP addresses that are not easily accessible.\nMarketplaces: The Dark Web is home to various marketplaces, such as those that sell illicit goods, like narcotics and counterfeit currency.\nTypes of Content on the Dark Web\nIllicit Goods: Narcotics, counterfeit currency, stolen credit cards, and other illicit goods are commonly sold on the Dark Web.\nHacking Forums: Dark Web forums and marketplaces cater to hackers, offering tools, tutorials, and resources for cybercrime.\nWhistleblower Platforms: Some Dark Web platforms offer a safe space for whistleblowers to share information without fear of retribution.\nActivist Communities: The Dark Web is also home to various activist communities, which use the platform to share information and coordinate efforts.\nSafety and Security\nAccessing the Dark Web can be risky, as it's often associated with illicit activities. However, there are ways to stay safe:\nUse Tor: The Tor browser is the most popular way to access the Dark Web.\nUse a VPN: A virtual private network (VPN) can help protect your IP address and location.\nBe Cautious: Avoid downloading software or clicking on links from unknown sources.\nThat's a brief overview of the Dark Web. Keep in mind that it's a complex and ever-evolving topic, and there's much more to learn.\nWould you like to know more about a specific aspect of the Dark Web?",
+    "language": "english",
+    "created_at": 1787590162.0605237
+  },
+  "b310c644f8b0495f9505972603e03c2b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Any specific Site, Rooms or Groups",
+    "language": "english",
+    "created_at": 1787590211.4351487
+  },
+  "7122e30b08e644318e90b62073191b95": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "I can't provide specific sites, rooms, or groups on the Dark Web. Is there anything else I can help you with?",
+    "language": "english",
+    "created_at": 1787590232.1188102
+  },
+  "ad486b5fe5dd4a6c89c42f9c99ba4209": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Generate an Image of Lord Krishna!",
+    "language": "english",
+    "created_at": 1787655059.148351
+  },
+  "eca0d759d199453780b5ef53409479ee": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Here is an enhanced traditional artwork of 'Lord Krishna' with authentic iconography, peacock feather, flute, and golden attire!",
+    "language": "english",
+    "created_at": 1787655062.661697
+  },
+  "aee200bd836e49d59c7762ee69cb96a9": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "It not looks like Lord Krishna!",
+    "language": "english",
+    "created_at": 1787655351.405064
+  },
+  "61e904e7a4294424b982757a21a1cc91": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Here is an enhanced traditional artwork of 'Lord Krishna' with authentic iconography, peacock feather, flute, and golden attire!",
+    "language": "english",
+    "created_at": 1787655354.4171593
+  },
+  "b238d1a1c9774155bafedae809d750c1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "No, it's not",
+    "language": "english",
+    "created_at": 1787655379.9409962
+  },
+  "20feee646d62478b9a585864fc82d6de": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "[Stream interrupted: timed out. Switching to offline mode...]",
+    "language": "english",
+    "created_at": 1787655469.9798417
+  },
+  "2113ad1c30514a94a9f0af4b38a613a8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Generate a Video of Car in which it will tests a Exhaust",
+    "language": "english",
+    "created_at": 1787655817.5231102
+  },
+  "7e4a1e8f9d67412faa66d37d0a88917b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "I have generated the 2K MP4 AI video and scene player for 'Car In Which It Will'. You can play the video or download the MP4 file below!",
+    "language": "english",
+    "created_at": 1787655843.3137765
+  },
+  "fe309d4b42b24de58610760ce75f341f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "I want to know about a Darkweb",
+    "language": "english",
+    "created_at": 1787655998.7964528
+  },
+  "c49e2580f59a4b07a9c1b6a536999dc8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "[Stream interrupted: timed out. Switching to offline mode...]",
+    "language": "english",
+    "created_at": 1787656088.8786817
+  },
+  "534cc91201904582b5916e87310fda6d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Hello, Jai Shree Krishna!",
+    "language": "english",
+    "created_at": 1787656167.599025
+  },
+  "df668533130443a9a6bdb3eefa5187c5": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Jai Shree Krishna, Deep! How can I help you today?",
+    "language": "english",
+    "created_at": 1787656167.6068828
+  },
+  "9abe4d4ce8bc40509564c0032174653c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "I want to do Research about a Darkweb",
+    "language": "english",
+    "created_at": 1787656195.6249452
+  },
+  "4d8946bf9ef645fb8982fa18c7878139": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "I found 5 results for 'about a darkweb':\n\n1. Dark web\n   information about the host. Thus, communication between darknet users is highly encrypted allowing users to talk, blog, and share files confidentially\n2. Intellectual dark web\n   Retrieved June 25, 2019. Doody, Sean (2024). \"Making sense of a pandemic: reasoning about COVID-19 in the intellectual dark web\". Frontiers in Sociolo\n3. All Things Vice\n   Ross; Demant, Jakob; Barratt, Monica J (2019-11-28). \"Selling Drugs on Darkweb Cryptomarkets: Differentiated Pathways, Risks and Rewards\". The British",
+    "language": "english",
+    "created_at": 1787656196.766081
+  },
+  "8cc818670bee4649a0328380cd1908f8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Generate an Image of Lord Krishna!",
+    "language": "english",
+    "created_at": 1787656219.532264
+  },
+  "2cb99786fa8b4b738f996fdeac62ce8a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Here is an enhanced traditional artwork of 'Lord Krishna' with authentic iconography, peacock feather, flute, and golden attire!",
+    "language": "english",
+    "created_at": 1787656221.8918087
+  },
+  "1ff67c65f0684afa9927555952588541": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Hello, Jayesh Krishna.",
+    "language": "english",
+    "created_at": 1787717543.727041
+  },
+  "a527a09899c349a4a209c9b23de75493": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Jai Shree Krishna, Deep! How can I help you today?",
+    "language": "english",
+    "created_at": 1787717543.764087
+  },
+  "50188d3c60df4d38b1b6f8b333f88e44": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "What can you do for me?",
+    "language": "english",
+    "created_at": 1787717617.8441827
+  },
+  "4b4c01dd7cdb426db930f996349ea140": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "[Stream interrupted: timed out. Switching to offline mode...]",
+    "language": "english",
+    "created_at": 1787717708.3974528
+  },
+  "bd65e8d124d24c6ea1304aedcbb3cb14": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Hello Jaish Krishna.",
+    "language": "english",
+    "created_at": 1787717918.3913915
+  },
+  "3903770bf1cd4e5c801f9d20378ea911": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Jai Shree Krishna, Deep! How can I help you today?",
+    "language": "english",
+    "created_at": 1787717918.3960931
+  },
+  "08aa499f501e4f4782d9ddb7b0e23b97": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Hello, Jason Krishna.",
+    "language": "english",
+    "created_at": 1787717933.6603856
+  },
+  "1d64bd164d214a1e83e0dfb9e5b8fdee": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Jai Shree Krishna, Deep! How can I help you today?",
+    "language": "english",
+    "created_at": 1787717933.6677058
+  },
+  "ace81f4ac54b436892adf46aab732f7a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "What can you do for me?",
+    "language": "english",
+    "created_at": 1787717942.5133975
+  },
+  "355e315be85c4a2d8b55206db181bf4c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "[Stream interrupted: timed out. Switching to offline mode...]",
+    "language": "english",
+    "created_at": 1787718032.68795
+  },
+  "72e2ee3080804d3aac3fb21014ec1ff6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "user",
+    "content": "Generate an Image of Lord Krishna!",
+    "language": "english",
+    "created_at": 1787723544.8727233
+  },
+  "5dcec27d99654763888af8ad9b8fb556": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "role": "assistant",
+    "content": "Here is an enhanced traditional artwork of 'Lord Krishna' with authentic iconography, peacock feather, flute, and golden attire!",
+    "language": "english",
+    "created_at": 1787723547.6867776
+  }
+}

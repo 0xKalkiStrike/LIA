@@ -198,25 +198,38 @@ def _mock_results(query: str) -> list[dict]:
 
     return results[:5]
 
+_DARKWEB_UNAVAILABLE_FALLBACK = [
+    {
+        "title": "⚠️ Tor Proxy Unreachable",
+        "link": "#",
+        "snippet": "Live onion-index search needs a local Tor daemon (SOCKS5 on 127.0.0.1:9050 by default -- "
+                   "install from torproject.org and run `tor`, or set tor_socks_host/tor_socks_port "
+                   "in config/settings.json for a remote proxy)."
+    },
+    {
+        "title": "⚠️ Safety Warning",
+        "link": "#",
+        "snippet": "The darkweb contains illegal content. Only access with proper security setup and legal awareness."
+    }
+]
+
+
 def darkweb_search(query: str, num_results: int = 3) -> list[dict]:
-    """Darkweb search (returns info + warning)"""
-    return [
-        {
-            "title": "⚠️ Darkweb Access Required",
-            "link": "#",
-            "snippet": "To search the darkweb, install Tor Browser from torproject.org. Use Ahmia.fi or DuckDuckGo Onion address."
-        },
-        {
-            "title": "Tor Browser Setup",
-            "link": "https://torproject.org/download",
-            "snippet": "Download and install Tor Browser for secure anonymous browsing"
-        },
-        {
-            "title": "⚠️ Safety Warning",
-            "link": "#",
-            "snippet": "The darkweb contains illegal content. Only access with proper security setup and legal awareness."
-        }
-    ]
+    """Real onion-index search via Ahmia, routed through Tor
+    (agents.web_intel.tor_net). Falls back to static setup guidance only if
+    the Tor proxy is actually unreachable."""
+    import asyncio
+    from agents.web_intel import tor_net
+
+    try:
+        results = asyncio.run(tor_net.search_ahmia(query, max_results=num_results))
+    except Exception as e:
+        print(f"[Search] Tor darkweb search failed: {e}")
+        results = []
+
+    if results:
+        return results
+    return _DARKWEB_UNAVAILABLE_FALLBACK
 
 def looks_like_search_request(message: str) -> bool:
     """Check if message is a search request"""

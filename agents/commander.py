@@ -12,6 +12,7 @@ import re
 import os
 
 from core.config import load, setting
+from core import persona
 from . import language_agent, memory_agent
 from .auth_agent import get_profile
 
@@ -115,6 +116,11 @@ except Exception:  # pragma: no cover
     video_agent = None
 
 try:
+    from . import longform_video_agent
+except Exception:  # pragma: no cover
+    longform_video_agent = None
+
+try:
     from . import presentation_agent
 except Exception:  # pragma: no cover
     presentation_agent = None
@@ -194,13 +200,20 @@ def _ollama_chat(messages: list[dict]) -> str | None:
             "model": setting("ollama_model", "llama3.2"),
             "messages": messages,
             "stream": False,
+            # Keep the model resident in RAM between calls. Benchmarked on this
+            # machine: a cold load of llama3.2 takes ~60-70s, a warm call ~1s.
+            # Without this, Ollama's default 5-minute keep_alive unloads the model
+            # between spaced-out calls (e.g. the long-form video pipeline's
+            # concept/character/world/scene stages), and every call pays the
+            # full reload cost again.
+            "keep_alive": "30m",
         }).encode()
         req = urllib.request.Request(
             setting("ollama_url") + "/api/chat",
             data=payload, headers={"Content-Type": "application/json"},
         )
-        # Use shorter timeout to prevent hanging - 60 seconds is enough for most models
-        with urllib.request.urlopen(req, timeout=60) as resp:
+        # 90s covers a cold model load (~60-70s observed); warm calls return in ~1s.
+        with urllib.request.urlopen(req, timeout=90) as resp:
             data = json.loads(resp.read())
         result = data.get("message", {}).get("content", "").strip()
         # If empty, return None to trigger fallback
@@ -217,6 +230,7 @@ def _ollama_chat_stream(messages: list[dict]):
             "model": setting("ollama_model", "llama3.2"),
             "messages": messages,
             "stream": True,
+            "keep_alive": "30m",
         }).encode()
         req = urllib.request.Request(
             setting("ollama_url") + "/api/chat",
@@ -801,6 +815,23 @@ def handle_message(user_id: str, message: str) -> dict:
             cmd = run_match.group(1).strip()
             task = {"type": "execute_command", "command": cmd}
 
+    # ── route: is this a long-form video production request (explicit duration)? ──
+    if task is None and longform_video_agent and longform_video_agent.looks_like_longform_request(message):
+        result = longform_video_agent.create_project(message, user_id)
+        memory_agent.save_turn(user_id, "assistant", result["spoken"], detected)
+        return {
+            "reply": result["spoken"], "language_detected": detected,
+            "engine": "longform_video",
+            "status": result.get("status"), "project_id": result.get("project_id"),
+            "video_id": result.get("video_id"), "topic": result.get("topic"),
+            "target_duration": result.get("target_duration"), "estimated_scenes": result.get("estimated_scenes"),
+            "poll_url": result.get("poll_url"),
+            "video_url": result.get("video_url"), "mp4_url": result.get("mp4_url"),
+            "srt_url": result.get("srt_url"), "scenes": result.get("scenes"),
+            "total_duration": result.get("total_duration"), "qc": result.get("qc"),
+            "emotion": "excited", "task": task
+        }
+
     # ── route: is this a video request? ──
     if task is None and video_agent and video_agent.looks_like_video_request(message):
         result = video_agent.generate_video(message, user_id)
@@ -937,8 +968,12 @@ def handle_message(user_id: str, message: str) -> dict:
         }
 
     memories = memory_agent.recall(user_id)
-    system = language_agent.system_prompt_for(
-        mode, profile.get("char_name", "LIA"), profile.get("display_name", "User"), detected_lang=detected
+    persona_mode = persona.detect_mode(message)
+    system = persona.build_system_prompt(
+        persona_mode,
+        char_name=profile.get("char_name", "LIA"),
+        user_name=profile.get("display_name", "User"),
+        detected_lang=detected,
     )
     
     # Inject current date and time for temporal awareness — emphatic instruction
@@ -1193,6 +1228,26 @@ def handle_message_stream(user_id: str, message: str):
             cmd = run_match.group(1).strip()
             task = {"type": "execute_command", "command": cmd}
 
+    # ── route: is this a long-form video production request (explicit duration)? ──
+    if task is None and longform_video_agent and longform_video_agent.looks_like_longform_request(message):
+        result = longform_video_agent.create_project(message, user_id)
+        reply = result["spoken"]
+        memory_agent.save_turn(user_id, "assistant", reply, detected)
+        yield json.dumps({"type": "text", "content": reply}) + "\n"
+        yield json.dumps({
+            "type": "done", "reply": reply, "language_detected": detected,
+            "engine": "longform_video",
+            "status": result.get("status"), "project_id": result.get("project_id"),
+            "video_id": result.get("video_id"), "topic": result.get("topic"),
+            "target_duration": result.get("target_duration"), "estimated_scenes": result.get("estimated_scenes"),
+            "poll_url": result.get("poll_url"),
+            "video_url": result.get("video_url"), "mp4_url": result.get("mp4_url"),
+            "srt_url": result.get("srt_url"), "scenes": result.get("scenes"),
+            "total_duration": result.get("total_duration"), "qc": result.get("qc"),
+            "emotion": "excited", "task": task
+        }) + "\n"
+        return
+
     # ── route: is this a video request? ──
     if task is None and video_agent and video_agent.looks_like_video_request(message):
         result = video_agent.generate_video(message, user_id)
@@ -1361,8 +1416,12 @@ def handle_message_stream(user_id: str, message: str):
         return
 
     memories = memory_agent.recall(user_id)
-    system = language_agent.system_prompt_for(
-        mode, profile.get("char_name", "LIA"), profile.get("display_name", "User"), detected_lang=detected
+    persona_mode = persona.detect_mode(message)
+    system = persona.build_system_prompt(
+        persona_mode,
+        char_name=profile.get("char_name", "LIA"),
+        user_name=profile.get("display_name", "User"),
+        detected_lang=detected,
     )
     
     # Inject current date and time for temporal awareness — emphatic instruction

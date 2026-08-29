@@ -36,8 +36,16 @@ IMAGE_FEEDBACK_TRIGGERS = (
 
 DEITY_ART_EXPANSIONS = [
     (
-        r"\b(krishna|radha|radhaji|radhe|radhakrishna|radha krishna|lord krishna|shree krishna|shri krishna)\b",
-        "Traditional divine painting of Hindu God Lord Krishna and Goddess Radha, male Lord Krishna with dark complexion, golden mukut crown decorated with a peacock feather, playing golden bamboo bansuri flute, wearing traditional golden silk dhoti, standing beside goddess Radha wearing an elegant fully clothed traditional golden silk saree and exquisite gold jewelry, serene divine expressions, lotus flower garden background, Raja Ravi Varma classical Indian temple art style, sacred oil painting masterpiece, 8k resolution"
+        r"\b(radha\s*krishna|radhakrishna|krishna\s*radha|radha\s+and\s+krishna|krishna\s+and\s+radha)\b",
+        "Radha Krishna divine couple, Lord Krishna: blue skin, golden peacock feather crown, playing golden bansuri flute, yellow dhoti, standing beside Goddess Radha: fair skin, red and gold silk saree, golden crown and jewelry, both smiling, lotus garden background, Raja Ravi Varma style classical Indian temple mural painting, sacred masterpiece, highly detailed, 8k"
+    ),
+    (
+        r"\b(krishna|krishnaji|krishnaa|lord krishna|shree krishna|shri krishna|bhagwan krishna)\b",
+        "Lord Krishna Hindu god, blue skin, golden peacock feather crown on head, playing golden bansuri flute held to lips with both hands, yellow silk dhoti, gentle smile, standing under a tree, radiant golden halo, Raja Ravi Varma style classical Indian temple mural painting, sacred masterpiece, highly detailed, 8k"
+    ),
+    (
+        r"\b(radha|radhaji|radhe|goddess radha)\b",
+        "Portrait of single Hindu goddess Radha alone, fair-skinned young woman, elegant fully clothed traditional red and gold silk saree, ornate golden crown and exquisite jewelry, serene divine smiling expression, lotus flower garden background, Raja Ravi Varma classical Indian temple mural art style, sacred oil painting masterpiece, highly detailed, 8k resolution"
     ),
     (
         r"\b(shiva|mahadev|bholenath|shankar|har har mahadev|lord shiva)\b",
@@ -182,11 +190,11 @@ def generate_and_save(message: str, user_id: str) -> dict:
     # URL candidates (using standard Pollinations parameters)
     url_configs = [
         {
-            "url": f"https://image.pollinations.ai/prompt/{encoded_enhanced}?width=1024&height=1024&nologo=true&seed={seed}",
-            "timeout": 20,
+            "url": f"https://image.pollinations.ai/prompt/{encoded_enhanced}?width=1024&height=1024&nologo=true&seed={seed}&model=flux&enhance=true",
+            "timeout": 25,
         },
         {
-            "url": f"https://image.pollinations.ai/prompt/{encoded_enhanced}?width=1024&height=1024&nologo=true&seed={seed}&model=flux",
+            "url": f"https://image.pollinations.ai/prompt/{encoded_enhanced}?width=1024&height=1024&nologo=true&seed={seed + 1}&model=flux",
             "timeout": 25,
         },
         {
@@ -194,7 +202,7 @@ def generate_and_save(message: str, user_id: str) -> dict:
             "timeout": 20,
         },
         {
-            "url": f"https://image.pollinations.ai/prompt/{encoded_enhanced}?nologo=true&model=turbo&seed={seed + 1}",
+            "url": f"https://image.pollinations.ai/prompt/{encoded_enhanced}?nologo=true&model=turbo&seed={seed + 2}",
             "timeout": 15,
         },
     ]

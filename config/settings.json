@@ -10,5 +10,14 @@
     "lia",
     "jarvis"
   ],
-  "session_hours": 12
+  "session_hours": 12,
+  "tor_enabled": true,
+  "tor_socks_host": "127.0.0.1",
+  "tor_socks_port": 9050,
+  "tor_control_port": 9051,
+  "searxng_url": "",
+  "ollama_embedding_model": "nomic-embed-text",
+  "n8n_url": "http://localhost:5678",
+  "watch_queries": [],
+  "research_interval_seconds": 1800
 }
