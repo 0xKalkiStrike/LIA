@@ -6,11 +6,6 @@ that already existed on disk before this module).
 """
 from __future__ import annotations
 
-import hashlib
-import time
-
-import aiohttp
-
 from core.config import DATA_DIR, setting
 
 _COLLECTION_NAME = "lia_intel"
@@ -30,6 +25,11 @@ def _get_collection():
 
 async def embed(text: str) -> list[float]:
     """Embed text via Ollama's /api/embeddings endpoint."""
+    try:
+        import aiohttp
+    except ImportError:
+        raise RuntimeError("aiohttp is required for embeddings. Install via: pip install aiohttp")
+
     model = setting("ollama_embedding_model", "nomic-embed-text")
     url = setting("ollama_url") + "/api/embeddings"
     async with aiohttp.ClientSession() as session:

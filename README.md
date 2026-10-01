@@ -1,75 +1,52 @@
-﻿# LIA AI — Smart Assistant
+# 🤖 LIA — Local Intelligence Assistant
 
-A Next.js + FastAPI AI assistant with JWT authentication and JSON-based database.
+**LIA** is an AI Operating System and multi-agent virtual assistant featuring interactive 3D VRM avatars, low-latency offline neural speech synthesis (Piper TTS), real-time WebSockets, multi-modal vision, desktop automation, and personal productivity tools.
 
-## Setup
+---
 
-### 1. Install Dependencies
+## ⚡ Quickstart
 
-`bash
+```bash
+# 1. Install requirements
 pip install -r requirements.txt
-cd frontend && npm install && cd ..
-`
 
-### 2. Start the Backend
-
-`bash
+# 2. Run LIA Backend & Web UI
 python run.py
-`
+```
+Open **http://127.0.0.1:8001** in your browser.
 
-Backend runs on **http://localhost:8001**
+For full-stack deployment (Backend + Next.js Frontend), execute:
+```cmd
+START_SERVERS.bat
+```
 
-### 3. Start the Frontend (in another terminal)
+---
 
-`bash
-cd frontend
-npm run dev
-`
+## 📚 Documentation
 
-Frontend runs on **http://localhost:3000**
+Detailed documentation is available in the [`docs/`](docs/) directory:
 
-## Architecture
+- 🛠️ [**Setup & Installation Guide**](docs/SETUP.md)
+- 🏗️ [**Architecture & Systems Overview**](docs/ARCHITECTURE.md)
+- ✨ [**Feature & Agent Capabilities**](docs/FEATURES.md)
 
-### Backend (FastAPI on port 8001)
-- **Authentication**: JWT tokens (12-hour expiry)
-- **Database**: JSON files in data/ directory
-- **Key Routes**:
-  - POST /api/signup - Create account
-  - POST /api/login - Login (returns JWT token)
-  - GET /api/profile - Get user profile (requires Bearer token)
-  - POST /api/profile - Update profile
-  - WebSocket /api/ws - Real-time chat stream
+---
 
-### Frontend (Next.js on port 3000)
-- Character creator with customization
-- Chat interface with LIA AI
-- Productivity suite (Notes, Tasks, Calendar, Reminders)
-- Authentication via localStorage
+## 🧪 Testing & Health Check
 
-### Database (JSON Files)
-Located in data/:
-- users.json - User accounts
-- profiles.json - Character customization
-- memories.json - Long-term memory
-- tasks.json, notes.json - Productivity
-- calendar_events.json, reminders.json - Calendar
-- voice_settings.json - Voice preferences
+Run integration tests:
+```bash
+python tests/test_backend.py
+python tests/test_browser_heuristics.py
+python tests/test_commands.py
+```
 
-## Authentication
+Run health diagnostics:
+```bash
+python lia_orchestrator.py health
+```
 
-1. Signup: POST /api/signup → returns JWT token
-2. Login: POST /api/login → returns JWT token  
-3. Use token: Authorization: Bearer <token> in all requests
-4. Token expires after 12 hours
+---
 
-## Getting Started
-
-`bash
-# Terminal 1: Start backend
-python run.py
-
-# Terminal 2: Start frontend
-cd frontend && npm run dev
-`
-
-Then visit http://localhost:3000 and create your account!
+## 📄 License
+Open source — built with FastAPI, Ollama, Piper TTS, and Three.js.

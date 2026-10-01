@@ -7,9 +7,10 @@ Features:
 """
 import json
 import re
+import urllib.request
 import uuid
 from pathlib import Path
-from core.config import ROOT
+from core.config import ROOT, setting
 
 ARTICLES_DIR = ROOT / "ui" / "static" / "generated" / "articles"
 
@@ -40,12 +41,58 @@ def _clean_topic(message: str) -> str:
     return cleaned or "The Future of Autonomous AI Systems"
 
 
+def _ollama_write(topic: str, message: str) -> str | None:
+    """Ask the local writing model for a real, topic-specific long-form article."""
+    system = (
+        "You are a professional long-form writer. Write a complete, well-researched "
+        "article in Markdown: a title (H1), a short summary blockquote, a table of "
+        "contents, and at least 5 sections (H2) with real substance specific to the "
+        "topic — no generic filler, no placeholder phrases. End with a conclusion."
+    )
+    try:
+        payload = json.dumps({
+            "model": setting("ollama_writing_model", "mistral"),
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": f"Write a long-form article: {message.strip() or topic}"},
+            ],
+            "stream": False,
+        }).encode()
+        req = urllib.request.Request(
+            setting("ollama_url") + "/api/chat",
+            data=payload, headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            data = json.loads(resp.read())
+        content = data.get("message", {}).get("content", "").strip()
+        return content or None
+    except Exception as e:
+        print(f"[ArticleAgent] Ollama unreachable, using offline template: {str(e)[:80]}")
+        return None
+
+
 def generate_article(message: str, user_id: str) -> dict:
     """Generate a comprehensive long-form article with SEO metadata, table of contents, and formatted sections."""
     ARTICLES_DIR.mkdir(parents=True, exist_ok=True)
     topic = _clean_topic(message)
     art_id = f"art_{uuid.uuid4().hex[:8]}"
 
+    generated = _ollama_write(topic, message)
+    if generated:
+        markdown_body = generated
+        md_file = ARTICLES_DIR / f"{art_id}.md"
+        md_file.write_text(markdown_body, encoding="utf-8")
+        return {
+            "ok": True,
+            "article_id": art_id,
+            "title": topic.title(),
+            "content": markdown_body,
+            "word_count": len(markdown_body.split()),
+            "download_url": f"/static/generated/articles/{art_id}.md",
+            "spoken": f"I have written a long-form article on '{topic}' formatted with markdown and ready for export."
+        }
+
+    # Offline fallback — used only if Ollama is unreachable.
     markdown_body = f"""# {topic.title()}
 
 > **Summary**: A comprehensive analysis of {topic}, examining current market dynamics, technological breakthroughs, practical implementations, and long-term trends.

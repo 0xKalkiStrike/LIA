@@ -158,15 +158,22 @@ def _resolve_model(persona_id, accent="us", language=None):
     return persona.get("piper_model", "en_US-amy-medium")
 
 
-def synthesize(text, persona_id="friday", accent="us", language=None):
-    """Synthesize speech and return WAV bytes. Raises RuntimeError if Piper unavailable.
+def clean_text_for_speech(text: str) -> str:
+    if not text:
+        return ""
+    import re
+    text = re.sub(r"\[SEARCH:.*?\]", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+    text = re.sub(r"\*([^*]+)\*", r"\1", text)
+    text = re.sub(r"_([^_]+)_", r"\1", text)
+    text = re.sub(r"[*#`_]", "", text)
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    return re.sub(r"\s+", " ", text).strip()
 
-    Args:
-        text: Text to synthesize
-        persona_id: Voice persona (friday, nova, etc)
-        accent: English accent variant (us, gb, in, au) - ignored if language is set
-        language: Language mode (gujarati, hindi, tamil, etc) - overrides accent if set
-    """
+
+def synthesize(text, persona_id="friday", accent="us", language=None):
+    """Synthesize speech and return WAV bytes. Raises RuntimeError if Piper unavailable."""
+    text = clean_text_for_speech(text)
     model_name = _resolve_model(persona_id, accent, language)
     voice = _get_voice(model_name)
     if voice is None:

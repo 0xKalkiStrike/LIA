@@ -1312,3 +1312,91 @@ body.context-collapsed .dash-right { width: 0; opacity: 0; overflow: hidden; bor
   .dash-nav { padding: 0 var(--sp-2); }
   .msg { max-width: 94%; }
 }
+
+/* ════════════════ COMPANION MODE & MOOD AURA VISUALS ════════════════ */
+.companion-toggle-btn {
+  background: rgba(255, 126, 179, 0.12);
+  border: 1px solid rgba(255, 126, 179, 0.35);
+  color: #FF8FB1;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.companion-toggle-btn:hover {
+  background: rgba(255, 126, 179, 0.25);
+  box-shadow: 0 0 16px rgba(255, 126, 179, 0.4);
+  transform: translateY(-1px);
+}
+
+.companion-toggle-btn.mode-gf {
+  background: linear-gradient(135deg, rgba(255, 117, 140, 0.25), rgba(255, 126, 179, 0.35));
+  border-color: #FF758C;
+  color: #FFFFFF;
+  box-shadow: 0 0 12px rgba(255, 117, 140, 0.35);
+}
+
+.holo-pod.aura-glow {
+  position: relative;
+}
+
+.pod-aura-ring {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(83, 215, 240, 0.3) 0%, rgba(83, 215, 240, 0) 70%);
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: 0;
+  transition: all 0.8s ease;
+  animation: auraPulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes auraPulse {
+  0% { transform: scale(0.95); opacity: 0.6; }
+  100% { transform: scale(1.08); opacity: 0.95; }
+}
+
+/* Aura Emotion Themes */
+.pod-aura-ring.aura-love {
+  background: radial-gradient(circle, rgba(255, 117, 140, 0.45) 0%, rgba(255, 126, 179, 0) 75%);
+}
+
+.pod-aura-ring.aura-happy {
+  background: radial-gradient(circle, rgba(255, 183, 3, 0.45) 0%, rgba(255, 214, 10, 0) 75%);
+}
+
+.pod-aura-ring.aura-sad {
+  background: radial-gradient(circle, rgba(72, 202, 228, 0.45) 0%, rgba(0, 119, 182, 0) 75%);
+}
+
+.pod-aura-ring.aura-angry {
+  background: radial-gradient(circle, rgba(242, 100, 124, 0.45) 0%, rgba(200, 30, 60, 0) 75%);
+}
+
+.pod-aura-ring.aura-stressed {
+  background: radial-gradient(circle, rgba(157, 123, 240, 0.45) 0%, rgba(110, 60, 200, 0) 75%);
+}
+
+.emotion-particles-canvas {
+  position: absolute;
+  inset: -20px;
+  width: calc(100% + 40px);
+  height: calc(100% + 40px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.emotion-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(83, 215, 240, 0.15);
+  border: 1px solid rgba(83, 215, 240, 0.3);
+  color: #53D7F0;
+  transition: all 0.3s ease;
+}
+

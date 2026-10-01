@@ -238,5 +238,1021 @@
     "secret_salt": "88bcc2e2339af19106852ed91f8ccc0a",
     "role": "commander",
     "created_at": 1787574002.702831
+  },
+  "eba46b2f55d84201899224b6bf718bf0": {
+    "username": "cal_5a907fa5",
+    "display_name": "Cal",
+    "secret_hash": "7e8f47f8e4762626cd2f60e6bdf5d03676749233445d5d04239a946ae953270b",
+    "secret_salt": "18f35f6347c94e9424af9154a950432c",
+    "role": "commander",
+    "created_at": 1789305308.2544546
+  },
+  "a6abb072ff4a42e2809de6635b638ba8": {
+    "username": "chat_05fae50c",
+    "display_name": "Chat",
+    "secret_hash": "d1a5ae3a383dc5144f6a939dc0c620332ec66cb01dddf1857fe58c96c9ace3db",
+    "secret_salt": "4bcb95e7dfebec0905b58b64a6eee81c",
+    "role": "commander",
+    "created_at": 1789305308.3648703
+  },
+  "142a420a68f54fe88064a669cb235123": {
+    "username": "wrongpw_be8ed22d",
+    "display_name": "Wrongpw_Be8Ed22D",
+    "secret_hash": "49acfc6153751ddabbf1db28785eb391e9b8949795b57926bf5ac29c18db958b",
+    "secret_salt": "e21b70c6aa429e6c970feed49884c9bc",
+    "role": "commander",
+    "created_at": 1789305308.4517472
+  },
+  "3e9ee53ad5a74c6eaed001a8aef591e2": {
+    "username": "mem_bdf9d4de",
+    "display_name": "Mem",
+    "secret_hash": "79ebc0149f1c39d235103db82f00af0bad6f38b1271a058f7cd6925abe2cb63c",
+    "secret_salt": "48b4820e20b0007253a33a7e9de56958",
+    "role": "commander",
+    "created_at": 1789305308.674859
+  },
+  "349b0f5b4e7a4afa863155120615d5ea": {
+    "username": "notes_d94077f6",
+    "display_name": "Notes",
+    "secret_hash": "8e8c23b23a24fb89b6ec0216f09bf1390802b3d453342b78fe72e5075063e896",
+    "secret_salt": "29d0dc1b289a39352791915f84b74d49",
+    "role": "commander",
+    "created_at": 1789305308.8169937
+  },
+  "39befd18b83c4a188e69ef16e56e14c6": {
+    "username": "inj_248b93a2",
+    "display_name": "Inj",
+    "secret_hash": "b146a95b976778a49e53d8fa6d38c8f732f3633bd20ab36ee9974ed7b3e57e7c",
+    "secret_salt": "a0aa3d80dc7c153d1bec2bac350ed89c",
+    "role": "commander",
+    "created_at": 1789305308.9337995
+  },
+  "5a2f66a90ebe49d18454c68bf1e7b645": {
+    "username": "male_dd60a4d1",
+    "display_name": "Male",
+    "secret_hash": "34d6235300ef3925e82bb4ec4272033d059448acefc75ebc90d93f60f84ddb78",
+    "secret_salt": "a2bf21c468d77adde4b63292ba46dc6a",
+    "role": "commander",
+    "created_at": 1789305309.058486
+  },
+  "0a9eb1b31984488e9e9fee6ef7777707": {
+    "username": "cmdr_0298d80b",
+    "display_name": "Cmdr",
+    "secret_hash": "e87a870c913684ad2473d1d8f177e86125530b7d3a09c40621116ac9aa2bd253",
+    "secret_salt": "1999cf437123b5f5633b4e06be677bd6",
+    "role": "commander",
+    "created_at": 1789305309.1811192
+  },
+  "8869965578f04abfbbeca0902c561b92": {
+    "username": "iso_a_4edc3845",
+    "display_name": "Iso_A",
+    "secret_hash": "6064e9bacc0d2b389d1545c4377aaf86934c5772364e3df295ccc3afadfcd4e0",
+    "secret_salt": "048d095ccd9c19f91b27a6c4a1f35462",
+    "role": "commander",
+    "created_at": 1789305309.2725625
+  },
+  "11b32aaa256a4af5b40ffca31d370057": {
+    "username": "iso_b_b4efca88",
+    "display_name": "Iso_B",
+    "secret_hash": "6acca5d0cd6263b92853a92be94a952dedca88325fbb7c3b0cac54e92b650605",
+    "secret_salt": "09ae0e6c65dfcb357bc39bd69437a3d3",
+    "role": "commander",
+    "created_at": 1789305309.3604193
+  },
+  "34c5e360bb3f494cb24445800d4af11f": {
+    "username": "tasks_99d93d82",
+    "display_name": "Tasks",
+    "secret_hash": "2ae00d3e75f1b82710cb7af01aba9c2ead21ab91e2f1e3c25e7cdee82b3e134f",
+    "secret_salt": "51344f4a646854bd196d80802c4e7654",
+    "role": "commander",
+    "created_at": 1789305309.4724576
+  },
+  "f9b91778f5184f578104fc2762df8ba1": {
+    "username": "tts_b1ba1f82",
+    "display_name": "Tts",
+    "secret_hash": "2e6ace85532320a2e9c577028572b41a6a9b5eae6d9870f38ca7b5828ea3a87e",
+    "secret_salt": "eeea8417f8739d5a00658d23c7df03e2",
+    "role": "commander",
+    "created_at": 1789305309.593941
+  },
+  "fa230ddeef654884b7c539b48c98e433": {
+    "username": "vault_43bd7fa8",
+    "display_name": "Vault",
+    "secret_hash": "86061dc160c2eeac9675923a1a2d3b7dd937dd28740c77e719462af4f58ec0ff",
+    "secret_salt": "1728049559f1ad5ed19fac207a913bf0",
+    "role": "commander",
+    "created_at": 1789305309.6974967
+  },
+  "40aa4f1c29ac46dda7a5338dd6dcfaf9": {
+    "username": "voice_b2dc97e3",
+    "display_name": "Voice",
+    "secret_hash": "72c15ac4a877dff90102e197059f52cd88c3cd565824bb791b7a9295c5cbc50a",
+    "secret_salt": "4171a627c375c54c275239c79c1cc792",
+    "role": "commander",
+    "created_at": 1789305309.8097863
+  },
+  "2765ad247a2d4972ac5b805663b86f1d": {
+    "username": "testuser",
+    "display_name": "Test User",
+    "secret_hash": "fb621b7961ff006cfd178e82bca64b3e93804b471e949b010ccd6400c16867d3",
+    "secret_salt": "6d506189872eb94cfb7812b328ca1308",
+    "role": "commander",
+    "created_at": 1789305335.5116165
+  },
+  "8a7eebcf02d347498aeec78a5e5e0a05": {
+    "username": "cal_3e8b7960",
+    "display_name": "Cal",
+    "secret_hash": "0e619871bcd3775ddd3e1ca870b33d9a36111d717086562adcef59a33cbe69df",
+    "secret_salt": "6555d071b8ca398e18915aa9e32312f0",
+    "role": "commander",
+    "created_at": 1789305607.598907
+  },
+  "950591990f274209ae6770f76d2028e9": {
+    "username": "chat_c347069e",
+    "display_name": "Chat",
+    "secret_hash": "4ff56a4b3c4b9949cedfa157706124136951a8250863b8182101bd3374a1c7d1",
+    "secret_salt": "4a2867bc47caba511c1d474a6cc5d62a",
+    "role": "commander",
+    "created_at": 1789305607.7506287
+  },
+  "19ed17cbace549a5b9c497efb64ce39f": {
+    "username": "wrongpw_9678a13c",
+    "display_name": "Wrongpw_9678A13C",
+    "secret_hash": "8333f671cc37a088cda045bd48f29aa4b256ee601275a88f6c85d174919575c4",
+    "secret_salt": "c70fd36d3a26b5603150179940336f48",
+    "role": "commander",
+    "created_at": 1789305607.8440244
+  },
+  "ba1d9fdceb0e498faa7f7be1522edbb2": {
+    "username": "mem_e9cfddd8",
+    "display_name": "Mem",
+    "secret_hash": "f2b637774d13b5a40cecdf06a609a1142c793b13fe3b3d7f0cae28ab32745a66",
+    "secret_salt": "ba56bdff62adc92161fa49b5bbe73e6d",
+    "role": "commander",
+    "created_at": 1789305608.0850785
+  },
+  "5dc4bfab8c9d47a59f02312814635945": {
+    "username": "notes_14ee917b",
+    "display_name": "Notes",
+    "secret_hash": "f6d4ce833776eb654444844a48674a9c8c2910aeaa6178832fcab96f3d825e84",
+    "secret_salt": "4d88e67fba7be8a1388bcb558580e43e",
+    "role": "commander",
+    "created_at": 1789305608.2530413
+  },
+  "f50d0c59e82b4cc793700d9cd98f0854": {
+    "username": "inj_52b0bff0",
+    "display_name": "Inj",
+    "secret_hash": "31760c82f140d2e4ce64a4f4afbb450eb0839a9bf2dd400ce9077393e83fe8e5",
+    "secret_salt": "ca751180eef07af12a3c1dc4aa5691d0",
+    "role": "commander",
+    "created_at": 1789305608.4021149
+  },
+  "01c8854b166c49f591effc71b17f4669": {
+    "username": "male_7c942f49",
+    "display_name": "Male",
+    "secret_hash": "8354ba092feec4121363feee219a7949923db1686db396f449bf0dca89b44ee1",
+    "secret_salt": "afc6ac44a75ffba5863d5ea76eb3284a",
+    "role": "commander",
+    "created_at": 1789305608.5419197
+  },
+  "0b20ab75b256409aa355823fc01f29ba": {
+    "username": "cmdr_1201a729",
+    "display_name": "Cmdr",
+    "secret_hash": "32c739627696e89b1755522ce98bfbb9823336927dae53fd2d783245116cd489",
+    "secret_salt": "24ac94d3040750d97dec066e0b221498",
+    "role": "commander",
+    "created_at": 1789305608.6765776
+  },
+  "bce8ef65aab64abe852b8c5bc3affd2b": {
+    "username": "iso_a_946f7e52",
+    "display_name": "Iso_A",
+    "secret_hash": "8358a4307447e28ee01295fcf52994d90aa3edb7511f4a9dd92380aa553773dc",
+    "secret_salt": "40da01834219eeb08805c602d840c2f7",
+    "role": "commander",
+    "created_at": 1789305608.7785969
+  },
+  "0a64e0157612456ba179aee4c11d65d6": {
+    "username": "iso_b_439dfabf",
+    "display_name": "Iso_B",
+    "secret_hash": "0e2774639617f2a7b2d05002ac9d4945a4b8cb00cfef23127cdc8075251a0988",
+    "secret_salt": "b1c848b9097b8721251eacd03ce34c36",
+    "role": "commander",
+    "created_at": 1789305608.8727005
+  },
+  "b9b8509e7322480f87a14b2ae1669532": {
+    "username": "tasks_dbc58926",
+    "display_name": "Tasks",
+    "secret_hash": "94390958b82a0119cae31f6dd2cd6906068a27d65a1cc812b571610a8d0a67db",
+    "secret_salt": "b5c7d5085f94ee5623bcc3bdc75a4aab",
+    "role": "commander",
+    "created_at": 1789305609.0138216
+  },
+  "fff3be966b8543a4b3621d437059b511": {
+    "username": "tts_61a6830c",
+    "display_name": "Tts",
+    "secret_hash": "5293008c661b02f836935d158bd6b28fc131416b6d328c73b21ca1b9a5a4130b",
+    "secret_salt": "a91eb888a8c138bbe508522823b5ac40",
+    "role": "commander",
+    "created_at": 1789305609.1762543
+  },
+  "94522f5a73de42d3959dccfbc99c439a": {
+    "username": "vault_0ff3f484",
+    "display_name": "Vault",
+    "secret_hash": "c9cc45ed428e0ba810622410af3b3875e93e949f32f6578157939828b2c6c3eb",
+    "secret_salt": "687fcdfe986094ac389e37e929c78ad5",
+    "role": "commander",
+    "created_at": 1789305609.3001378
+  },
+  "f2e55dba5ccc4e318b879af106a1fb17": {
+    "username": "voice_918a329c",
+    "display_name": "Voice",
+    "secret_hash": "6b4b2be651902df8a204f165ba4742878d5f04802cf438f451d4bcb6fb4bb020",
+    "secret_salt": "c1dd350e1cc8311c4642a95ce95cfd55",
+    "role": "commander",
+    "created_at": 1789305609.438629
+  },
+  "4cc618fcc8c941969d6f474da96c1018": {
+    "username": "cal_2742cc49",
+    "display_name": "Cal",
+    "secret_hash": "4703aa04132fff2e4295d8a7c1ad9c64cbd7f5928fa8bd5aa128f6c8dbe0dc5c",
+    "secret_salt": "17483c6cbee31f053660fb17486e5c46",
+    "role": "commander",
+    "created_at": 1789305823.5941627
+  },
+  "f78bbf9ea3d94ad8beffb85b9279e4a3": {
+    "username": "chat_237ffae6",
+    "display_name": "Chat",
+    "secret_hash": "793eb0661815d1b443e5e6c2fe768181b485d9905fa78a7c33355a72121627cb",
+    "secret_salt": "7abb9c3aaedd6b2b6f53bbe18e1555dc",
+    "role": "commander",
+    "created_at": 1789305823.7113543
+  },
+  "34c4601e3b6c4ca59e09ba8d309c1f1a": {
+    "username": "wrongpw_46b4212a",
+    "display_name": "Wrongpw_46B4212A",
+    "secret_hash": "af50d2238a3e4f518544a63db39c504a09068a3db339bb6687d5d963547e2c9e",
+    "secret_salt": "874a0b5a4ae49431a8331a20e5444fcc",
+    "role": "commander",
+    "created_at": 1789305823.7958107
+  },
+  "20ec80450a5c42aaac2dba601f41dccb": {
+    "username": "mem_3ee7331d",
+    "display_name": "Mem",
+    "secret_hash": "33eb29f49ee4a8a55ebeef5328571fe8e82040c33696e2471fe3e55dec3b6bab",
+    "secret_salt": "6b48e12322e0faff84a6742bc193dee5",
+    "role": "commander",
+    "created_at": 1789305824.0219326
+  },
+  "b1ab1cf4922f42b990957b859a02f75b": {
+    "username": "notes_e4bbe119",
+    "display_name": "Notes",
+    "secret_hash": "d8fd3d24d519d5506e2d0d00318af1337247462f5adac0388704cdf04618d369",
+    "secret_salt": "1767cff358115f4a82d334b71adc7391",
+    "role": "commander",
+    "created_at": 1789305824.140398
+  },
+  "02e957eb7f2042a3a392269721222c17": {
+    "username": "inj_78f6f191",
+    "display_name": "Inj",
+    "secret_hash": "ab4031db66011f23635eb5084d9b8513b351e1ab15baa4956541f4b45f533107",
+    "secret_salt": "ceb2260f6c38b851635f64832b71cafb",
+    "role": "commander",
+    "created_at": 1789305824.2386181
+  },
+  "f5fa505c643e4ccaa3e372356da1bd21": {
+    "username": "male_cbfd6fd6",
+    "display_name": "Male",
+    "secret_hash": "a5ea042b25254ff30cee846b8c199801d9e044f922c791deebbc14595339c5e7",
+    "secret_salt": "69d0157efab9533bf2a802cccb6876f7",
+    "role": "commander",
+    "created_at": 1789305824.3319833
+  },
+  "627a18a8322e43de89644aaae9984504": {
+    "username": "cmdr_d2eb27d4",
+    "display_name": "Cmdr",
+    "secret_hash": "859d762671fa7a6d89578b0e3dba5fe5815609eb4142b7778f30d17104fd8671",
+    "secret_salt": "bc1c088db90127c3da619eb01c48303c",
+    "role": "commander",
+    "created_at": 1789305824.4338002
+  },
+  "8ca7856ec1164c658dce3c7694f848bb": {
+    "username": "iso_a_e74d3eee",
+    "display_name": "Iso_A",
+    "secret_hash": "2c1fc53f065b9153459644f41eeaeb46fc684c2e33d59224351af6a46cc5e41d",
+    "secret_salt": "452c6b6c8a07b301ae08cd3f817a61d8",
+    "role": "commander",
+    "created_at": 1789305824.5141358
+  },
+  "bba037b75eec410d9c2f73a519103487": {
+    "username": "iso_b_8f0276db",
+    "display_name": "Iso_B",
+    "secret_hash": "1879eb8a8e972de202ee690d1998f3f61cd01cf0d36e1a44efef486244d8d3f5",
+    "secret_salt": "01a2115f3a9d54de7643b6c9d2939dcd",
+    "role": "commander",
+    "created_at": 1789305824.5864198
+  },
+  "97ea45e7babc4bea86aef9160a5495be": {
+    "username": "tasks_b8c850d5",
+    "display_name": "Tasks",
+    "secret_hash": "096bd9e335da53811d89ad4cdb09d83951d142e2a2756f1a9153470b029c3ddc",
+    "secret_salt": "5e4020e7492bccaeff51eee25ad94265",
+    "role": "commander",
+    "created_at": 1789305824.6840873
+  },
+  "a5f5f25077944ba787a13ad6d808083f": {
+    "username": "tts_d828eea7",
+    "display_name": "Tts",
+    "secret_hash": "d27948f0c95ccc31e27432cea355440ab1a8c8604e3ae603cc93ad200923c3cb",
+    "secret_salt": "f102e2cc7c803dc9d8cbc125be649c13",
+    "role": "commander",
+    "created_at": 1789305824.7924602
+  },
+  "bb61bebc8b7c4cdab21fdeb8a7e644bc": {
+    "username": "vault_095cb337",
+    "display_name": "Vault",
+    "secret_hash": "74e4e904f72ea2290cdcb4d7a2a4518fb52c17974e9a84819fe05992cb83d068",
+    "secret_salt": "ac2e57ff2afa5ccfa7fba75c97d4949c",
+    "role": "commander",
+    "created_at": 1789305824.8742957
+  },
+  "10a744b7cb6c4e7394cc2eb7a514161d": {
+    "username": "voice_4f0d7bbb",
+    "display_name": "Voice",
+    "secret_hash": "241cb7415f7a06e6897b77a4fc36176cb200084c83efdef44c78ce7db967f963",
+    "secret_salt": "fdb484ec665e87117b7f200c7f23567f",
+    "role": "commander",
+    "created_at": 1789305824.9616334
+  },
+  "034afb71ac2c4d46bd81f6bf481fa5ec": {
+    "username": "cal_abe15ca9",
+    "display_name": "Cal",
+    "secret_hash": "d99b38ccb4da05ed83e11caa8234b20e29edb9eac6f599f88b24c6f44e55f735",
+    "secret_salt": "5123e295c93d5f6af05336352f05bf11",
+    "role": "commander",
+    "created_at": 1789305891.845212
+  },
+  "afb2f4febc7242fb8fcb2278507fcf8f": {
+    "username": "chat_dbd9ed81",
+    "display_name": "Chat",
+    "secret_hash": "cbf13bf488204ba28fe509321525fa177562ec9c50f6300fe313e567eeefb3d5",
+    "secret_salt": "6d999fca6f9ee95c80080903a4f2a07e",
+    "role": "commander",
+    "created_at": 1789305891.9534361
+  },
+  "fd2d4a8f3c1f47ea8ba1558ac0256dd9": {
+    "username": "wrongpw_4f60bc02",
+    "display_name": "Wrongpw_4F60Bc02",
+    "secret_hash": "66c03a3ad32f3e248bc921001d5d2cdcb118ac7eb4cb1fe3a08d38035d766122",
+    "secret_salt": "5a46d6397d39bdb6013dea309af1f5e5",
+    "role": "commander",
+    "created_at": 1789305892.038
+  },
+  "237c03b5e87b4ae1a40290ddbdcf2423": {
+    "username": "mem_985c95e2",
+    "display_name": "Mem",
+    "secret_hash": "7dc6346012fb7589044c469ed8859b666a81d41e7173f981edfb6a01b1bc25d6",
+    "secret_salt": "9577fb9a41588c44ea6d74e48012b55c",
+    "role": "commander",
+    "created_at": 1789305892.2547514
+  },
+  "f8edc5fcd25f4109b9c672545f6b1a92": {
+    "username": "notes_7b8c3c18",
+    "display_name": "Notes",
+    "secret_hash": "fbec2cb84ed5b007e9fe5a408a1880836c38f85f4664b4d5827dac0ad0164500",
+    "secret_salt": "fc99401808f6f99d1682d005e9b8e37b",
+    "role": "commander",
+    "created_at": 1789305892.3651707
+  },
+  "04c516d3858b4bff81300be0d0546382": {
+    "username": "inj_9e4e5458",
+    "display_name": "Inj",
+    "secret_hash": "caacb9eafdf200165fe6a8ead61d5a9fad29e72b8cc903d7f6e4b993d9d08435",
+    "secret_salt": "b4139d1fd74dd25c450d0bf14b2caaee",
+    "role": "commander",
+    "created_at": 1789305892.4723697
+  },
+  "93951c6b43ac49f98e6977b46a04a1d3": {
+    "username": "male_69adccb9",
+    "display_name": "Male",
+    "secret_hash": "96831ff590188640def0513675ee71a3a01311246cf038a89caa0898e8217377",
+    "secret_salt": "8acf1ff71f199e7020da00c295a6f8de",
+    "role": "commander",
+    "created_at": 1789305892.574121
+  },
+  "ed3abd2e1bc8489785e505a7f9245839": {
+    "username": "cmdr_b1f208c6",
+    "display_name": "Cmdr",
+    "secret_hash": "168616c6035eea369a5a0ef06548158b643e8db142f2274cf3487555c61d98cf",
+    "secret_salt": "d481d8f18cfe4db0f9017df8b8c381e7",
+    "role": "commander",
+    "created_at": 1789305892.6795163
+  },
+  "1f1badae4ee34c05bad5c31305b1ddcd": {
+    "username": "iso_a_42ac6aec",
+    "display_name": "Iso_A",
+    "secret_hash": "cbc40ca1dd24738d34a41566113467f8c2d15f05549dc6ec96f43f59a184d85f",
+    "secret_salt": "6f70db0ecf48ac72d3b62dd548249bdf",
+    "role": "commander",
+    "created_at": 1789305892.7570157
+  },
+  "1ab576cec7a3482080c3e026d128457f": {
+    "username": "iso_b_590ca673",
+    "display_name": "Iso_B",
+    "secret_hash": "f9464e6b91b336a7734d1987cce8cf86f50af10accff92cb2d563641e9ad2bbc",
+    "secret_salt": "7deef2fb537dbf20123985a824aa2380",
+    "role": "commander",
+    "created_at": 1789305892.8271058
+  },
+  "3d84a3b71b8c472089b2a2d655f5d45f": {
+    "username": "tasks_ebbe5f99",
+    "display_name": "Tasks",
+    "secret_hash": "38909485545481e743f13cb21451b671e1a442acbd160bac5c0ac5ac130709dc",
+    "secret_salt": "7252d893905fdd139881ba4e6331d7bc",
+    "role": "commander",
+    "created_at": 1789305892.9215226
+  },
+  "84c9f8ea082045de9ebe33e012d9578a": {
+    "username": "tts_b753c151",
+    "display_name": "Tts",
+    "secret_hash": "57866a2a26d59a25c52f97651070abe17328c786403f0c7cc8a565ef13162c24",
+    "secret_salt": "7d8d8be4a96ee74d79ca77ee36fa2e5f",
+    "role": "commander",
+    "created_at": 1789305893.0286343
+  },
+  "58f08961792940aa9db12145f93ace7c": {
+    "username": "vault_b07764ea",
+    "display_name": "Vault",
+    "secret_hash": "b21f98081bf3cc46a7b41aa39dcd1f6ea096969a44bfeeefdbfe5774d20ee3c5",
+    "secret_salt": "9978e864d6bf0020504b0526b8c958e0",
+    "role": "commander",
+    "created_at": 1789305893.1164782
+  },
+  "a8e57110dd5f42a69c3b75a98bec0cc7": {
+    "username": "voice_8d3b3143",
+    "display_name": "Voice",
+    "secret_hash": "ecbb19361906dd00731b9699ae4628350a719e93226c3f5bffb6ef7da6a130f8",
+    "secret_salt": "083bd2c1b2032af3c885521a00a26101",
+    "role": "commander",
+    "created_at": 1789305893.2126484
+  },
+  "621fbe6575b44fa280f648a21c3805cb": {
+    "username": "cal_c2233a48",
+    "display_name": "Cal",
+    "secret_hash": "8651133aba198a6f1f958517f763802b2739986617d6500445f371e588ff6868",
+    "secret_salt": "b6bd88e02579d358f635e2ac9ebbd58b",
+    "role": "commander",
+    "created_at": 1789306006.4091952
+  },
+  "d5b7b8de7df74761b58d7edff324150f": {
+    "username": "chat_12f78e88",
+    "display_name": "Chat",
+    "secret_hash": "5f4976dcd91f27cbd8f6c2a8d967598aec42400538357dfa6ac4b2254c79de78",
+    "secret_salt": "8fc6017bdbd4aa1c7b65678436681ccb",
+    "role": "commander",
+    "created_at": 1789306006.6806204
+  },
+  "41aa7646e58f40d487a7a536599c9c72": {
+    "username": "wrongpw_23c7b48d",
+    "display_name": "Wrongpw_23C7B48D",
+    "secret_hash": "1ac6c549f632ba211c31c571d940f7d66a453faec08c8e8c590fb23137cc77ec",
+    "secret_salt": "893d7ebab5b2d32580ddf41e08021dc2",
+    "role": "commander",
+    "created_at": 1789306006.8339324
+  },
+  "427b65a4460e41009efaba4f37ffa30f": {
+    "username": "mem_b2ce17d3",
+    "display_name": "Mem",
+    "secret_hash": "74ec6f7177744e7fa513b4d6e91258f39d62c49a6e512d3453509a083c39e873",
+    "secret_salt": "6de4b74000668b3d008773d6b534a6ed",
+    "role": "commander",
+    "created_at": 1789306007.2651591
+  },
+  "ffa2450547194222a777d738d82d096a": {
+    "username": "notes_9893446c",
+    "display_name": "Notes",
+    "secret_hash": "b6986b903645292f2a0ead13dcc24260332156fa743e3e6202202b085f8c2543",
+    "secret_salt": "69890262f3607e9fbe9cecd2a1aeb585",
+    "role": "commander",
+    "created_at": 1789306007.6012955
+  },
+  "9954217873644795809dcfd878a0167d": {
+    "username": "inj_d5ac7243",
+    "display_name": "Inj",
+    "secret_hash": "2cb1983b07944f99bf360cc707de619ffca89b8fb745c45830d609fa6b466d6b",
+    "secret_salt": "f518e5a71d09435b3f4a87f6b9f08d29",
+    "role": "commander",
+    "created_at": 1789306007.903007
+  },
+  "01006545d4ee4434bd93d191a23e578e": {
+    "username": "male_7dc29bd1",
+    "display_name": "Male",
+    "secret_hash": "061395760ab3d29569f7b6aa18bb76d592470db557daf5888ceb3866521b3558",
+    "secret_salt": "b34f7dc2857b264ff0e858aa2dea0ab5",
+    "role": "commander",
+    "created_at": 1789306008.2049403
+  },
+  "9a4c786e7f4b41feaf6828aa031a2814": {
+    "username": "cmdr_408fc0e6",
+    "display_name": "Cmdr",
+    "secret_hash": "c7213f49991f6757562f7d205c245c785ba06e1e7fefddf441076a7016f379a2",
+    "secret_salt": "1557355aa914d8ddae8e9285dcb01828",
+    "role": "commander",
+    "created_at": 1789306008.5139258
+  },
+  "cd2cf2203fa64f59ae7ff5a9b904ed84": {
+    "username": "iso_a_1c068a01",
+    "display_name": "Iso_A",
+    "secret_hash": "9cc33cca598641ab222c9c6d084efaa9263f6465de287f904e91b0f1a23c25d8",
+    "secret_salt": "7b2a92e190f97a4a8ded88a56be82fc0",
+    "role": "commander",
+    "created_at": 1789306008.6831303
+  },
+  "4aab2b6dca8d483493998cc13f1be53e": {
+    "username": "iso_b_eb69fb50",
+    "display_name": "Iso_B",
+    "secret_hash": "fb67589caeb72141b84fd1cff1592ad1d6ebc63d17ff4a4ed32c1aac5032513f",
+    "secret_salt": "10580b9788f5183ff15e18d91b7003fc",
+    "role": "commander",
+    "created_at": 1789306008.8358562
+  },
+  "31dcc690c2b64160b3b463a4b180a56a": {
+    "username": "tasks_13a46c85",
+    "display_name": "Tasks",
+    "secret_hash": "ab87c7ae727e6a42c3cfc9e56d07760872fbeaad3fb242b4e1468219353dfc07",
+    "secret_salt": "eb49c8406bdcd2188b5928a4f85fd50d",
+    "role": "commander",
+    "created_at": 1789306009.0947971
+  },
+  "d68656906c4e41b3995072e0073c3ae7": {
+    "username": "tts_0eca817d",
+    "display_name": "Tts",
+    "secret_hash": "4a18057419572cf198616f40cb41be24722dfa3b23c3376db3a0e55c7d82567a",
+    "secret_salt": "299cd765567b151b2d7ed8ad19bf064d",
+    "role": "commander",
+    "created_at": 1789306009.4316852
+  },
+  "29463d2b058840458c4472b3945ee0d8": {
+    "username": "vault_47ee6987",
+    "display_name": "Vault",
+    "secret_hash": "6e9bad0eb73b72aaddb2a244cf354497163f1ce1b1f853d18ccee3d7a7c6cbda",
+    "secret_salt": "a6ade34443c1e0522439680ba4a0d02b",
+    "role": "commander",
+    "created_at": 1789306009.7343738
+  },
+  "7b04f87a6cf4459e9a6dec82b7a0f30e": {
+    "username": "voice_e82ed1e2",
+    "display_name": "Voice",
+    "secret_hash": "3efaa86f2410b9c0012b1e54c749ccafd4995f0f20b97130d6c8d59bfefb8476",
+    "secret_salt": "0279b35f908723eaefcb5a680719b3aa",
+    "role": "commander",
+    "created_at": 1789306010.040373
+  },
+  "0f7537a03caf4af7af4440d25d981099": {
+    "username": "cal_8cf00675",
+    "display_name": "Cal",
+    "secret_hash": "e334e4907340275a0946aaf6c88548889b6c959405b064cf3526b8c28feb8665",
+    "secret_salt": "4f1f58916929aaede14701f0a6945e04",
+    "role": "commander",
+    "created_at": 1789307223.6135097
+  },
+  "5d951b48c7d04955b23f8d98ec4cd53e": {
+    "username": "chat_54a4e05d",
+    "display_name": "Chat",
+    "secret_hash": "ed9faa19a2857cefd75b2717c6ced28660e2649bb1d22a9c468bd51185e995e8",
+    "secret_salt": "e5ae37a398ea865763f111f0ea3b6da8",
+    "role": "commander",
+    "created_at": 1789307223.727565
+  },
+  "195f565026ef4e9b8d46f9abe4ca4e58": {
+    "username": "wrongpw_985804a4",
+    "display_name": "Wrongpw_985804A4",
+    "secret_hash": "513642c3e7e0956738f360cfb5f37d11589c919f5094ea49b2d3b8f539135eb5",
+    "secret_salt": "35d4fd54035c776f3f3c221c669c77f7",
+    "role": "commander",
+    "created_at": 1789307223.8119094
+  },
+  "4bde7d55a96440898e8d0b664de43a80": {
+    "username": "mem_0c72db8d",
+    "display_name": "Mem",
+    "secret_hash": "3889d7b0f0396c04df766edc80ecbcd4985886076722b33b317eafc77fe6839e",
+    "secret_salt": "6a6bd0b24d966cfa56a4dd4c20bb6bc1",
+    "role": "commander",
+    "created_at": 1789307224.0180426
+  },
+  "277cba94eea745028195c044c12e1e59": {
+    "username": "notes_73c9e7ff",
+    "display_name": "Notes",
+    "secret_hash": "8463878aed7554d1824978cfb14e6c5993d52a78637d4b75c91649782537e124",
+    "secret_salt": "cc2d9b0ee063760d6c5f8bbc9671edcb",
+    "role": "commander",
+    "created_at": 1789307224.1302495
+  },
+  "5e519096c5864147b76ef091711b4ebc": {
+    "username": "inj_8bb67e8e",
+    "display_name": "Inj",
+    "secret_hash": "73e03649267355d7599ee45a2ecc970cb08dc5782f83375bc9de3e940d6556e0",
+    "secret_salt": "42d8e4dc57961c6e21df0c9018c6614a",
+    "role": "commander",
+    "created_at": 1789307224.2297783
+  },
+  "abd10d08b6624b4c96444faf74bd108d": {
+    "username": "male_2fb61be3",
+    "display_name": "Male",
+    "secret_hash": "2cd8132cc4a107fef8fab8b768271337521425924a009b0918b78528e703f778",
+    "secret_salt": "c8cd43a25ea0dc9bbe4dd06893919c9f",
+    "role": "commander",
+    "created_at": 1789307224.3332462
+  },
+  "afd0a206a3134cdd8616b498e2e155d4": {
+    "username": "cmdr_52ff6c1a",
+    "display_name": "Cmdr",
+    "secret_hash": "dd7b758e0664846be27a2c6ffff27305ba4610ea81031bd8144b608b4861a176",
+    "secret_salt": "5a6ad39a417b4814ded52f343ce0a0e9",
+    "role": "commander",
+    "created_at": 1789307224.4389637
+  },
+  "481c2b66c7194d4085dda9dcb4aa500a": {
+    "username": "iso_a_11b527bf",
+    "display_name": "Iso_A",
+    "secret_hash": "7c687cdde34442f516cd61b9931cc683d0e46ae1430c4f34063a709a87cafefb",
+    "secret_salt": "28a898251364b5424bdf311e4d617ed4",
+    "role": "commander",
+    "created_at": 1789307224.520692
+  },
+  "3077d14d5b22402ab5b5b6e455a51e3b": {
+    "username": "iso_b_7d94d80b",
+    "display_name": "Iso_B",
+    "secret_hash": "29b0609133dd8511a7512e994c42792fbd33f7f3788c51cb8afc47dc09f31ff6",
+    "secret_salt": "48d53c21335a148a80676e87eb7f75df",
+    "role": "commander",
+    "created_at": 1789307224.5935557
+  },
+  "528407bd940648ab8b6b707276dee112": {
+    "username": "tasks_a62cd0db",
+    "display_name": "Tasks",
+    "secret_hash": "fba62696427440901f1727aa7f4351536ae14cf6aa25f9d832cd9fe5380cc269",
+    "secret_salt": "cc1ec9853427526d29bd935f182f76b8",
+    "role": "commander",
+    "created_at": 1789307224.6894953
+  },
+  "d809bf5ec1b4421fbcf1d36ca25d3482": {
+    "username": "tts_6b4e38c5",
+    "display_name": "Tts",
+    "secret_hash": "9994cf4aa2911310712510872b5e3d1cad96f0deadf3d34f20742cf4db4497f3",
+    "secret_salt": "b5605f70ab8331f130ce7daf54a195a1",
+    "role": "commander",
+    "created_at": 1789307224.7989247
+  },
+  "e4cb6319b713431da4599d7f646f1d54": {
+    "username": "vault_edf5fe1d",
+    "display_name": "Vault",
+    "secret_hash": "97a003f17e39c6a717241730f2f91677982daa304265acec9270dcd146b5cc96",
+    "secret_salt": "d40e1cc5747283ec95bdd552be73db95",
+    "role": "commander",
+    "created_at": 1789307224.8840148
+  },
+  "f8cc612884804d3a94751e9605be2992": {
+    "username": "voice_82d9a60f",
+    "display_name": "Voice",
+    "secret_hash": "7e6e4e9e9d63613f22f42d2d92b7f5c2e75489c9e2ac548d7bd01bffa4a8dcff",
+    "secret_salt": "0b1333c971ed017a99a85f0cbd8ea5e4",
+    "role": "commander",
+    "created_at": 1789307224.9744549
+  },
+  "784cae0e4e784ddf81ea4e6d9739049d": {
+    "username": "cal_1abbc8dc",
+    "display_name": "Cal",
+    "secret_hash": "a3e5c2193b2952191acba9867f852ca08de1146ed2b9cade5a482c6123aa0118",
+    "secret_salt": "482ca9c10e7383eae1e55577156d1762",
+    "role": "commander",
+    "created_at": 1789307537.1931071
+  },
+  "0a06357f781f4422ba8d331fc37e24fb": {
+    "username": "chat_0cf1c91a",
+    "display_name": "Chat",
+    "secret_hash": "251d9a3328533c73af754e6c4e21f81b5cb4bc0e10310b4ad1b4b38b128c3919",
+    "secret_salt": "a6f0b6c1d34689b7fae6e8002c4581f9",
+    "role": "commander",
+    "created_at": 1789307537.3107772
+  },
+  "45f06f1ded4c4f4d9f12d21ef011be6b": {
+    "username": "wrongpw_bfb1df43",
+    "display_name": "Wrongpw_Bfb1Df43",
+    "secret_hash": "d78bc13f0691018293f0355a51b7c7defe2394ddf81f55c1028efecf062c262e",
+    "secret_salt": "020313fb1bfe377adecfc0542e4314db",
+    "role": "commander",
+    "created_at": 1789307537.3962972
+  },
+  "0e3bcb13ae1f43c3804dbe72258ed34e": {
+    "username": "mem_382b806e",
+    "display_name": "Mem",
+    "secret_hash": "69ee6c6e09ccf3bb2e9747d367af721ded37f8f5c5cb3698ca80bb759c6a5467",
+    "secret_salt": "d43e85e6bb48f7455433221741490a5b",
+    "role": "commander",
+    "created_at": 1789307537.606578
+  },
+  "a30ee4535ee74dbfb666198bd42b14e7": {
+    "username": "notes_0deaae36",
+    "display_name": "Notes",
+    "secret_hash": "b95a489c559f691cb04f54c1e137919f49b266433cb5973d36914e026114225b",
+    "secret_salt": "f73532320b555589cb3f1e7500a26aa8",
+    "role": "commander",
+    "created_at": 1789307537.7214062
+  },
+  "4976e81dcbe14dbab9052e252e3eebb1": {
+    "username": "inj_61306b8c",
+    "display_name": "Inj",
+    "secret_hash": "1ef50362b41bf2610493696fcd782d065eeeaea6671829600ed4dec9a10a4122",
+    "secret_salt": "3b896b47fef1dc99365622397bf9c5b2",
+    "role": "commander",
+    "created_at": 1789307537.8258545
+  },
+  "6b7e7a1f873e4da4aacf87b732b98618": {
+    "username": "male_eebf2bca",
+    "display_name": "Male",
+    "secret_hash": "16cf175ae268f1d6d6341892a80e68dba84db802b5bc10fc64dd184b3ef06a02",
+    "secret_salt": "0ebe59ce232afcaf4662226238ab4645",
+    "role": "commander",
+    "created_at": 1789307537.936323
+  },
+  "6abbf47eaa5048b9b114d73179b4beb8": {
+    "username": "cmdr_4bd38cd7",
+    "display_name": "Cmdr",
+    "secret_hash": "72f4529977b5d7dfc9ec3480210686368f6fb548db026884fa86a887d6a75f74",
+    "secret_salt": "6925c9cc616b39092a42927032f2aedb",
+    "role": "commander",
+    "created_at": 1789307538.0460505
+  },
+  "797db01f3a4a4d5b92b2d33d1e5c61dc": {
+    "username": "iso_a_871d33ac",
+    "display_name": "Iso_A",
+    "secret_hash": "eb6250e4056db5ac29025cae40380458bcf2b912413862b1da2b26c91d287efe",
+    "secret_salt": "9ebad4438b5a51f0df1134c99a5c299a",
+    "role": "commander",
+    "created_at": 1789307538.12753
+  },
+  "3e81660183e34311a7d0952863a27dd4": {
+    "username": "iso_b_9e1b709d",
+    "display_name": "Iso_B",
+    "secret_hash": "4ec6e7929d662bcda31eb29be0fa9982ba73f9189b85de1524a7484f08a74e0a",
+    "secret_salt": "f25fc28d13ef950be7d4cde1d8676ee3",
+    "role": "commander",
+    "created_at": 1789307538.208365
+  },
+  "61efc04b60a74521a8f7ac31d70f0817": {
+    "username": "tasks_f013df26",
+    "display_name": "Tasks",
+    "secret_hash": "4a0d1fece4bb1ed9dc3aeda5e81a16a24bf628783aa38b48884e0fabd634ed90",
+    "secret_salt": "3a854cc29a4bc7b6e9654769920fc169",
+    "role": "commander",
+    "created_at": 1789307538.3093266
+  },
+  "a0a8e18636444e5f9cf9a725d613198d": {
+    "username": "tts_bda447dd",
+    "display_name": "Tts",
+    "secret_hash": "283c482dc11f52dc89bc879989c2b4c4d1f8b752ad60980d8335e7f0ceaffea5",
+    "secret_salt": "1d090eea0e0ab8783d149008c49ec690",
+    "role": "commander",
+    "created_at": 1789307538.4190965
+  },
+  "d94bd1250a8c4d38ad2650cfd42e5841": {
+    "username": "vault_f331084e",
+    "display_name": "Vault",
+    "secret_hash": "96a5041974aa6eedbd7149831ebd8f040930ac5c65bbb027389517adc18a0983",
+    "secret_salt": "176fe03044c4e597818bbffad8fd6592",
+    "role": "commander",
+    "created_at": 1789307538.5064116
+  },
+  "cef6667644d04fa08d445a3bb4a0dcaf": {
+    "username": "voice_12b621c6",
+    "display_name": "Voice",
+    "secret_hash": "885c9b7ca5c2f4f5aa7d254168778a508ab1e0d0c7f19a58410f0133e8dca804",
+    "secret_salt": "afdd6b7ccb6906e6269492b5da1d8a8b",
+    "role": "commander",
+    "created_at": 1789307538.6073244
+  },
+  "0a0f98191a494ec1bf2400fd0c8606fa": {
+    "username": "cal_d1112d72",
+    "display_name": "Cal",
+    "secret_hash": "7c593b8a8db406623d73cea00d09fffa0a2abee33d6968b4ee6ac25bffa1cbdf",
+    "secret_salt": "f07ee8686a3b73c606cfd92740cafbe1",
+    "role": "commander",
+    "created_at": 1789307912.9446757
+  },
+  "eb1f3477caf44f94b2bf36cccfee7d0a": {
+    "username": "chat_c36e83eb",
+    "display_name": "Chat",
+    "secret_hash": "1333008237eb9063c5c840ccabf37b2bb9f46a908b8aa6292f7ce31aaedc8897",
+    "secret_salt": "1737910745f6098ec0e46e15d56f72b7",
+    "role": "commander",
+    "created_at": 1789307913.0623758
+  },
+  "7c4cd969a4874d2a990f3c79c73e9cb3": {
+    "username": "wrongpw_cb07b4ca",
+    "display_name": "Wrongpw_Cb07B4Ca",
+    "secret_hash": "0b0f6be53d0882149e1557561ed3a2abd8e5a27625e04489af5b4a922f5cc8b7",
+    "secret_salt": "2fab6cd3497002cf9b0a55231c6c542a",
+    "role": "commander",
+    "created_at": 1789307913.1475036
+  },
+  "ecad6466d14f41b9b4c9927f8f57a0ad": {
+    "username": "mem_7caeb039",
+    "display_name": "Mem",
+    "secret_hash": "549f855b828790ca272d4105dce25a5699a4d9d9af6973e4c45b76099105c3e7",
+    "secret_salt": "811e1401bce1d3bd3019be765db14299",
+    "role": "commander",
+    "created_at": 1789307913.4259124
+  },
+  "3e3bd8629c3d4add9537da044b0cd769": {
+    "username": "notes_9ef8c365",
+    "display_name": "Notes",
+    "secret_hash": "dd81c1bd5bfacc5fefa3b44fdadb00d1bdefb5ffbd492ee2905d7eabe247d874",
+    "secret_salt": "1748e676bf9c9dbb42fbaa2058e1db40",
+    "role": "commander",
+    "created_at": 1789307913.541874
+  },
+  "3bb037cb4cb0413db325d99eb704cf7c": {
+    "username": "inj_4e21dd03",
+    "display_name": "Inj",
+    "secret_hash": "862d20b10c22f89731573d945c0fa36170f013fc0d3566eda4f0a04b5e81fe98",
+    "secret_salt": "92dba71359c303844b03cab054386bc4",
+    "role": "commander",
+    "created_at": 1789307913.6492279
+  },
+  "f3f213edabe14f3494bc38b38d62c551": {
+    "username": "male_949e419a",
+    "display_name": "Male",
+    "secret_hash": "06cb07b78f639364c1d4cd27d0aafdb6c6ded368148bb8b9c2a98c3f0d73f0c8",
+    "secret_salt": "d3753ef05d0fcfc105ebab37190b16c8",
+    "role": "commander",
+    "created_at": 1789307913.7607105
+  },
+  "20c17a4f354f47b69e2a9984ba6834c8": {
+    "username": "cmdr_bb6ff512",
+    "display_name": "Cmdr",
+    "secret_hash": "c5719021c5061fec1b1242f4845845fd4cbdd6aef263f360fc4e8915200dfbe1",
+    "secret_salt": "30725d98f3645c25e60292bf7236bbdf",
+    "role": "commander",
+    "created_at": 1789307913.8755856
+  },
+  "fd6d0d4406ee453f86fb8c7891e87fc4": {
+    "username": "iso_a_07a989cd",
+    "display_name": "Iso_A",
+    "secret_hash": "de633f244b2b8836d3ef6aa521cebcd520d640af7d9974169430cc98b2ae42e8",
+    "secret_salt": "266b71af5762dec39465a7dad381eab5",
+    "role": "commander",
+    "created_at": 1789307913.9628336
+  },
+  "1defee760c0a4a5e8e58a2668e6518c7": {
+    "username": "iso_b_df4fb16c",
+    "display_name": "Iso_B",
+    "secret_hash": "63caca14fd99e2001f070c907ed20d39ccbec147ba4d68254c4b0c45649b302b",
+    "secret_salt": "a42d77f2aa0f9c6440bbdd49c191fb2d",
+    "role": "commander",
+    "created_at": 1789307914.0409377
+  },
+  "ab8f8f9ae7ff461a97e0726955c3ca19": {
+    "username": "tasks_2ba72168",
+    "display_name": "Tasks",
+    "secret_hash": "364c580e4ef8238661dcf487ce06bbf319743bbe87044a1d9486ac64252897b3",
+    "secret_salt": "86136dd2275243e8cd60f6bfde86f6e0",
+    "role": "commander",
+    "created_at": 1789307914.15081
+  },
+  "a0a4352ad14c4185ac764fbff671aa11": {
+    "username": "tts_0f6c48c3",
+    "display_name": "Tts",
+    "secret_hash": "1dfbc4c76c23537bf367a389b844afb2d2ae619dbf0c131a0c059921f0a6a091",
+    "secret_salt": "067699bf1d9d30e66804bbf82697639d",
+    "role": "commander",
+    "created_at": 1789307914.2597394
+  },
+  "d5a18be7637041a6b4d94f2297a6ebff": {
+    "username": "vault_9ce6da25",
+    "display_name": "Vault",
+    "secret_hash": "775619c1321cb5a97e082747087587c440c4496108ea71ef8f2396aeab961b33",
+    "secret_salt": "5b1d66b22ce0b77da7f9b711e6bb3086",
+    "role": "commander",
+    "created_at": 1789307914.3491998
+  },
+  "b3cfae6f0712409eb8d8cc8d2e1618ac": {
+    "username": "voice_fbb267d6",
+    "display_name": "Voice",
+    "secret_hash": "23dab6de2a560fec88dc8cd1b22f7b6284a2fc0e8bccc36ad051ed1a72dc73e7",
+    "secret_salt": "c61a108c7576136604b63532e07a231e",
+    "role": "commander",
+    "created_at": 1789307914.4458084
+  },
+  "8b72692630c248fcb4483161b8d47a2a": {
+    "username": "cal_02fae51e",
+    "display_name": "Cal",
+    "secret_hash": "874bd83b79922eef7a789328e2afc5abfb9de70fb98c4187d5115c5c9a7299cf",
+    "secret_salt": "75e8b1cc499afadc7d16fd53581ad5d0",
+    "role": "commander",
+    "created_at": 1789308420.1277742
+  },
+  "5be3cd89a376448685f49627bdb555a5": {
+    "username": "chat_e9d57861",
+    "display_name": "Chat",
+    "secret_hash": "891a4ddaceafcc9363bf05d9dc94f44ca8d60ebb512b78e043e625b010d1d4d5",
+    "secret_salt": "06b2ff6de582a9e8681f654b4026d20a",
+    "role": "commander",
+    "created_at": 1789308420.2470329
+  },
+  "cd34d8a3bae240c9b95aec4491e23da2": {
+    "username": "wrongpw_16517c60",
+    "display_name": "Wrongpw_16517C60",
+    "secret_hash": "d764d9c63d364fcfef55f27610d3cdd1a12c7ba5ae352d84162236b0fd07df26",
+    "secret_salt": "912c9da42c6576c6bd41cd5ae1474085",
+    "role": "commander",
+    "created_at": 1789308420.3365965
+  },
+  "cad73e9a1df041e497cc4341695754d3": {
+    "username": "mem_05e2f316",
+    "display_name": "Mem",
+    "secret_hash": "3da52027d19da1bd97d976ae4995673f6f647ebccfc5e2663f58178bb682111d",
+    "secret_salt": "f0256f39cb1cdbd7bf704ac6c307046b",
+    "role": "commander",
+    "created_at": 1789308420.5547445
+  },
+  "dac55656d31642c49342e3ff0693bb37": {
+    "username": "notes_d4e5133c",
+    "display_name": "Notes",
+    "secret_hash": "bbc395ada2424f112c31e9f4da240c68eeb03d846792f66ab6428fece6c8d5c6",
+    "secret_salt": "0b49d88b05d63b6818f969ba18dc9232",
+    "role": "commander",
+    "created_at": 1789308420.6864686
+  },
+  "1922a3fa6afc418eaf44abde3eebb233": {
+    "username": "inj_c0b5cd4c",
+    "display_name": "Inj",
+    "secret_hash": "5f35e2bd09692e0eadf349007453f36f315caaa39da5b5401a5dc47e67b0c58e",
+    "secret_salt": "fb2babed612ecaafc7e071dda2a3a6e1",
+    "role": "commander",
+    "created_at": 1789308420.7908723
+  },
+  "f44f2c634f634dfd83075953776b19d3": {
+    "username": "male_a57f45ad",
+    "display_name": "Male",
+    "secret_hash": "40e0a025063ab3ed0b1e6264e43e2e695c36449ab1dcdfeae3bbc95570ec8140",
+    "secret_salt": "f8f2f7a39f6a3ccec7783ef2c9600a22",
+    "role": "commander",
+    "created_at": 1789308420.8984168
+  },
+  "8005b90c53ef4d779775ca9ab44bb6aa": {
+    "username": "cmdr_f11a5780",
+    "display_name": "Cmdr",
+    "secret_hash": "2dd298a892c8a166cd4c9c60021a84f9b1341dd62eb3ce7d093f513c5ed3bd98",
+    "secret_salt": "e01b43e026f930b997dd8d9aa4800fa3",
+    "role": "commander",
+    "created_at": 1789308421.010709
+  },
+  "0215aa85272747b58d806c87b94b5764": {
+    "username": "iso_a_dcdcd996",
+    "display_name": "Iso_A",
+    "secret_hash": "223fafb3e88b0ac6526217b18d79695c5e70cda24236fc10742f1a97a28c02c7",
+    "secret_salt": "89f77d78a4333f4973a0e7b1c1eed5e1",
+    "role": "commander",
+    "created_at": 1789308421.096144
+  },
+  "0cc51d4163924c04b977472156622cb0": {
+    "username": "iso_b_0c914d0e",
+    "display_name": "Iso_B",
+    "secret_hash": "37249b4041dc5a14b5d2c6786e8499e81f4c1b534e60a53bafef1969ce12238d",
+    "secret_salt": "7ad18e7b095c81ac9b520bd1c71e910b",
+    "role": "commander",
+    "created_at": 1789308421.1774356
+  },
+  "acc33bf3af044481b592e2c7b6f442f2": {
+    "username": "tasks_ea149083",
+    "display_name": "Tasks",
+    "secret_hash": "a7bdc2472dde49e53495c37b42cda837cd99a007c3a5d0b7e5120ed5f12b1803",
+    "secret_salt": "288b91e30573a7bffa8d710aa9a6f311",
+    "role": "commander",
+    "created_at": 1789308421.2875001
+  },
+  "515d835e295642089cf02c824402761f": {
+    "username": "tts_60d9ba6d",
+    "display_name": "Tts",
+    "secret_hash": "659b0b58da931bdc75c31725fba6fd1f37d2988428a25f0b28a06ee0538c99fe",
+    "secret_salt": "833d62f87cdd536dca4cf0993b6dfdd3",
+    "role": "commander",
+    "created_at": 1789308421.3955863
+  },
+  "6a52471dd280472fbe047e2d5e01b4d0": {
+    "username": "vault_918b554f",
+    "display_name": "Vault",
+    "secret_hash": "abfe397aa64cad484081a1f06ce11c90068274eead72fa8a2f663b6cfcdd676b",
+    "secret_salt": "60ffb7a7f346ca1c0014042fa8b1e684",
+    "role": "commander",
+    "created_at": 1789308421.4836009
+  },
+  "4ecc78f878a24730a39c2c34f5455aef": {
+    "username": "voice_f2e5d217",
+    "display_name": "Voice",
+    "secret_hash": "04bb4746afbe00b6b0840403b0d08b6de1ba841f4d7fce27942e44b194230b52",
+    "secret_salt": "d767c86418d121d62a94f189cf97f4d6",
+    "role": "commander",
+    "created_at": 1789308421.577982
   }
 }

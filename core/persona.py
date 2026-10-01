@@ -123,6 +123,7 @@ def build_system_prompt(
     char_name: str,
     user_name: str,
     detected_lang: str = "english",
+    detected_expression: str | None = None,
     mem_ctx: str | None = None,
     search_context: str | None = None,
 ) -> str:
@@ -134,7 +135,8 @@ def build_system_prompt(
     else:
         from agents import language_agent
         prompt = language_agent.system_prompt_for(
-            "auto", char_name, user_name, detected_lang=detected_lang
+            "auto", char_name, user_name, detected_lang=detected_lang,
+            detected_expression=detected_expression
         )
 
     if mem_ctx:

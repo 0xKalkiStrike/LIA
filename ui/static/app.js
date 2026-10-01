@@ -282,12 +282,10 @@ function playAudioBuffer(audioBuf, onend) {
 
     if (state.avatar) { 
       state.avatar.stopSpeaking(); 
-      state.avatar.setEmotion('excited'); 
       state.avatar.gesture('talking'); 
     }
     if (state.callAvatar) { 
       state.callAvatar.stopSpeaking(); 
-      state.callAvatar.setEmotion('excited'); 
       state.callAvatar.gesture('talking'); 
     }
 
@@ -295,7 +293,6 @@ function playAudioBuffer(audioBuf, onend) {
     const callBars = document.querySelectorAll('.call-lia-wave .cw-bar');
 
     let raf;
-    let emotionCycle = 0;
     let lastViseme = 'rest';
     let visemeSmoothing = 0;
 
@@ -335,15 +332,6 @@ function playAudioBuffer(audioBuf, onend) {
       if (state.avatar) state.avatar.setViseme(vis);
       if (state.callAvatar) state.callAvatar.setViseme(vis);
 
-      emotionCycle += 0.016;
-      if (emotionCycle > 3) {
-        emotionCycle = 0;
-        const emotions = ['excited', 'friendly', 'happy'];
-        const nextEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-        if (state.avatar) state.avatar.setEmotion(nextEmotion);
-        if (state.callAvatar) state.callAvatar.setEmotion(nextEmotion);
-      }
-
       if (visualizerBars.length) {
         for (let i = 0; i < visualizerBars.length; i++) {
           const val = dataArr[i] || 0;
@@ -371,13 +359,11 @@ function playAudioBuffer(audioBuf, onend) {
       if (state.avatar) { 
         state.avatar.setViseme('rest'); 
         state.avatar.stopSpeaking();
-        state.avatar.setEmotion('neutral');
         setTimeout(() => state.avatar && state.avatar.gesture('idle'), 500);
       }
       if (state.callAvatar) { 
         state.callAvatar.setViseme('rest'); 
         state.callAvatar.stopSpeaking();
-        state.callAvatar.setEmotion('neutral');
         setTimeout(() => state.callAvatar && state.callAvatar.gesture('idle'), 500);
       }
       onend && onend();
@@ -390,10 +376,26 @@ function playAudioBuffer(audioBuf, onend) {
   }
 }
 
+function cleanTextForSpeech(text) {
+  if (!text) return "";
+  return text
+    .replace(/\[SEARCH:.*?\]/gi, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/_([^_]+)_/g, "$1")
+    .replace(/[*#`_]/g, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Browser speechSynthesis — smart voice selection for natural, non-robotic sound. */
-function _speakBrowser(text, persona, p, onend, languageMode = null) {
+function _speakBrowser(rawText, persona, p, onend, languageMode = null) {
   if (!('speechSynthesis' in window)) { onend && onend(); return; }
   speechSynthesis.cancel();
+
+  const text = cleanTextForSpeech(rawText);
+  if (!text) { onend && onend(); return; }
 
   // Determine which language mode we're using
   const mode = languageMode || p.language_mode || 'auto';
@@ -637,17 +639,15 @@ function _speakBrowser(text, persona, p, onend, languageMode = null) {
   };
   u.onend = () => {
     clearTimeout(u._boundaryTimer);
-    /* Smooth transition back to idle with neutral expression */
+    /* Smooth transition back to idle, preserving active expression */
     if (state.avatar) { 
       state.avatar.setViseme('rest'); 
       state.avatar.stopSpeaking();
-      state.avatar.setEmotion('neutral');
       setTimeout(() => state.avatar && state.avatar.gesture('idle'), 600); 
     }
     if (state.callAvatar) { 
       state.callAvatar.setViseme('rest'); 
       state.callAvatar.stopSpeaking();
-      state.callAvatar.setEmotion('neutral');
       setTimeout(() => state.callAvatar && state.callAvatar.gesture('idle'), 600); 
     }
     onend && onend();
@@ -1433,6 +1433,14 @@ async function streamChat(text, onToken, onDone) {
 
 async function sendMessage(text, speakResponse = false) {
   text = (text || $('#chat-input').value).trim();
+  
+  if (typeof attachedFiles !== 'undefined' && attachedFiles.length) {
+    const fileSummary = attachedFiles.map(f => `[Attached ${f.type.startsWith('image/') ? 'Image' : f.type.startsWith('video/') ? 'Video' : 'File'}: ${f.name} -> ${f.url}]`).join('\n');
+    text = (text ? text + '\n\n' : '') + fileSummary;
+    attachedFiles = [];
+    if (typeof renderAttachmentStrip === 'function') renderAttachmentStrip();
+  }
+  
   if (!text) return;
   $('#chat-input').value = '';
 
@@ -2019,6 +2027,72 @@ async function sendMessage(text, speakResponse = false) {
     }
   }
 }
+
+/* ──────────────────────── File / Folder Attachment Manager ──────────────────────── */
+let attachedFiles = [];
+
+function renderAttachmentStrip() {
+  const strip = $('#chat-attachment-strip');
+  if (!strip) return;
+  if (!attachedFiles.length) {
+    strip.style.display = 'none';
+    strip.innerHTML = '';
+    return;
+  }
+  strip.style.display = 'flex';
+  strip.innerHTML = attachedFiles.map((file, idx) => `
+    <div class="attachment-chip" style="display:inline-flex; align-items:center; gap:6px; background:rgba(83,215,240,0.15); border:1px solid rgba(83,215,240,0.3); border-radius:16px; padding:4px 10px; font-size:12px; color:#53D7F0; flex-shrink:0;">
+      <span>${file.type.startsWith('image/') ? '🖼️' : file.type.startsWith('video/') ? '📹' : '📄'} ${file.name}</span>
+      <button onclick="removeAttachedFile(${idx})" style="background:none; border:none; color:#F2647C; cursor:pointer; font-weight:bold; font-size:13px; margin-left:4px;">✕</button>
+    </div>
+  `).join('');
+}
+
+window.removeAttachedFile = function(idx) {
+  attachedFiles.splice(idx, 1);
+  renderAttachmentStrip();
+};
+
+const fileInputEl = $('#chat-file-input');
+const uploadBtnEl = $('#btn-upload-file');
+if (uploadBtnEl && fileInputEl) {
+  uploadBtnEl.onclick = () => fileInputEl.click();
+  fileInputEl.onchange = async (e) => {
+    const files = [...(e.target.files || [])];
+    if (!files.length) return;
+    
+    const formData = new FormData();
+    for (const f of files) {
+      formData.append('files', f);
+    }
+    
+    try {
+      const headers = {};
+      if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers,
+        body: formData
+      });
+      const data = await res.json();
+      if (data.ok && data.files) {
+        data.files.forEach((sf, i) => {
+          attachedFiles.push({
+            name: sf.original_name,
+            url: sf.url,
+            type: sf.content_type,
+            fileObj: files[i]
+          });
+        });
+        renderAttachmentStrip();
+      }
+    } catch (err) {
+      console.warn("File upload error:", err);
+    }
+    fileInputEl.value = '';
+  };
+}
+
 $('#btn-send').onclick = () => sendMessage();
 $('#chat-input').addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
 
@@ -2327,32 +2401,65 @@ async function setupMediaPipeSensors() {
       const lipLeft = landmarks[61];
       const lipRight = landmarks[291];
       const lipTop = landmarks[13];
-      const lipBottom = landmarks[14];
-      
-      const lipWidth = Math.sqrt(Math.pow(lipLeft.x - lipRight.x, 2) + Math.pow(lipLeft.y - lipRight.y, 2));
-      const lipHeight = Math.sqrt(Math.pow(lipTop.x - lipBottom.x, 2) + Math.pow(lipTop.y - lipBottom.y, 2));
-      
-      const smileRatio = lipWidth / (lipHeight || 0.01);
+      const lipCenterY = (lipLeft.y + lipRight.y) / 2;
+      const lipAvgY = (lipTop.y + lipBottom.y) / 2;
+      const cornersDrooping = (lipLeft.y > lipAvgY + 0.01) && (lipRight.y > lipAvgY + 0.01);
+      const mouthOpen = Math.abs(lipBottom.y - lipTop.y) > 0.035;
+      const browInnerDist = Math.abs((landmarks[107]?.x || 0) - (landmarks[336]?.x || 0));
+      const browRaised = landmarks[70] && landmarks[159] && (landmarks[70].y < landmarks[159].y - 0.06);
+
+      let detectedExpr = "neutral";
+      if (smileRatio > 5.2 || (lipLeft.y < lipAvgY - 0.008 && lipRight.y < lipAvgY - 0.008)) {
+        detectedExpr = "happy";
+      } else if (cornersDrooping) {
+        detectedExpr = "sad";
+      } else if (browInnerDist > 0 && browInnerDist < 0.065 && !mouthOpen) {
+        detectedExpr = "angry";
+      } else if (mouthOpen && browRaised) {
+        detectedExpr = "surprised";
+      } else if (landmarks[159] && landmarks[145] && Math.abs(landmarks[159].y - landmarks[145].y) < 0.008) {
+        detectedExpr = "tired";
+      }
+
       const expressionCard = $('#tel-expression');
-      
-      if (smileRatio > 5.5) {
-        expressionCard.textContent = "Smile Detected";
-        expressionCard.style.color = "#10B981";
-        
-        // Dynamic smile reaction trigger
-        if (state.avatar) state.avatar.setEmotion('happy');
-        sendTelemetryEvent("smile", "Smiling at JARVIS");
-      } else {
-        expressionCard.textContent = "Neutral";
-        expressionCard.style.color = "#53D7F0";
+      const exprConfig = {
+        happy:     { label: "Happy 😊",     color: "#10B981", aura: "aura-happy",     vrm: "happy" },
+        sad:       { label: "Sad 😢",       color: "#48CAE4", aura: "aura-sad",       vrm: "sad" },
+        angry:     { label: "Angry 😠",     color: "#F2647C", aura: "aura-angry",     vrm: "angry" },
+        surprised: { label: "Surprised 😲", color: "#9D7BF0", aura: "aura-stressed",  vrm: "surprised" },
+        tired:     { label: "Tired 🥱",     color: "#F59E0B", aura: "aura-stressed",  vrm: "relaxed" },
+        neutral:   { label: "Neutral 😐",   color: "#53D7F0", aura: "",               vrm: "neutral" },
+      };
+
+      const cfg = exprConfig[detectedExpr] || exprConfig.neutral;
+      if (expressionCard) {
+        expressionCard.textContent = cfg.label;
+        expressionCard.style.color = cfg.color;
+      }
+
+      // Update 3D avatar expression and mood aura ring
+      if (state.lastDetectedExpr !== detectedExpr) {
+        state.lastDetectedExpr = detectedExpr;
+        if (state.avatar) state.avatar.setEmotion(cfg.vrm);
+        updateAvatarMoodAura(detectedExpr);
+        emitEmotionParticles(detectedExpr);
+
+        // Throttle backend telemetry to once every 5s per expression change
+        const nowMs = Date.now();
+        if (!state.lastExprTelemetryTime || (nowMs - state.lastExprTelemetryTime) > 5000) {
+          state.lastExprTelemetryTime = nowMs;
+          sendTelemetryEvent("expression_change", detectedExpr);
+        }
       }
     } else {
       // User Left Desk
       const presentCard = $('#tel-presence');
-      presentCard.textContent = "Absent";
-      presentCard.className = "value";
-      $('#tel-attention').textContent = "--";
-      $('#tel-expression').textContent = "--";
+      if (presentCard) {
+        presentCard.textContent = "Absent";
+        presentCard.className = "value";
+      }
+      const att = $('#tel-attention'); if (att) att.textContent = "--";
+      const exp = $('#tel-expression'); if (exp) exp.textContent = "--";
     }
   });
 
@@ -2431,6 +2538,80 @@ async function sendTelemetryEvent(evt, details) {
       body: JSON.stringify({ event: evt, meta: details })
     });
   } catch (err) {}
+}
+
+/* ── Mood Aura & Emotion Visual Particles ── */
+function updateAvatarMoodAura(emotion) {
+  const ring = $('#pod-aura-ring');
+  if (!ring) return;
+
+  ring.className = "pod-aura-ring";
+
+  if (emotion === "happy") {
+    ring.classList.add("aura-happy");
+  } else if (emotion === "sad") {
+    ring.classList.add("aura-sad");
+  } else if (emotion === "angry") {
+    ring.classList.add("aura-angry");
+  } else if (emotion === "tired" || emotion === "surprised") {
+    ring.classList.add("aura-stressed");
+  } else {
+    ring.classList.add("aura-love");
+  }
+}
+
+let activeParticles = [];
+function emitEmotionParticles(emotion) {
+  const canvas = $('#emotion-particles-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = canvas.clientWidth || 220;
+  canvas.height = canvas.clientHeight || 220;
+
+  const particleChar = (emotion === "happy" || emotion === "neutral") ? "💕" : (emotion === "sad" ? "✨" : "⭐");
+
+  for (let i = 0; i < 6; i++) {
+    activeParticles.push({
+      x: canvas.width / 2 + (Math.random() - 0.5) * 80,
+      y: canvas.height / 2 + (Math.random() - 0.5) * 60,
+      vy: -1.2 - Math.random() * 1.5,
+      vx: (Math.random() - 0.5) * 0.8,
+      size: 14 + Math.random() * 10,
+      opacity: 1.0,
+      char: particleChar
+    });
+  }
+
+  if (!state.particleLoopActive) {
+    state.particleLoopActive = true;
+    requestAnimationFrame(renderParticles);
+  }
+}
+
+function renderParticles() {
+  const canvas = $('#emotion-particles-canvas');
+  if (!canvas) { state.particleLoopActive = false; return; }
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  activeParticles = activeParticles.filter(p => p.opacity > 0.05);
+
+  for (const p of activeParticles) {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.opacity -= 0.02;
+
+    ctx.globalAlpha = Math.max(0, p.opacity);
+    ctx.font = `${p.size}px sans-serif`;
+    ctx.fillText(p.char, p.x, p.y);
+  }
+
+  if (activeParticles.length > 0) {
+    requestAnimationFrame(renderParticles);
+  } else {
+    state.particleLoopActive = false;
+  }
 }
 
 function stopWebcamSensor(errorText = "Vision Sensors Inactive") {

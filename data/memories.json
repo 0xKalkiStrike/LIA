@@ -12,5 +12,82 @@
     "content": "first day at new job",
     "importance": 5,
     "created_at": 1787573999.587406
+  },
+  "a00c4fac761842d6bbd4995d75a2cf0a": {
+    "user_id": "fa230ddeef654884b7c539b48c98e433",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1789305309.7135322
+  },
+  "f99b9bc94e6040ebbba2f7269c054dbe": {
+    "user_id": "94522f5a73de42d3959dccfbc99c439a",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1789305609.3309982
+  },
+  "883c088c2f894b06a56a74cfa3e867b6": {
+    "user_id": "bb61bebc8b7c4cdab21fdeb8a7e644bc",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1789305824.8879898
+  },
+  "1e0f43f684b4431a8f34e4a151c0cbd2": {
+    "user_id": "58f08961792940aa9db12145f93ace7c",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1789305893.1315782
+  },
+  "60cb31c2133e4590bea9fd16444b97cd": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "category": "preference",
+    "content": "Commander prefers coding in Python.",
+    "importance": 2,
+    "created_at": 1789305938.0485747
+  },
+  "b3bf9d699c854e828c4d5599c76ce87d": {
+    "user_id": "29463d2b058840458c4472b3945ee0d8",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1789306009.8344402
+  },
+  "0ea0070908424008a915fa337a757b76": {
+    "user_id": "e4cb6319b713431da4599d7f646f1d54",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1789307224.90084
+  },
+  "dd32c6fcb3b8454fbd3c0834276be9ba": {
+    "user_id": "d94bd1250a8c4d38ad2650cfd42e5841",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1789307538.5246415
+  },
+  "9af0115fbdbd4d368be9b1fa446fe54c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "category": "preference",
+    "content": "Commander prefers coding in Python.",
+    "importance": 2,
+    "created_at": 1789307578.3892193
+  },
+  "4ec352c12c1943f897d4bc25539b9abf": {
+    "user_id": "d5a18be7637041a6b4d94f2297a6ebff",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1789307914.366775
+  },
+  "d5370d321aa14d11a278b0b232cd6ef3": {
+    "user_id": "6a52471dd280472fbe047e2d5e01b4d0",
+    "category": "vault",
+    "content": "first day at new job",
+    "importance": 5,
+    "created_at": 1789308421.502738
   }
 }

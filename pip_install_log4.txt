@@ -1,0 +1,78 @@
+Collecting torch==2.6.0
+  Downloading torch-2.6.0-cp313-cp313-win_amd64.whl.metadata (28 kB)
+Collecting filelock (from torch==2.6.0)
+  Downloading filelock-3.32.7-py3-none-any.whl.metadata (2.0 kB)
+Collecting typing-extensions>=4.10.0 (from torch==2.6.0)
+  Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting networkx (from torch==2.6.0)
+  Using cached networkx-3.6.1-py3-none-any.whl.metadata (6.8 kB)
+Collecting jinja2 (from torch==2.6.0)
+  Using cached jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting fsspec (from torch==2.6.0)
+  Using cached fsspec-2026.7.0-py3-none-any.whl.metadata (10 kB)
+Collecting setuptools (from torch==2.6.0)
+  Using cached setuptools-84.0.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting sympy==1.13.1 (from torch==2.6.0)
+  Using cached sympy-1.13.1-py3-none-any.whl.metadata (12 kB)
+Collecting mpmath<1.4,>=1.1.0 (from sympy==1.13.1->torch==2.6.0)
+  Using cached mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+Collecting MarkupSafe>=2.0 (from jinja2->torch==2.6.0)
+  Using cached markupsafe-3.0.3-cp313-cp313-win_amd64.whl.metadata (2.8 kB)
+Downloading torch-2.6.0-cp313-cp313-win_amd64.whl (204.1 MB)
+   ---------------------------------------- 204.1/204.1 MB 1.2 MB/s  0:02:36
+Using cached sympy-1.13.1-py3-none-any.whl (6.2 MB)
+Using cached mpmath-1.3.0-py3-none-any.whl (536 kB)
+Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Downloading filelock-3.32.7-py3-none-any.whl (100 kB)
+Downloading fsspec-2026.7.0-py3-none-any.whl (206 kB)
+Using cached jinja2-3.1.6-py3-none-any.whl (134 kB)
+Using cached markupsafe-3.0.3-cp313-cp313-win_amd64.whl (15 kB)
+Using cached networkx-3.6.1-py3-none-any.whl (2.1 MB)
+Using cached setuptools-84.0.0-py3-none-any.whl (818 kB)
+Installing collected packages: mpmath, typing-extensions, sympy, setuptools, networkx, MarkupSafe, fsspec, filelock, jinja2, torch
+  Attempting uninstall: mpmath
+    Found existing installation: mpmath 1.3.0
+    Uninstalling mpmath-1.3.0:
+      Successfully uninstalled mpmath-1.3.0
+  Attempting uninstall: typing-extensions
+    Found existing installation: typing_extensions 4.15.0
+    Uninstalling typing_extensions-4.15.0:
+      Successfully uninstalled typing_extensions-4.15.0
+  Attempting uninstall: sympy
+    Found existing installation: sympy 1.14.0
+    Uninstalling sympy-1.14.0:
+      Successfully uninstalled sympy-1.14.0
+  Attempting uninstall: setuptools
+    Found existing installation: setuptools 78.1.0
+    Uninstalling setuptools-78.1.0:
+      Successfully uninstalled setuptools-78.1.0
+  Attempting uninstall: networkx
+    Found existing installation: networkx 3.6.1
+    Uninstalling networkx-3.6.1:
+      Successfully uninstalled networkx-3.6.1
+  Attempting uninstall: MarkupSafe
+    Found existing installation: MarkupSafe 3.0.3
+    Uninstalling MarkupSafe-3.0.3:
+      Successfully uninstalled MarkupSafe-3.0.3
+  Attempting uninstall: fsspec
+    Found existing installation: fsspec 2026.7.0
+    Uninstalling fsspec-2026.7.0:
+      Successfully uninstalled fsspec-2026.7.0
+  Attempting uninstall: filelock
+    Found existing installation: filelock 3.32.4
+    Uninstalling filelock-3.32.4:
+      Successfully uninstalled filelock-3.32.4
+  Attempting uninstall: jinja2
+    Found existing installation: Jinja2 3.1.6
+    Uninstalling Jinja2-3.1.6:
+      Successfully uninstalled Jinja2-3.1.6
+  Attempting uninstall: torch
+    Found existing installation: torch 2.14.0
+    Uninstalling torch-2.14.0:
+      Successfully uninstalled torch-2.14.0
+
+Successfully installed MarkupSafe-3.0.3 filelock-3.32.7 fsspec-2026.7.0 jinja2-3.1.6 mpmath-1.3.0 networkx-3.6.1 setuptools-84.0.0 sympy-1.13.1 torch-2.6.0+cu124 typing-extensions-4.16.0
+
+[notice] A new release of pip is available: 26.0.1 -> 26.2.1
+[notice] To update, run: C:\hacker\LIA\.venv\Scripts\python.exe -m pip install --upgrade pip
+PIP_EXIT=0

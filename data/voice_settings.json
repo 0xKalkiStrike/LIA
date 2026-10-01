@@ -22,5 +22,113 @@
     "custom_voice_path": "",
     "legal_authorized": false,
     "updated_at": 1787573999.7837694
+  },
+  "40aa4f1c29ac46dda7a5338dd6dcfaf9": {
+    "user_id": "40aa4f1c29ac46dda7a5338dd6dcfaf9",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1789305309.831849
+  },
+  "f2e55dba5ccc4e318b879af106a1fb17": {
+    "user_id": "f2e55dba5ccc4e318b879af106a1fb17",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1789305609.481938
+  },
+  "10a744b7cb6c4e7394cc2eb7a514161d": {
+    "user_id": "10a744b7cb6c4e7394cc2eb7a514161d",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1789305824.980655
+  },
+  "a8e57110dd5f42a69c3b75a98bec0cc7": {
+    "user_id": "a8e57110dd5f42a69c3b75a98bec0cc7",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1789305893.2321637
+  },
+  "7b04f87a6cf4459e9a6dec82b7a0f30e": {
+    "user_id": "7b04f87a6cf4459e9a6dec82b7a0f30e",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1789306010.2242973
+  },
+  "f8cc612884804d3a94751e9605be2992": {
+    "user_id": "f8cc612884804d3a94751e9605be2992",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1789307224.995841
+  },
+  "cef6667644d04fa08d445a3bb4a0dcaf": {
+    "user_id": "cef6667644d04fa08d445a3bb4a0dcaf",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1789307538.6314182
+  },
+  "b3cfae6f0712409eb8d8cc8d2e1618ac": {
+    "user_id": "b3cfae6f0712409eb8d8cc8d2e1618ac",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1789307914.4704297
+  },
+  "4ecc78f878a24730a39c2c34f5455aef": {
+    "user_id": "4ecc78f878a24730a39c2c34f5455aef",
+    "voice_id": "nova",
+    "accent": "us",
+    "pitch": 1.1,
+    "speed": 0.9,
+    "style": "formal",
+    "emotional_speech": true,
+    "custom_voice_path": "",
+    "legal_authorized": false,
+    "updated_at": 1789308421.608978
   }
 }

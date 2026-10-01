@@ -46,6 +46,54 @@ def status_text() -> str:
     return f"Running on {s['platform']} ({s['machine']}), Python {s['python']}."
 
 
+# Patterns that can cause irreversible, wide-blast-radius damage. Blocked
+# outright rather than confirmed, because a confirmation prompt only helps
+# when a human is watching — an autonomous/voice-driven agent loop is not.
+_DANGEROUS_PATTERNS = (
+    "format ", "diskpart", "rm -rf /", "rm -rf ~", "rm -rf *",
+    "del /s /q c:", "del /q /s c:", "rd /s /q c:", "rmdir /s /q c:",
+    ":(){ :|:& };:",  # fork bomb
+    "shutdown", "restart-computer", "stop-computer",
+    "reg delete", "vssadmin delete shadows", "cipher /w",
+    "> /dev/sda", "mkfs", "dd if=",
+    "net user administrator", "disable-computerrestore",
+)
+
+
+def _is_dangerous(command: str) -> str | None:
+    low = command.lower()
+    for pattern in _DANGEROUS_PATTERNS:
+        if pattern in low:
+            return pattern
+    return None
+
+
+# Destructive/system-altering verbs that are only safe when the command also
+# stays inside WORKSPACE_DIR or PROJECTS_DIR. The exact-pattern blocklist
+# above only catches a handful of known catastrophic one-liners; this catches
+# the much larger space of "delete/kill/disable something outside the
+# sandbox" commands that don't happen to match one of those exact strings.
+_DESTRUCTIVE_VERBS = (
+    "del ", "erase ", "remove-item", "rd ", "rmdir", "ren ", "move-item",
+    "taskkill", "stop-process", "stop-service", "sc delete", "sc stop",
+    "net user", "net localgroup", "reg add", "reg import", "icacls",
+    "takeown", "attrib", "bcdedit", "netsh", "schtasks", "wmic",
+    "set-executionpolicy", "disable-", "uninstall-",
+)
+
+_SAFE_ROOTS = (str(WORKSPACE_DIR).lower(), str(PROJECTS_DIR).lower())
+
+
+def _targets_outside_sandbox(command: str) -> bool:
+    """True if a destructive-verb command doesn't clearly stay inside the
+    workspace/projects sandbox. Conservative: anything we can't prove is
+    scoped to the sandbox is treated as outside it."""
+    low = command.lower()
+    if not any(v in low for v in _DESTRUCTIVE_VERBS):
+        return False
+    return not any(root in low for root in _SAFE_ROOTS)
+
+
 def run_command(command: str) -> dict:
     """Execute shell command securely and return output."""
     if not command or not command.strip():
@@ -56,8 +104,30 @@ def run_command(command: str) -> dict:
             "code": -3
         }
 
+    command = command.strip()
+    blocked = _is_dangerous(command)
+    if blocked:
+        return {
+            "ok": False,
+            "stdout": "",
+            "stderr": f"Blocked: command matches a destructive pattern ('{blocked}'). "
+                      f"Run this manually yourself if you really intend it.",
+            "code": -4,
+            "command": command,
+        }
+
+    if _targets_outside_sandbox(command):
+        return {
+            "ok": False,
+            "stdout": "",
+            "stderr": "Blocked: this looks like a destructive/system-altering command "
+                      "aimed outside LIA's own workspace/projects folder. Run it manually "
+                      "yourself if you really intend it.",
+            "code": -5,
+            "command": command,
+        }
+
     try:
-        command = command.strip()
         cmd_lower = command.lower()
 
         # Handle persistent/server/interactive commands on Windows to prevent blocking

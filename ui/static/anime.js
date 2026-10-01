@@ -1672,22 +1672,22 @@ export function buildAnime(el, cfg) {
 
         /* Emotion */
         const emo = EMOTION_TARGETS[st.emotion] || EMOTION_TARGETS.neutral;
-        st.emotionAge = Math.min(1, st.emotionAge + delta * 4.0);
+        st.emotionAge = Math.min(1, st.emotionAge + delta * 6.0);
         const blend = st.emotionAge;
 
-        setExpr(st.vrm, EXPR.happy,     THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.happy),     emo.happy     * blend, 0.18));
-        setExpr(st.vrm, EXPR.sad,       THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.sad),       emo.sad       * blend, 0.18));
-        setExpr(st.vrm, EXPR.angry,     THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.angry),     emo.angry     * blend, 0.18));
-        setExpr(st.vrm, EXPR.surprised, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.surprised), emo.surprised * blend, 0.18));
-        setExpr(st.vrm, EXPR.relaxed,   THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.relaxed),   emo.relaxed   * blend, 0.18));
+        setExpr(st.vrm, EXPR.happy,     THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.happy),     emo.happy     * blend, 0.28));
+        setExpr(st.vrm, EXPR.sad,       THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.sad),       emo.sad       * blend, 0.28));
+        setExpr(st.vrm, EXPR.angry,     THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.angry),     emo.angry     * blend, 0.28));
+        setExpr(st.vrm, EXPR.surprised, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.surprised), emo.surprised * blend, 0.28));
+        setExpr(st.vrm, EXPR.relaxed,   THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.relaxed),   emo.relaxed   * blend, 0.28));
 
         /* Viseme — morph lips. Faster lerp = crisper lip sync */
         const vt = VISEME_TARGETS[st.viseme] || VISEME_TARGETS.rest;
-        setExpr(st.vrm, EXPR.aa, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.aa), vt.aa, 0.42));
-        setExpr(st.vrm, EXPR.ee, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ee), vt.ee, 0.42));
-        setExpr(st.vrm, EXPR.ih, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ih), vt.ih, 0.42));
-        setExpr(st.vrm, EXPR.oh, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.oh), vt.oh, 0.42));
-        setExpr(st.vrm, EXPR.ou, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ou), vt.ou, 0.42));
+        setExpr(st.vrm, EXPR.aa, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.aa), vt.aa, 0.55));
+        setExpr(st.vrm, EXPR.ee, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ee), vt.ee, 0.55));
+        setExpr(st.vrm, EXPR.ih, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ih), vt.ih, 0.55));
+        setExpr(st.vrm, EXPR.oh, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.oh), vt.oh, 0.55));
+        setExpr(st.vrm, EXPR.ou, THREE.MathUtils.lerp(getExpr(st.vrm, EXPR.ou), vt.ou, 0.55));
 
         if (st.vrm.blendShapeProxy) {
           st.vrm.blendShapeProxy.update();
@@ -1706,14 +1706,23 @@ export function buildAnime(el, cfg) {
   }
   animate();
 
-  /* Resize handler */
+  /* Resize handler with ResizeObserver support for responsive container scaling */
   function onResize() {
-    const w = el.clientWidth, h = el.clientHeight;
+    const w = el.clientWidth || 300, h = el.clientHeight || 300;
+    if (w === 0 || h === 0) return;
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
   }
   window.addEventListener('resize', onResize);
+
+  let resizeObserver = null;
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(() => {
+      onResize();
+    });
+    resizeObserver.observe(el);
+  }
 
   /* ──────────────────────────────────────────
    *  PUBLIC CONTROLLER
@@ -1757,7 +1766,9 @@ export function buildAnime(el, cfg) {
         curious:   'reacting',
         neutral:   'idle',
       };
-      controller.gesture(gestureMap[emotion] || 'idle');
+      if (!controller._isSpeaking) {
+        controller.gesture(gestureMap[emotion] || 'idle');
+      }
 
       /* Rim light colour by emotion */
       const lightMap = {
@@ -1818,6 +1829,9 @@ export function buildAnime(el, cfg) {
     _cleanup() {
       cancelAnimationFrame(reqId);
       clearInterval(st.visemeTimer);
+      if (resizeObserver) {
+        try { resizeObserver.disconnect(); } catch(e){}
+      }
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', onResize);
       renderer.dispose();

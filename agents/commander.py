@@ -974,6 +974,7 @@ def handle_message(user_id: str, message: str) -> dict:
         char_name=profile.get("char_name", "LIA"),
         user_name=profile.get("display_name", "User"),
         detected_lang=detected,
+        detected_expression=profile.get("latest_expression"),
     )
     
     # Inject current date and time for temporal awareness — emphatic instruction
@@ -1422,6 +1423,7 @@ def handle_message_stream(user_id: str, message: str):
         char_name=profile.get("char_name", "LIA"),
         user_name=profile.get("display_name", "User"),
         detected_lang=detected,
+        detected_expression=profile.get("latest_expression"),
     )
     
     # Inject current date and time for temporal awareness — emphatic instruction

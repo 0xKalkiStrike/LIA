@@ -1,0 +1,79 @@
+Collecting torch
+  Using cached torch-2.14.0-cp313-cp313-win_amd64.whl.metadata (38 kB)
+Requirement already satisfied: filelock in .\.venv\Lib\site-packages (from torch) (3.32.4)
+Requirement already satisfied: typing-extensions>=4.10.0 in .\.venv\Lib\site-packages (from torch) (4.15.0)
+Collecting setuptools>=77.0.3 (from torch)
+  Using cached setuptools-84.0.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting sympy>=1.13.3 (from torch)
+  Using cached sympy-1.14.0-py3-none-any.whl.metadata (12 kB)
+Collecting networkx>=2.5.1 (from torch)
+  Using cached networkx-3.6.1-py3-none-any.whl.metadata (6.8 kB)
+Collecting jinja2 (from torch)
+  Using cached jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Requirement already satisfied: fsspec>=0.8.5 in .\.venv\Lib\site-packages (from torch) (2026.7.0)
+Collecting mpmath<1.4,>=1.1.0 (from sympy>=1.13.3->torch)
+  Using cached mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+Collecting MarkupSafe>=2.0 (from jinja2->torch)
+  Using cached markupsafe-3.0.3-cp313-cp313-win_amd64.whl.metadata (2.8 kB)
+Using cached torch-2.14.0-cp313-cp313-win_amd64.whl (124.1 MB)
+Using cached networkx-3.6.1-py3-none-any.whl (2.1 MB)
+Using cached setuptools-84.0.0-py3-none-any.whl (818 kB)
+Downloading sympy-1.14.0-py3-none-any.whl (6.3 MB)
+   ---------------------------------------- 6.3/6.3 MB 749.2 kB/s  0:00:08
+Using cached mpmath-1.3.0-py3-none-any.whl (536 kB)
+Using cached jinja2-3.1.6-py3-none-any.whl (134 kB)
+Using cached markupsafe-3.0.3-cp313-cp313-win_amd64.whl (15 kB)
+Installing collected packages: mpmath, sympy, setuptools, networkx, MarkupSafe, jinja2, torch
+
+[notice] A new release of pip is available: 26.0.1 -> 26.2.1
+[notice] To update, run: C:\hacker\LIA\.venv\Scripts\python.exe -m pip install --upgrade pip
+ERROR: Exception:
+Traceback (most recent call last):
+  File "C:\hacker\LIA\.venv\Lib\site-packages\pip\_internal\cli\base_command.py", line 107, in _run_wrapper
+    status = _inner_run()
+  File "C:\hacker\LIA\.venv\Lib\site-packages\pip\_internal\cli\base_command.py", line 98, in _inner_run
+    return self.run(options, args)
+           ~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\hacker\LIA\.venv\Lib\site-packages\pip\_internal\cli\req_command.py", line 96, in wrapper
+    return func(self, options, args)
+  File "C:\hacker\LIA\.venv\Lib\site-packages\pip\_internal\commands\install.py", line 462, in run
+    installed = install_given_reqs(
+        to_install,
+    ...<6 lines>...
+        progress_bar=options.progress_bar,
+    )
+  File "C:\hacker\LIA\.venv\Lib\site-packages\pip\_internal\req\__init__.py", line 84, in install_given_reqs
+    requirement.install(
+    ~~~~~~~~~~~~~~~~~~~^
+        root=root,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        pycompile=pycompile,
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\hacker\LIA\.venv\Lib\site-packages\pip\_internal\req\req_install.py", line 781, in install
+    install_wheel(
+    ~~~~~~~~~~~~~^
+        self.req.name,
+        ^^^^^^^^^^^^^^
+    ...<6 lines>...
+        requested=self.user_supplied,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\hacker\LIA\.venv\Lib\site-packages\pip\_internal\operations\install\wheel.py", line 736, in install_wheel
+    _install_wheel(
+    ~~~~~~~~~~~~~~^
+        name=name,
+        ^^^^^^^^^^
+    ...<6 lines>...
+        requested=requested,
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\hacker\LIA\.venv\Lib\site-packages\pip\_internal\operations\install\wheel.py", line 625, in _install_wheel
+    assert os.path.exists(pyc_path)
+           ~~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError
+

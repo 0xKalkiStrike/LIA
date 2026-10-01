@@ -225,7 +225,9 @@
   <!-- LEFT SIDEBAR: LIA identity, quick actions, agent monitor -->
   <aside class="dash-left">
     <div class="identity-block">
-      <div class="holo-pod" id="dash-pod">
+      <div class="holo-pod aura-glow" id="dash-pod">
+        <div class="pod-aura-ring" id="pod-aura-ring"></div>
+        <canvas class="emotion-particles-canvas" id="emotion-particles-canvas"></canvas>
         <div class="pod-ring"></div>
         <div class="pod-scan"></div>
         <div id="dash-avatar" class="avatar-slot"></div>
@@ -303,7 +305,10 @@
         </div>
 
         <div class="chat-bar">
+          <div id="chat-attachment-strip" class="attachment-strip" style="display:none; gap:8px; padding:6px 12px; overflow-x:auto; background:rgba(8,11,19,0.8); border:1px solid var(--line); border-radius:var(--radius-md); margin-bottom:6px;"></div>
           <div class="chat-input-shell">
+            <button id="btn-upload-file" class="btn ghost icon-only" title="Upload Images, Videos, Files or Folders for LIA to inspect & update" style="font-size:18px;">📎</button>
+            <input type="file" id="chat-file-input" multiple style="display:none;" />
             <button id="btn-mic" class="mic-btn" title="Hold to speak">🎤</button>
             <input id="chat-input" class="text-input grow" placeholder="Ask LIA anything — code apps, create images, videos, presentations, research…"/>
             <button id="btn-send" class="btn solid">Send</button>

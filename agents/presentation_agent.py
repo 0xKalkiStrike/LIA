@@ -9,9 +9,10 @@ Features:
 """
 import json
 import re
+import urllib.request
 import uuid
 from pathlib import Path
-from core.config import ROOT
+from core.config import ROOT, setting
 
 PRESENTATIONS_DIR = ROOT / "ui" / "static" / "generated" / "presentations"
 
@@ -40,6 +41,45 @@ def _clean_topic(message: str) -> str:
     cleaned = re.sub(r"\b(a|an|the|me|us|please|can|you|i|want|need)\b", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     return cleaned or "Strategic Insights & Analysis"
+
+
+def _ollama_slides(topic: str, message: str) -> list | None:
+    """Ask the local writing model for real, topic-specific slide content as JSON."""
+    system = (
+        "You create presentation slide decks. Respond with ONLY a JSON array (no "
+        "markdown fences, no commentary) of 5-7 slide objects, each with exactly these "
+        "keys: slide_number (int), title (string), subtitle (string), bullets "
+        "(array of 3 short strings, each may start with one emoji), notes (string, "
+        "one sentence of speaker guidance). Content must be specific and substantive "
+        "to the requested topic — no generic filler."
+    )
+    try:
+        payload = json.dumps({
+            "model": setting("ollama_writing_model", "mistral"),
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": f"Presentation topic: {message.strip() or topic}"},
+            ],
+            "stream": False,
+        }).encode()
+        req = urllib.request.Request(
+            setting("ollama_url") + "/api/chat",
+            data=payload, headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            data = json.loads(resp.read())
+        content = data.get("message", {}).get("content", "").strip()
+        content = re.sub(r"^```(?:json)?|```$", "", content, flags=re.MULTILINE).strip()
+        slides = json.loads(content)
+        if isinstance(slides, list) and slides and all(
+            isinstance(s, dict) and "title" in s and "bullets" in s for s in slides
+        ):
+            for i, s in enumerate(slides, 1):
+                s.setdefault("slide_number", i)
+            return slides
+    except Exception as e:
+        print(f"[PresentationAgent] Ollama unreachable/bad JSON, using offline template: {str(e)[:80]}")
+    return None
 
 
 def _synthesize_topic_slides(topic: str) -> list:
@@ -357,7 +397,7 @@ def generate_presentation(message: str, user_id: str) -> dict:
     """Generate a complete topic-tailored presentation slide deck with interactive viewer and export file."""
     PRESENTATIONS_DIR.mkdir(parents=True, exist_ok=True)
     topic = _clean_topic(message)
-    slides = _synthesize_topic_slides(topic)
+    slides = _ollama_slides(topic, message) or _synthesize_topic_slides(topic)
 
     pres_id = f"pres_{uuid.uuid4().hex[:8]}"
 

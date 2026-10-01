@@ -1,0 +1,67 @@
+Collecting diffusers
+  Downloading diffusers-0.40.0-py3-none-any.whl.metadata (20 kB)
+Collecting transformers
+  Downloading transformers-5.17.0-py3-none-any.whl.metadata (32 kB)
+Collecting accelerate
+  Downloading accelerate-1.15.0-py3-none-any.whl.metadata (19 kB)
+Collecting safetensors
+  Downloading safetensors-0.8.0-cp310-abi3-win_amd64.whl.metadata (4.2 kB)
+Collecting importlib_metadata (from diffusers)
+  Downloading importlib_metadata-9.0.1-py3-none-any.whl.metadata (4.5 kB)
+Requirement already satisfied: filelock in .\.venv\Lib\site-packages (from diffusers) (3.32.7)
+Requirement already satisfied: httpx<1.0.0 in .\.venv\Lib\site-packages (from diffusers) (0.28.1)
+Requirement already satisfied: huggingface-hub<2.0,>=1.23.0 in .\.venv\Lib\site-packages (from diffusers) (1.28.0)
+Requirement already satisfied: numpy in .\.venv\Lib\site-packages (from diffusers) (2.5.1)
+Collecting regex!=2019.12.17 (from diffusers)
+  Downloading regex-2026.9.10-cp313-cp313-win_amd64.whl.metadata (41 kB)
+Requirement already satisfied: requests in .\.venv\Lib\site-packages (from diffusers) (2.34.2)
+Requirement already satisfied: Pillow in .\.venv\Lib\site-packages (from diffusers) (12.3.0)
+Requirement already satisfied: anyio in .\.venv\Lib\site-packages (from httpx<1.0.0->diffusers) (4.13.0)
+Requirement already satisfied: certifi in .\.venv\Lib\site-packages (from httpx<1.0.0->diffusers) (2026.5.20)
+Requirement already satisfied: httpcore==1.* in .\.venv\Lib\site-packages (from httpx<1.0.0->diffusers) (1.0.9)
+Requirement already satisfied: idna in .\.venv\Lib\site-packages (from httpx<1.0.0->diffusers) (3.18)
+Requirement already satisfied: h11>=0.16 in .\.venv\Lib\site-packages (from httpcore==1.*->httpx<1.0.0->diffusers) (0.16.0)
+Requirement already satisfied: click<9.0.0,>=8.4.2 in .\.venv\Lib\site-packages (from huggingface-hub<2.0,>=1.23.0->diffusers) (8.4.2)
+Requirement already satisfied: fsspec>=2023.5.0 in .\.venv\Lib\site-packages (from huggingface-hub<2.0,>=1.23.0->diffusers) (2026.7.0)
+Requirement already satisfied: hf-xet<2.0.0,>=1.5.2 in .\.venv\Lib\site-packages (from huggingface-hub<2.0,>=1.23.0->diffusers) (1.6.0)
+Requirement already satisfied: packaging>=20.9 in .\.venv\Lib\site-packages (from huggingface-hub<2.0,>=1.23.0->diffusers) (26.2)
+Requirement already satisfied: pyyaml>=5.1 in .\.venv\Lib\site-packages (from huggingface-hub<2.0,>=1.23.0->diffusers) (6.0.3)
+Requirement already satisfied: tqdm>=4.42.1 in .\.venv\Lib\site-packages (from huggingface-hub<2.0,>=1.23.0->diffusers) (4.70.0)
+Requirement already satisfied: typing-extensions>=4.1.0 in .\.venv\Lib\site-packages (from huggingface-hub<2.0,>=1.23.0->diffusers) (4.16.0)
+Requirement already satisfied: colorama in .\.venv\Lib\site-packages (from click<9.0.0,>=8.4.2->huggingface-hub<2.0,>=1.23.0->diffusers) (0.4.6)
+Requirement already satisfied: tokenizers<0.24.0,>=0.23.1 in .\.venv\Lib\site-packages (from transformers) (0.23.1)
+Requirement already satisfied: typer in .\.venv\Lib\site-packages (from transformers) (0.27.1)
+Requirement already satisfied: psutil in .\.venv\Lib\site-packages (from accelerate) (7.2.2)
+Requirement already satisfied: torch>=2.0.0 in .\.venv\Lib\site-packages (from accelerate) (2.6.0+cu124)
+Requirement already satisfied: networkx in .\.venv\Lib\site-packages (from torch>=2.0.0->accelerate) (3.6.1)
+Requirement already satisfied: jinja2 in .\.venv\Lib\site-packages (from torch>=2.0.0->accelerate) (3.1.6)
+Requirement already satisfied: setuptools in .\.venv\Lib\site-packages (from torch>=2.0.0->accelerate) (84.0.0)
+Requirement already satisfied: sympy==1.13.1 in .\.venv\Lib\site-packages (from torch>=2.0.0->accelerate) (1.13.1)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in .\.venv\Lib\site-packages (from sympy==1.13.1->torch>=2.0.0->accelerate) (1.3.0)
+Collecting zipp>=3.20 (from importlib_metadata->diffusers)
+  Downloading zipp-4.1.0-py3-none-any.whl.metadata (3.6 kB)
+Requirement already satisfied: MarkupSafe>=2.0 in .\.venv\Lib\site-packages (from jinja2->torch>=2.0.0->accelerate) (3.0.3)
+Requirement already satisfied: charset_normalizer<4,>=2 in .\.venv\Lib\site-packages (from requests->diffusers) (3.4.7)
+Requirement already satisfied: urllib3<3,>=1.26 in .\.venv\Lib\site-packages (from requests->diffusers) (2.7.0)
+Requirement already satisfied: shellingham>=1.3.0 in .\.venv\Lib\site-packages (from typer->transformers) (1.5.4)
+Requirement already satisfied: rich>=13.8.0 in .\.venv\Lib\site-packages (from typer->transformers) (15.0.0)
+Requirement already satisfied: annotated-doc>=0.0.2 in .\.venv\Lib\site-packages (from typer->transformers) (0.0.4)
+Requirement already satisfied: markdown-it-py>=2.2.0 in .\.venv\Lib\site-packages (from rich>=13.8.0->typer->transformers) (4.2.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in .\.venv\Lib\site-packages (from rich>=13.8.0->typer->transformers) (2.21.0)
+Requirement already satisfied: mdurl~=0.1 in .\.venv\Lib\site-packages (from markdown-it-py>=2.2.0->rich>=13.8.0->typer->transformers) (0.1.2)
+Downloading diffusers-0.40.0-py3-none-any.whl (5.9 MB)
+   ---------------------------------------- 5.9/5.9 MB 7.5 MB/s  0:00:00
+Downloading transformers-5.17.0-py3-none-any.whl (12.3 MB)
+   ---------------------------------------- 12.3/12.3 MB 8.0 MB/s  0:00:01
+Downloading accelerate-1.15.0-py3-none-any.whl (394 kB)
+Downloading safetensors-0.8.0-cp310-abi3-win_amd64.whl (355 kB)
+Downloading regex-2026.9.10-cp313-cp313-win_amd64.whl (277 kB)
+Downloading importlib_metadata-9.0.1-py3-none-any.whl (27 kB)
+Downloading zipp-4.1.0-py3-none-any.whl (10 kB)
+Installing collected packages: zipp, safetensors, regex, importlib_metadata, diffusers, accelerate, transformers
+
+Successfully installed accelerate-1.15.0 diffusers-0.40.0 importlib_metadata-9.0.1 regex-2026.9.10 safetensors-0.8.0 transformers-5.17.0 zipp-4.1.0
+
+[notice] A new release of pip is available: 26.0.1 -> 26.2.1
+[notice] To update, run: C:\hacker\LIA\.venv\Scripts\python.exe -m pip install --upgrade pip
+PIP_EXIT=0

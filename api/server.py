@@ -23,7 +23,7 @@ from core.config import ROOT, load
 from core import json_db
 from core.jwt_security import get_user_id_from_token
 from fastapi.middleware.cors import CORSMiddleware
-from agents import auth_agent, commander, memory_agent, device_agent, coder_agent, productivity, collaboration, voice_cloning
+from agents import agent_loop, auth_agent, commander, memory_agent, device_agent, coder_agent, productivity, collaboration, voice_cloning
 
 app = FastAPI(title="LIA AI", version="2.0.0")
 
@@ -401,14 +401,33 @@ def vision_telemetry(body: TelemetryBody, authorization: str | None = Header(def
     json_db.insert("detections", _new_id(), detection_doc)
 
     reply = None
-    if body.event == "hand_wave":
-        reply = "I see you waving! Hello there, commander!"
+    event_lower = (body.event or "").lower()
+    meta_lower = (body.meta or "").lower()
+
+    if event_lower in ("expression_change", "expression") or meta_lower in ("sad", "happy", "angry", "surprised", "tired", "neutral"):
+        expr = meta_lower or event_lower
+        auth_agent.update_profile(user_id, {"latest_expression": expr})
+
+        if expr == "sad":
+            reply = "I noticed you're looking a bit down. I'm right here with you — tell me what's on your mind."
+        elif expr in ("happy", "smile"):
+            reply = "Seeing that smile on your face makes my day so much brighter!"
+        elif expr == "angry":
+            reply = "Take a deep breath... I can see you're feeling frustrated. I'm right here listening."
+        elif expr == "surprised":
+            reply = "Ooh, you look surprised! What just happened?"
+        elif expr == "tired":
+            reply = "You look a bit tired. Please make sure to rest and take care of yourself."
+
+    elif body.event == "hand_wave":
+        reply = "I see you waving! Hello there!"
     elif body.event == "smile":
-        reply = "Looking happy! That's what I like to see."
+        auth_agent.update_profile(user_id, {"latest_expression": "happy"})
+        reply = "Looking happy! That's wonderful to see."
     elif body.event == "presence_lost":
-        reply = "Commander has walked away."
+        reply = "I see you stepped away. Take your time!"
     elif body.event == "presence_gain":
-        reply = "Welcome back, commander. Ready when you are."
+        reply = "Welcome back! Ready whenever you are."
 
     return {"ok": True, "reply": reply}
 
@@ -850,9 +869,147 @@ def delete_custom_vrm(authorization: str | None = Header(default=None)):
     auth_agent.update_profile(user_id, {"vrm_path": "", "avatar_type": "lia"})
     return {"ok": True}
 
+# ------------------------------------------------------------- file uploads
+UPLOAD_DIR = ROOT / "ui" / "static" / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+@app.post("/api/upload")
+async def upload_files(files: list[UploadFile] = File(...), authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    saved_files = []
+    import re
+    for file in files:
+        filename = file.filename or f"upload_{_new_id()}"
+        safe_name = re.sub(r'[^a-zA-Z0-9_\.\-]', '_', filename)
+        file_path = UPLOAD_DIR / f"{_new_id()}_{safe_name}"
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        file_url = f"/static/uploads/{file_path.name}"
+        file_type = file.content_type or mimetypes.guess_type(filename)[0] or "application/octet-stream"
+        
+        saved_files.append({
+            "original_name": filename,
+            "saved_name": file_path.name,
+            "url": file_url,
+            "content_type": file_type,
+            "size": file_path.stat().st_size
+        })
+        
+    return {"ok": True, "files": saved_files}
+
+# ------------------------------------------------------- agent (Ollama tools)
+class AgentChatBody(BaseModel):
+    message: str
+    model: str | None = None
+    autonomy: str | None = None  # "ask" (approve risky tools) | "auto"
+
+class ApproveBody(BaseModel):
+    id: str
+    approved: bool
+
+@app.post("/api/agent/chat")
+def agent_chat(body: AgentChatBody, authorization: str | None = Header(default=None)):
+    user_id = require_user(authorization)
+    if not body.message.strip():
+        raise HTTPException(400, "Empty message.")
+    return StreamingResponse(
+        agent_loop.run(user_id, body.message.strip(), body.model, body.autonomy),
+        media_type="application/x-ndjson")
+
+@app.post("/api/agent/approve")
+def agent_approve(body: ApproveBody, authorization: str | None = Header(default=None)):
+    ok = agent_loop.resolve_approval(body.id, require_user(authorization), body.approved)
+    return {"ok": ok}
+
+@app.get("/api/agent/info")
+def agent_info(authorization: str | None = Header(default=None)):
+    require_user(authorization)
+    from core import tools as agent_tools
+    from core.config import setting
+    models = agent_loop.available_models()
+    return {"models": models, "default_model": setting("ollama_model", "llama3.2"),
+            "ollama_online": bool(models), "autonomy": setting("agent_autonomy", "ask"),
+            "tools": [{"name": n, "description": d, "risky": r} for n, (_f, d, _p, r) in agent_tools.TOOLS.items()]}
+
+# Per-user workspace: where uploaded folders land so the agent's file tools can read them.
+MAX_UPLOAD_FILES = 1500
+MAX_UPLOAD_TOTAL_BYTES = 150 * 1024 * 1024  # 150MB per upload batch
+
+@app.post("/api/workspace/upload-folder")
+async def upload_folder(
+    files: list[UploadFile] = File(...),
+    paths: str = Form(...),  # JSON list of relative paths, same order/length as `files`
+    dest: str = Form(""),  # optional subfolder name to drop the tree into
+    authorization: str | None = Header(default=None),
+):
+    """Accepts an entire folder (from a <input webkitdirectory> picker) and saves it,
+    preserving its structure, into the signed-in user's private workspace so LIA's
+    list_files / read_file / read_project tools can explore it."""
+    user_id = require_user(authorization)
+    try:
+        rel_paths = json.loads(paths)
+    except Exception:
+        raise HTTPException(400, "`paths` must be a JSON array of relative file paths.")
+    if not isinstance(rel_paths, list) or len(rel_paths) != len(files):
+        raise HTTPException(400, "`paths` must list exactly one relative path per uploaded file.")
+    if len(files) > MAX_UPLOAD_FILES:
+        raise HTTPException(400, f"Too many files ({len(files)}); limit is {MAX_UPLOAD_FILES}.")
+
+    from core import tools as agent_tools
+    import re as _re
+    root = agent_tools.user_workspace(user_id)
+    safe_dest = _re.sub(r"[^a-zA-Z0-9_\- ]", "_", (dest or "").strip()) or f"upload_{_new_id()[:8]}"
+    target_root = (root / safe_dest).resolve()
+    if root.resolve() != target_root and root.resolve() not in target_root.parents:
+        raise HTTPException(400, "Invalid destination folder name.")
+
+    saved, skipped, total_bytes = 0, [], 0
+    for f, rel in zip(files, rel_paths):
+        rel = str(rel).replace("\\", "/").lstrip("/")
+        parts = [p for p in rel.split("/") if p not in ("", ".", "..")]
+        if not parts:
+            skipped.append(rel or "(empty path)")
+            continue
+        dest_path = target_root.joinpath(*parts)
+        try:
+            dest_path.resolve().relative_to(target_root)
+        except ValueError:
+            skipped.append(rel)
+            continue
+        data = await f.read()
+        total_bytes += len(data)
+        if total_bytes > MAX_UPLOAD_TOTAL_BYTES:
+            raise HTTPException(400, f"Upload too large; limit is {MAX_UPLOAD_TOTAL_BYTES // (1024 * 1024)}MB total.")
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
+        dest_path.write_bytes(data)
+        saved += 1
+
+    return {"ok": True, "folder": safe_dest, "files_saved": saved, "files_skipped": len(skipped),
+            "total_bytes": total_bytes, "workspace_path": safe_dest}
+
+@app.get("/api/workspace/tree")
+def workspace_tree(path: str = ".", authorization: str | None = Header(default=None)):
+    user_id = require_user(authorization)
+    from core import tools as agent_tools
+    listing = agent_tools.list_files(user_id, path, recursive=True)
+    return {"path": path, "listing": listing}
+
+@app.get("/api/agent/history")
+def agent_history(limit: int = 40, authorization: str | None = Header(default=None)):
+    return memory_agent.recent_turns(require_user(authorization), min(limit, 200))
+
+@app.delete("/api/agent/history")
+def agent_history_clear(authorization: str | None = Header(default=None)):
+    return {"ok": True, "deleted": json_db.delete_many("conversations", {"user_id": require_user(authorization)})}
+
 # ---------------------------------------------------------------------- UI
 @app.get("/")
 def index():
+    return FileResponse(STATIC / "console" / "index.html", headers={"Cache-Control": "no-cache"})
+
+@app.get("/classic")
+def classic():
     return FileResponse(STATIC / "index.html")
 
 # Serve static files including custom voices

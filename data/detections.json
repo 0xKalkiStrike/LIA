@@ -1,1 +1,2874 @@
-{}
+{
+  "1c00ea6240794b88a6825cba80992e8f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305553.9381437
+  },
+  "8255218571454f119bfe629ba464c529": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305554.2080026
+  },
+  "ac6aa6caf90a4b9489ed8bd11d313b1b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305554.5180182
+  },
+  "e1aea3ad5f16425f99a95ddb5cd54c3b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305554.6784697
+  },
+  "cdd9337df1d74b598d2737aaf2dc2d8b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305554.8304589
+  },
+  "9c2d9878b5c347fa8aa52ed821f45309": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305555.1280847
+  },
+  "33ba6bb174834adda13382f131c8fb5f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305555.302589
+  },
+  "2b5d8b79eb1f46709f9596ef5de95024": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305555.4978752
+  },
+  "de60534a982743aa9f7f341c28ad8087": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305555.6651878
+  },
+  "e9fdfd3a3d334f1494307f679b93681a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305555.8422673
+  },
+  "0f7835049f024fd1ad6dee75fa2df40c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305556.0260704
+  },
+  "c5c13dda0085472cbe4063afd0dec49b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305556.1914077
+  },
+  "806486c822f54cfdad26cde5b1483f3d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305556.4311082
+  },
+  "2bcabff538cb4525ad95c5527a1d1536": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305556.5975971
+  },
+  "e3a5ad93ae6c411ab73b3735f1242ad8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305556.7450979
+  },
+  "9583d0f7c3fc4c649884a352a47b51d1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305556.980391
+  },
+  "b3a693a64cec4ad0b3e3fee7791b614f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305557.1453907
+  },
+  "9f60ce0ae71c4b1fba7f35585cbe8913": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305557.3511925
+  },
+  "f2fb87f178c947f6a3f6db981fed4b9b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305557.617588
+  },
+  "11e51ca9b45f441fadca1f03ab01aa74": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305557.7638881
+  },
+  "88e6b14e6ca749f5ba1c36a5c568af11": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305557.899414
+  },
+  "fa7c053f428c462bbbd1aac06ebda3e2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305558.040509
+  },
+  "b1c3f6c51a5b42b18305184a1bd39eba": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305558.1925924
+  },
+  "4a50360c2343482c86cdbb1090cb33a8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305558.3193936
+  },
+  "013ca94dbee647d5962f4f8ae1bd2759": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305558.4725683
+  },
+  "7ed2ed967fde457f99b189f64f6ddae5": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305558.6212473
+  },
+  "df3f961b1d0b423ca34749fd111c8482": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305558.7494535
+  },
+  "e36bcf3a55b44d2ea506b66f6339eb11": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305558.8733132
+  },
+  "7ec5753fdf63410b9724f7748c635251": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305558.9945662
+  },
+  "a4942aad50004ec5bc6728536ef73f30": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305559.136436
+  },
+  "d17c77b9878745e6938957d0097baf28": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305559.2930174
+  },
+  "75ec15b7149140c1a979043d45aba2f8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305559.476075
+  },
+  "9bf377bc2fef49719f8082f41a7ab1a2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305559.6068246
+  },
+  "5f586e9d0af74c5694db09c3a02bfc50": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305559.7334194
+  },
+  "c0458df5a1394b01a7f609f3a6453d39": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305559.853848
+  },
+  "77612db9f8dd41eab50c911634577e39": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305559.983401
+  },
+  "f61a1e8f21d04296a94abd668312693c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305560.1381502
+  },
+  "f74e069dbb084353937b3e3810753264": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305560.2535229
+  },
+  "d2058690d161492c9ac7bdc3bbf54fa1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305560.383779
+  },
+  "d6f0133878ff4ede81ade30bbff8c80e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305560.5075006
+  },
+  "af4cacee576848bfa780abc84a12979c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305560.6300926
+  },
+  "48fe0dfffd734c6d860c395110403178": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305560.7543137
+  },
+  "ea2b6621d2444ae6b30f6021dabfe20b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305560.87926
+  },
+  "a5b476ba466a47c58d876369b1851602": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305560.9993632
+  },
+  "9b032acf90964fc98fe20b37bd6b0062": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305561.122828
+  },
+  "8c067cda66ac42c585ad547295f0bb4d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305561.2421846
+  },
+  "80a9ed053ef04c3c8cd0ece6b8a99789": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305561.3665578
+  },
+  "b439e52c533a489c857da6c94001db7a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305561.4814863
+  },
+  "8f56e2e98ae5431d90e7d145c2954625": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305561.604477
+  },
+  "42e6a24fd8f248f298767946af3e5e3d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305561.7402382
+  },
+  "6c295ad5acbc4e54bf1ed49cbb32fe16": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305561.8704412
+  },
+  "3715bc88eda64912beb6864412bdf7c2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305562.0170767
+  },
+  "94714ce8d4af43838776a0e207a9e2c6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305562.1547203
+  },
+  "9381809bdfe746ecbaa6369990bcd120": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305562.283456
+  },
+  "c3a315ef2c654c20a8d7ab58f180a066": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305562.3987565
+  },
+  "ab6cd865276246a889bae4729c75bfc3": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305562.500082
+  },
+  "325d5f7b4e094a0198ac343f9e8636cb": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305562.6293485
+  },
+  "06aac9cf03c34088b2c05246fe25dae4": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305562.755146
+  },
+  "6fe333e087464c05b90efb51d04c413f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305562.8879466
+  },
+  "7f2757591d2c4058a80c31247e174b8b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305563.022961
+  },
+  "3ca509c01561453c81109b922b760a57": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305563.1552966
+  },
+  "6c363714dd1a4ebe9a822bcf8cb8ece0": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305563.2857776
+  },
+  "21df8b4be4ae4297810d0f48d1aaa6dc": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305563.4206593
+  },
+  "296be53e597c4e9db2f09733488920ef": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305563.5551784
+  },
+  "330df4a5b05c4492a2ceddb58376d282": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305563.6852574
+  },
+  "b8d867d473444184b481d8d309570b35": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305563.8117087
+  },
+  "874af40c4b194e26a9751a5baa004a4e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305564.0444882
+  },
+  "e972f5f2d3a54a4289cbbdc8e44bcf48": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305564.178726
+  },
+  "cbc332b9cf7642799462caf4dedf9300": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305564.3020217
+  },
+  "a3aeba3bc91147a58497b1fa0edc885a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305564.428736
+  },
+  "caff97f83b6b454b8b1dd2ada8bd1aa3": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305564.5507915
+  },
+  "a1b25044782f430f9c0c8afffe6bd8bc": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305564.9038522
+  },
+  "5e9ae07f98fd41159968f10eecdbb9d3": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305565.0581663
+  },
+  "11bbc3c3f4704232a2fe3b41a8e33ab9": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305565.2030559
+  },
+  "9884195ca3c741e094460be589ef6580": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305565.363297
+  },
+  "429d4319713d4728b59fb8ad82ac5805": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305565.4857755
+  },
+  "5fb8b8a860284854ae41a73031379765": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305565.6240919
+  },
+  "86660a4d41114bd3bf2faedfbe405a94": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305565.7683825
+  },
+  "320addcb06ba4ea3827993e709a7df6f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305565.914352
+  },
+  "1e841f557de14b249d1cbf718e6087a9": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305566.0671465
+  },
+  "5881d7f0cf644b0fac6fbeae200356d1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305566.2452018
+  },
+  "40f42922f4244677be413b08d12d8bed": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305566.402779
+  },
+  "c3c3021b26074e5781fb097ca9b1feb6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305566.5554135
+  },
+  "b90e7b7bda1840759e0237b75d826180": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305566.819175
+  },
+  "911632b7debc46feb9311df9d5aa5da9": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305566.9602966
+  },
+  "3e78d3ae55d84a50ba8cf5571b684868": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305567.1073596
+  },
+  "c1be08ced3c4461eafa600c80f4a3e12": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305567.257796
+  },
+  "88b3bd9066a74fdaadc018bd43d354bf": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305567.394512
+  },
+  "c0d7d5b92e6948a882b931071a00c306": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305567.5417252
+  },
+  "79d71589309743cb92b1d06593cac234": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305567.6848786
+  },
+  "80e467a9ea7247378ebb244e78ca389c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305567.9961162
+  },
+  "959abdc9eaee4d39b47e23c5fe957249": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305568.168808
+  },
+  "cdfe6644d76a4d8eb6dc5d85f83e1284": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305568.325082
+  },
+  "6a590eac35fe4a9293f47bc157be1cfe": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305568.4556422
+  },
+  "ce0281e85df4410e91866551b9e8c9f8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305568.6099582
+  },
+  "f91ea593035d4beebec4f33d2597f218": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305568.970784
+  },
+  "7cc12aed9a85400d931a026ebafd7195": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305569.119431
+  },
+  "d9bd695f71a744f2a2906585dc44e575": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305569.2602012
+  },
+  "73b5f24f84e14545b87aa4bac83b26cd": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305569.3999093
+  },
+  "d894f85e2e324c03a6b57f75fed3754b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305569.539492
+  },
+  "c2688d9bcaa84cdd875ad58cdbef5073": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305569.776105
+  },
+  "84ec743ffc23490cb26f162d420c4838": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305569.9147804
+  },
+  "5188fd18fff34645a586185f2c9419cd": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305570.0526497
+  },
+  "53cb130bf9ca4436b5d2e612af4caf21": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305570.203807
+  },
+  "15b94c2c618742e48487f24a4fc8739c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305570.3979647
+  },
+  "6e8eadaac9e24ca694ee81a430539a7a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305570.5744338
+  },
+  "beaa58e180224925a23d82df800e2c5e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305570.7399645
+  },
+  "8392c08f450a4f2d9089f219a1c6de56": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305570.8736348
+  },
+  "86f7eb0c712e43a1954e658df6eec113": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305571.0173545
+  },
+  "1ff7c07a4e9e435cba22dd486b72f112": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305571.2552204
+  },
+  "78cf159901a14b86904e78e4809e8fa8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305571.3563552
+  },
+  "d3e17844e4ce4eec9622323c724da562": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305571.461313
+  },
+  "b33a7836d2b044b78a4ffa1a586525b2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305571.5959296
+  },
+  "b404c4df07a64fc68098a88fcceb356d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305571.7381182
+  },
+  "a291cb134363446bb4ef7dde8c068020": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305571.8736756
+  },
+  "8bb8f5c7fdca46d5a117329204a4a5aa": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305572.1087677
+  },
+  "27f6aa0a602d47bda57adc91e2ba7c22": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305572.2555113
+  },
+  "de6b42b273b649389d001947a548ad2f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305572.3934588
+  },
+  "14ba9d432a594440a65bd6b9db479c32": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305572.538061
+  },
+  "d080b55678334326af6506b68eed980b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305572.678464
+  },
+  "7bb7b09b496c47e6abdb2ee7fbb7f326": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305572.8173134
+  },
+  "43193b456fbb49af8526ff0c57e32615": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305572.9626305
+  },
+  "bf7afcefa47b462c80ce8c6ec665c66e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305573.1062853
+  },
+  "b186dbbb29104456afd81ebfa453fe07": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305573.247758
+  },
+  "6e7005d63bf74da78cda09e43d8b8379": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305573.4084594
+  },
+  "f7d14ae648d54040bcfa0847fdf5ba6e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305573.5651658
+  },
+  "ec9c6b2eae994c04b05a55f411d47fc7": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305573.74065
+  },
+  "f7fd5e0cb201486fb89572c544b25e1e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305573.9099834
+  },
+  "a6673ef5543a4db691f5c655254715f5": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305574.0594356
+  },
+  "b8567671b8d44087ade3a6ed49520562": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305574.2117102
+  },
+  "ad8aa30e11b24d4e9f3b4e3128c17f25": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305574.365839
+  },
+  "bcaf234568b143b68aee201bfe041ce9": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305574.5168612
+  },
+  "8ca937408ce94d1a9050a81a1a4d6099": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305574.6754863
+  },
+  "5d5edc50c7b14b7fbea4e6873ead6261": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305574.823392
+  },
+  "f6e28714bc144978870741ad0ec7cb4d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305574.9759653
+  },
+  "10c3882562364e26b759daab31a44206": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305575.145988
+  },
+  "446a4ed96fd54b27a092777ada8144d3": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305575.29716
+  },
+  "30f41a3dde9642ccabd90cdd7b771863": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305575.4414687
+  },
+  "c52d6ca5612840bca48e4761d3baeb31": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305575.6078465
+  },
+  "fdba3e9057a74d3a993425aec908d7de": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305575.899317
+  },
+  "09df25d5244740109eb410b7c7694e19": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305576.0400286
+  },
+  "09fe49b211184a8d9a68062374064d71": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305576.1859996
+  },
+  "f1b88b1ffd114f87a7b5bc44c3613286": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305576.328155
+  },
+  "2baa0d46fd2546099167e74b15b755ee": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305576.4577565
+  },
+  "676fc2bb2bb643c1bdbc8eb834874565": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305576.6003802
+  },
+  "79fcaa0f5c4f49bb962525080e9053da": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305576.751153
+  },
+  "96b38707b9d745bf978d2f8bd43bb74d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305576.8933642
+  },
+  "8f7a34298256494ea87b7a7c3e16b236": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305577.0075223
+  },
+  "ceb67f3cd4224f82b83a05fcb1b07c34": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305577.1347928
+  },
+  "5deed0e6943243679e5c7d3dbe17762d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305577.2467563
+  },
+  "ecd3b3eda3e24d9399f802567e509056": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305577.343143
+  },
+  "7350b5e8380443c28113ddf862c981f0": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305577.4291213
+  },
+  "75f67f866d424b5391880f161253dc56": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305577.5275974
+  },
+  "7bfa195ad9c94f198e29a5697d8db5f7": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305577.6523757
+  },
+  "011618a93b884b5583f2feb1d0559436": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305577.7741244
+  },
+  "5bc53335308a47bc8e8ad2f8c2492662": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305577.8931818
+  },
+  "77f8c3b6d74f415f8648dacf0f24fcc0": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305578.0167701
+  },
+  "7166dd426117407f89f43a976268b176": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305578.139227
+  },
+  "271bfe6e69c5442da681ee23c6e605db": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305578.2640924
+  },
+  "73ac6e2c65c04bf892ef37420aad51a2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305578.3987079
+  },
+  "686c6058158e407a8f566c94361312ed": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305578.5516903
+  },
+  "e0f7103a3feb444bb4852e375f561983": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305578.6776462
+  },
+  "6ab1134330ad4757838ced26ee54e823": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305578.8020685
+  },
+  "08c9b682148443688c5d6323fa1ce6fb": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305578.9303906
+  },
+  "cec6bc6c7ed8432ea25b2f757e29e36a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305579.0524173
+  },
+  "c6d6082647cd4fdf816ac37943279148": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305579.1784072
+  },
+  "eec622bcd17045bd92f3396678152ce9": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305579.3083029
+  },
+  "dfc8fe950dac4b23834811cb9a39c91f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305579.4411886
+  },
+  "dac75696d45141a1be5938568657068c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305579.5661747
+  },
+  "ffc7b2acfe7c4af880ebcfbd72e46c34": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305579.6924832
+  },
+  "55625771c57f4d65a5646de509d821d8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305579.8165703
+  },
+  "a61b9639ed614a9ba72e86f6ffe49df9": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305579.9523704
+  },
+  "e52447ff29ca4b318bb9a85711c75b40": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305580.078341
+  },
+  "2c4647ee1b3f467cadfc2e942e948080": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305580.208329
+  },
+  "1cf569714ec3468398d3a6335c4b1ead": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305580.338615
+  },
+  "c0781348da184797a5ea824a0b30b4b0": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305580.464707
+  },
+  "13c2a900cb874faba42f54d8ecda4992": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305580.5912752
+  },
+  "3cb6c4b13207409b8213588940ebcb5a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305580.720535
+  },
+  "28811a1132464d86ab25e20c6561e297": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305580.8864472
+  },
+  "0054792d9f514e47b81abddbcba0ab5f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305581.1558654
+  },
+  "6a8ad284ca8448afa0a7d0f7897e1723": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305581.5754101
+  },
+  "7ddb4e0449214b04ae024fb683e3dbe4": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305581.7139456
+  },
+  "dbc5214cb1454cf9aaf9c42d4ab0a419": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305581.8528163
+  },
+  "8e35545040aa4f9ba81dd6ae2c5308fc": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305581.9912338
+  },
+  "318e4ad844e348db8e227bf648217435": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305582.137583
+  },
+  "ca0172f0a31f4c93a47e2b970575e504": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305582.2868025
+  },
+  "f4e39880188243a695c97f6a6260ddaf": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305582.4458199
+  },
+  "21e4ae94c1e048589d8d1477df96e916": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305582.5983353
+  },
+  "32f20edf88454e8ca2c9615c9b0abd62": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305582.7604032
+  },
+  "ccb931dc4278445480cde7be549f0cf2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305582.9214947
+  },
+  "a9742e0d686d4236b14d6e77a880b375": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305583.100584
+  },
+  "0d24ed90f63d4d008e70cb99e62006af": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305583.2758987
+  },
+  "5b1a8d6b49034c0088519e7265902170": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305583.4084575
+  },
+  "6969f155d6414e9a8dd073171f3191d1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305583.562848
+  },
+  "e6773d5cbb4c47daa5db1a8994a83cac": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305583.7495394
+  },
+  "fc079ad0489c4ed18e275a78b0b0309b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305583.91686
+  },
+  "bb2449fba02e43f2bdb725c07cea95ad": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305584.1675923
+  },
+  "e4cbac470f974a6a95ff1f6370d80c17": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305591.6613197
+  },
+  "5fefb4dbc7df403a8563b1f186a93fbc": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305591.792635
+  },
+  "732501318dc646a39d87971691cb815d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305591.9349728
+  },
+  "37412d1114654a5ea038f6c6811cd61a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305592.0733328
+  },
+  "0e2540eda4c64c46a1a6f9ad904ebe51": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305592.1946857
+  },
+  "13574e63415d46da998ced3bd23e2aa0": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305592.309009
+  },
+  "5b030e748f5b435699aa84eb6e8629af": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305592.4367075
+  },
+  "a21bd34c258144c7bbcca063289e068c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305592.5723605
+  },
+  "ea2fae6de1b04207b83ef44eec686aac": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305592.7046423
+  },
+  "39f3b74bdb8c4bf89d948df9a6c49ef9": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305592.9148355
+  },
+  "4ada069084db4f588b7179310694ab89": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305593.0476618
+  },
+  "93501e841df442aa98bd18a219345e4e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305593.1871269
+  },
+  "a0a3cff9f2c04cb0b369f7dbb9c928f6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305593.8806071
+  },
+  "d96d9340230747b8aef6e3d507150f0a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305594.2491388
+  },
+  "653dd9a84cf44a29b87337d8a60419bb": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305594.6167865
+  },
+  "5e04b56e6c8e41e1bb4cbf684cc774ed": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305594.7393568
+  },
+  "ba55db0fefbd4f10868d642bab7c9f2e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305594.8761022
+  },
+  "785d4924da7641bd80a2addb3b62ffdf": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305595.6881323
+  },
+  "c0958fefb8dd4bc3b60d0c31512bfb3d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305595.813102
+  },
+  "bacc2cc90fe84798a766e55b343122ce": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305595.9362476
+  },
+  "c41cb70198224fbba876b2124d64bfca": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305596.0798585
+  },
+  "ebcd2bc39f9841ce9e309dcbe0585960": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305596.2462974
+  },
+  "2707606ab8374473af54ec32e4004d38": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305596.3873482
+  },
+  "4f2631e0ce3a461a9620d0c837229419": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305596.5222728
+  },
+  "3c7fb716f7194694ae6d30edcfebc0b1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305596.641132
+  },
+  "d7d3f94220f144b09814f7ff9975edfa": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305596.7672913
+  },
+  "8df0b9dcd6924affb1aaa454a3284110": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305596.886621
+  },
+  "db0cc69c523b44e791a1852cf8545f3b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305597.0032854
+  },
+  "1d221e9533744c02a8ebc018a6624d27": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305597.1242402
+  },
+  "46c16608440542f4afc1112d37909761": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305597.2453961
+  },
+  "40dbc6ba7e8d4712aa4e9688ff4d448f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305597.3707223
+  },
+  "da0e7fad6b8e442298d94553f43b2f4f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305597.4918222
+  },
+  "b9720319245a40359b69706480d90f74": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305597.6156301
+  },
+  "bd423a594c5f4f8788f3e07cac38bcfa": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305597.7815707
+  },
+  "b4f7b8e7357944fd90b0eca35fda9ce8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305597.92595
+  },
+  "165fbfc2d4eb4bae8951d6179c424e85": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305598.0606663
+  },
+  "b3b0c083da0a463ba8848645b0b6c08b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305598.2005515
+  },
+  "cc6ecc3701f2445096260c6fd7b907c5": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305598.291753
+  },
+  "04e89e4304ee48a8a4f4c791fe6307af": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305598.3920557
+  },
+  "73d6f0f53024446bbb2a1bee4b6b8cdd": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305598.5124836
+  },
+  "1d50ab13dbfe4a01a2096c4bfc683bc6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305598.6436923
+  },
+  "2df2658bba90408d818310bd421fa6bf": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305598.7695684
+  },
+  "73c1783a9d1b4bbf9dc65a182cb9d4c7": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305598.90817
+  },
+  "7c426620c12342a3ae09d458130030c3": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305599.0365894
+  },
+  "6fb425f50f97453cab2cdc51322003d5": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305599.1804965
+  },
+  "b0c1779a4e4e46e3b3d5eb8392b9f7fa": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305599.3088353
+  },
+  "209d9e60b7b445e3a50dce9ff66fccc0": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305599.444485
+  },
+  "5e17810386164cca95fb1b518ee43bf2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305599.5734162
+  },
+  "ff5d52c6c2264bac8fa595fd480baba7": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305599.7386332
+  },
+  "3c81bb1554cf4ae6aac78e583dc54fe6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305599.8684704
+  },
+  "c37f70a5e45a45868e6a99d989364027": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305599.9980965
+  },
+  "cba9bd5e903846f4a50ce6704c1fc2e2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305600.1221335
+  },
+  "c2dc114de665491e9eccdd6b7ee70331": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305600.2478628
+  },
+  "9edd6ef0ca534238ba1d87638a39db18": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305600.3733144
+  },
+  "24a986ec172c4afda37a74fdf6a985cc": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305600.5035985
+  },
+  "ae6dec36833a42e0b779dad5d9970bbc": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305600.6214256
+  },
+  "3f69f5daa01944cba07c5aad8aa28376": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305600.770065
+  },
+  "89b9fab6fb7140e5afac1342a32e8741": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305600.9035068
+  },
+  "42d09a9f9e104cd1a75ac40250e63703": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305601.0298996
+  },
+  "6649ef8210ad45169b10d8d822723548": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305601.1514187
+  },
+  "0d43e1366f4b4adaba78d6ed83c3a4c1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305601.2679055
+  },
+  "304b7d8acc8a42ca92940b4fa3b0af0d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305601.3644323
+  },
+  "cf1876a3dbf140079255cb7d2f6cfae7": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305601.4555712
+  },
+  "a48f83e82cc04c768bd1c31de47b7c45": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305601.5674868
+  },
+  "d147177537054bf191e6f102f5af4d9f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305601.7005014
+  },
+  "454b09658e434e61b1bdbd87d48c7610": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305601.8301566
+  },
+  "a7c5b3f5f93041da9889b109ce78c8de": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305601.9561112
+  },
+  "584a95ff804347b78ebc8ec5a9d439a3": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305602.0746088
+  },
+  "b809ea19b1c14504819376b67d51b05d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305602.2006109
+  },
+  "7caf8eb4d9994a9e91d2adc2b2202570": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305602.326295
+  },
+  "6083e9a5c60b473e9fa93c26a270ad94": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305602.4495227
+  },
+  "bbe24f8424a84b9bbb384e609eae7820": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305602.570738
+  },
+  "0e8ec0090c114813abb654862949cfc7": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305602.6959534
+  },
+  "250d3a71b42c4c61986dafa9199b3bdb": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305602.817507
+  },
+  "628465b6cab9400a90d632743a27e6db": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305602.9413133
+  },
+  "54df976f16414edb8b783fd860385fca": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305603.0647962
+  },
+  "9ef5c884b82246a990e7a2c04af75236": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305603.184977
+  },
+  "3ade15884ea44973b2cb7c696f40c09c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305603.3076372
+  },
+  "339448ea5aec484896d6e25ad50a7f8b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305603.4325404
+  },
+  "c121ca77349f44abb9691667b2c0c806": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305603.5521326
+  },
+  "2847ae860a424a5ab5839339659c3626": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305603.671496
+  },
+  "bb596622f98448a8b1d7f6cbd81f62c2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305603.7965865
+  },
+  "b7ebcd6419b74753a5e84869a848bce4": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305603.927936
+  },
+  "746abdb62bb14358934ec87cc34dc7d8": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305604.0472414
+  },
+  "531b7456056b4397ab05dfe8ef8f89de": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305604.168129
+  },
+  "18a8de48e54b4b73ac1bc496315d8196": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305604.293867
+  },
+  "cf472a18221d440399113be8cdaa7dfc": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305604.417804
+  },
+  "75579dc50a1245d59d74f38fe9b47c2c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305604.5624044
+  },
+  "07754c65bb634d33a83122dc6dd54ae5": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305604.7367556
+  },
+  "7f9b12ff3b714ae1a6c3ebc2d9abf44e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305604.8745246
+  },
+  "a5ca83b4122049cbac0e81b7e9a7a1ff": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305605.0122025
+  },
+  "78a1be67fa3542d1ab201e8f10994420": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305605.144899
+  },
+  "9ee23693834640078e35abda89d25561": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305605.2761815
+  },
+  "408b3a66d86841ce9b7d2063d56c5b0e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305605.4102142
+  },
+  "6e916c72b69641ae9c7af6e3a418acd2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305605.5522578
+  },
+  "dced5d04324741599f900c1782af66df": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305605.6855667
+  },
+  "0c2988205b3648b6919858e8d540957a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305605.8231103
+  },
+  "65d640c4a337484cb588ac5e7bb3110a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305605.9524963
+  },
+  "46378fd946764520b9f323a6148a2978": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305606.0877662
+  },
+  "d197427507b948c2b69848dd25ec7bfe": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305606.2159154
+  },
+  "e740ad0063194645bf34cad1cde8b2b4": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305606.345312
+  },
+  "3d68d8fa19c349af817b9368c350f02b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305606.4869547
+  },
+  "f77c09fac4b74f35894ea5eb0933cd9a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305606.6214056
+  },
+  "d9ce741584ee41cb883766090105c350": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305606.7740192
+  },
+  "670e8228df0a4ed7afd73326481db130": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305606.939072
+  },
+  "a047aaefe19242acae2f064faaff3bb5": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305607.0950158
+  },
+  "0d0faaa560c44b87972a4a62e4be2ce3": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305607.2414083
+  },
+  "33d8b1df3a70455782694e222b8b1f28": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305607.3550665
+  },
+  "4278ab9175aa4558945db19170f5378d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305607.4725308
+  },
+  "a04b5832d7b2464f8a0d1b2d61a33646": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305607.6059363
+  },
+  "ce4ce44e0e5246079ca1e597cb2e393d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305607.733226
+  },
+  "3df345b7ec5f4acf95cf294fd8771bbf": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305607.8652468
+  },
+  "a695102eedf241d091865da4fb43c0e6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305607.99497
+  },
+  "29f61ca204644445abfe45fe7755e378": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305608.127324
+  },
+  "9a3ac267505f4c8daf149556b1be1a36": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305608.2539787
+  },
+  "0a07a59d6ef240d4ba9b5df53c5a96e6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305608.3881695
+  },
+  "37a817e33741467eaef282a8929b0567": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305608.519206
+  },
+  "d0ac52c05b3f4a14bc34255bfcdbd24e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305608.644158
+  },
+  "c146718d20124a73b2004693c778095d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305608.7703202
+  },
+  "998bef6dd72742f0b30a922f8d7ba4a1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305608.9059353
+  },
+  "36a33f6901a0403091be657fba5014b2": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305609.0547442
+  },
+  "55f2a2359579475296eac3ffa6b78356": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305609.1866488
+  },
+  "b87b06db35bc4ba283543a20db667152": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305609.329461
+  },
+  "6f5c92c244be4c28b18840f7f74c4bca": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305609.4853628
+  },
+  "7e322d8eb8d34d3d9997123d25383cba": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305609.6524034
+  },
+  "eae5e46a42244f02978e8dd3d42fed16": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305609.8083062
+  },
+  "38cb6148d8e64069bd0b3614c9de9093": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305609.9541447
+  },
+  "bfff34e21d494dc98bffd00750f18d84": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305610.1075246
+  },
+  "83e9a059f4564a0c8cfa566bad0a1832": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305610.2452264
+  },
+  "a4e6a726bb984593a95aa8a4afe92afe": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305610.3789458
+  },
+  "8d76aae4bfca4a61a2fad138f8c0a8c1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305610.516995
+  },
+  "0865e3a8950a47c3bb117d69ef90320c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305610.636056
+  },
+  "ad25a46a2c604e569f2e9451b47c183a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305610.7613418
+  },
+  "683fa0bbb4b44100b7abd3a98bfe670b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305610.8862844
+  },
+  "87e0bb47575a4c669d036c809bd33cf6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305611.0140572
+  },
+  "4fe47baa638046a28c42c491aa4254fd": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305611.1389182
+  },
+  "460a60724ef54abf8f5bab549d2a62ab": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305611.2605767
+  },
+  "df65c4f5ae61417a8b65b008d832278c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305611.3773603
+  },
+  "b94ff85f24a64cc7ab9383ea27908f8e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305611.5057735
+  },
+  "0ab60a4a92df4b0a8860e4aa8188597f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305611.635765
+  },
+  "983f8d0dd147472490f9dc5e9a6761fa": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305611.7615108
+  },
+  "02d9aa7d6a704ffb83c0c80d35f8a73b": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305612.0643501
+  },
+  "784e3832ae2646cc8c01b83c7c02236c": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305612.199775
+  },
+  "a09abda3cf3f4784b14a513c33eb855a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305620.5005095
+  },
+  "6f397e11578149038d8d55bbfda1fd2a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305621.0543802
+  },
+  "9d65f37daf1a4dbcb22556cbb97de53f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305621.3056164
+  },
+  "3ff44acc01db4627a80904f2f142f919": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305621.4465551
+  },
+  "c54cb3154ca048f2afa9c82be0aba906": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305621.5919025
+  },
+  "6e243eb663fd4ae7af4905da7afbee0d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305621.7345695
+  },
+  "793eeb40d1b04e40bcce568caa211107": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305621.8648095
+  },
+  "373cf64f9a1a4e8daf9a27b5dedca248": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305621.99396
+  },
+  "46b65346b8804723b8ff43b1418bffa7": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305622.1293035
+  },
+  "9fc5c18ecb9344e596d94c57f06ba463": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305622.2520008
+  },
+  "2cc9d533217347e8b8a55904fdf6d77d": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305622.3561535
+  },
+  "89e55590b6c14b2a8fc89feeb0c228ca": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305622.4694297
+  },
+  "8eff6f2b69c5422496e9b472272f589f": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305622.6495702
+  },
+  "6384cf402d3f495ba3cd5f74450909a1": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305622.7928908
+  },
+  "7f4debac1ae0472c95d362b4830a7fe6": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305622.9234269
+  },
+  "0b94205d6d894febb703c0b3d3e96b44": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305623.0491896
+  },
+  "04816b6e9251404089386033dd62db4a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305623.1797724
+  },
+  "5561e37cc14945b29e4edaca998fca4a": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305623.3040087
+  },
+  "d9c55ae3a76947e199fc5ba34041611e": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "kind": "telemetry",
+    "label": "smile",
+    "confidence": 1.0,
+    "meta": "Smiling at JARVIS",
+    "created_at": 1789305623.4765553
+  }
+}

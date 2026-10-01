@@ -88,7 +88,7 @@ def _ollama_code(message: str, lang: str) -> str | None:
     )
     try:
         payload = json.dumps({
-            "model": setting("ollama_model", "llama3.2"),
+            "model": setting("ollama_coding_model", "qwen2.5-coder:7b"),
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": message},

@@ -1,12 +1,29 @@
+# Caches and Python bytecode
 __pycache__/
 *.pyc
-data/*.db
-*.pt
+*.pyo
+.pytest_cache/
 .venv/
 
-# design-sync
+# Environment and Data
+data/*.db
+data/chroma/
+*.pt
+*.log
+backend_restart.log
+frontend.log
+server.log
+ddg_debug.html
+
+# Frontend build outputs
+frontend/.next/
+frontend/node_modules/
 .ds-sync/
 ds-bundle/
 .design-sync/.cache/
-.design-sync/learnings/
-.design-sync/node_modules
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
