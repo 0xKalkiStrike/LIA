@@ -167,10 +167,27 @@ def strip_markdown_for_speech(text: str) -> str:
 
 
 def detect_emotion(reply: str) -> str:
-    """Classify the reply into one of 10 emotions:
-    happy, excited, thinking, curious, confident, sad, concerned, surprised, focused, friendly.
+    """Classify the reply into one of the emotions the avatar engine (anime.js
+    EMOTION_TARGETS) knows how to perform: laughing, crying, angry, excited,
+    sad, concerned, surprised, thinking, curious, confident, focused, friendly,
+    happy, neutral. Order matters — more specific/intense cues are checked
+    before the broader ones they could otherwise be swallowed by.
     """
     low = reply.lower()
+    # Laughter and anger are the most distinctive and should win over generic
+    # happy/sad matches below (e.g. "that's hilarious, sorry for the pun").
+    # The regex also catches stretched-out laughs models love to write, like
+    # "HAAAAAHA" or "ahahah", not just a clean "haha".
+    if (re.search(r"h[ha]{3,}", low) or
+            any(w in low for w in ("lol", "lmao", "hilarious", "so funny", "that's funny",
+                                    "cracking up", "can't stop laughing", "rofl", "😂", "🤣"))):
+        return "laughing"
+    if any(w in low for w in ("angry", "furious", "annoyed", "frustrat", "outrage", "infuriat",
+                               "unacceptable", "ridiculous", "fed up", "pissed")):
+        return "angry"
+    if any(w in low for w in ("crying", "in tears", "heartbreak", "devastat", "sobbing", "tearful",
+                               "my heart breaks", "😢", "😭")):
+        return "crying"
     if any(w in low for w in ("excited", "awesome", "great", "fantastic", "amazing", "power", "online", "wonderful")):
         return "excited"
     if any(w in low for w in ("sorry", "apologize", "unfortunately", "sad", "bad", "loss", "error", "fail", "broken")):

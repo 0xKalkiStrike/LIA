@@ -89,5 +89,12 @@
     "content": "first day at new job",
     "importance": 5,
     "created_at": 1789308421.502738
+  },
+  "6ebf630785cc4b028cc94de0f2565df0": {
+    "user_id": "ff39a3ca879845248844a3546571006d",
+    "category": "vault",
+    "content": "I feel lonely, how can you help me today?",
+    "importance": 5,
+    "created_at": 1790956959.8317153
   }
 }

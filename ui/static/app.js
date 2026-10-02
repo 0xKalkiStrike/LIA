@@ -1,7 +1,7 @@
 /* JARVIS AI — front-end app
  * Flow: boot → (no users? onboarding : login) → wake-up sequence → dashboard
  */
-import { buildAnime } from './anime.js?v=4.3.7';
+import { buildAnime } from './anime.js?v=4.3.10';
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -972,6 +972,11 @@ async function saveProfilePatch(patch) {
   }
 }
 
+function _charAccessories(p) {
+  try { const a = JSON.parse(p?.char_accessories || '[]'); return Array.isArray(a) ? a : []; }
+  catch (_) { return []; }
+}
+
 function buildSettingsChar() {
   const root = $('#settings-char');
   if (!root) return;
@@ -996,6 +1001,13 @@ function buildSettingsChar() {
       <label class="field-label">Upload VRM file</label>
       <input type="file" id="settings-vrm-input" accept=".vrm" class="text-input" style="padding:6px;"/>
       <p class="hint" id="settings-vrm-status"></p>
+    </div>
+    <div class="field-label" style="margin-top:16px;">Accessories</div>
+    <div class="pick-row wrap" id="acc-row">
+      ${[['glasses','👓','Glasses'],['cap','🧢','Cap']].map(([id,emoji,label]) => {
+        const on = _charAccessories(p).includes(id);
+        return `<button type="button" class="pick-card acc-toggle${on?' sel':''}" data-acc="${id}"><span class="pick-emoji">${emoji}</span>${label}</button>`;
+      }).join('')}
     </div>
   `;
 
@@ -1110,6 +1122,22 @@ function buildSettingsChar() {
         const el = $('#dash-avatar');
         if (el) state.avatar = mountAvatar(el, updated);
         buildSettingsChar();
+      }
+    };
+  });
+
+  // Re-bind accessory toggles (multi-select — glasses and cap can both be on)
+  root.querySelectorAll('.acc-toggle').forEach(btn => {
+    btn.onclick = async () => {
+      btn.classList.toggle('sel');
+      // Read the toggled set back from the DOM (not the render-time snapshot
+      // `p`) so two quick clicks in a row don't clobber each other.
+      const list = Array.from(root.querySelectorAll('.acc-toggle.sel')).map(b => b.dataset.acc);
+      const val = JSON.stringify(list);
+      if (state.charEditing) {
+        stageCharPick('char_accessories', val);
+      } else {
+        await saveProfilePatch({ char_accessories: val });
       }
     };
   });
@@ -2327,6 +2355,119 @@ async function loadProcesses() {
 let trackerFace = null;
 let trackerHands = null;
 let webcamCamera = null;
+let callTrackerFace = null;
+let _callFaceRAF = null;
+
+/* Shared label/color/avatar-emotion config for every detected facial expression,
+ * and the heuristic landmark classifier — used by both the dashboard Vision
+ * panel and the Live Call camera so "she can see me" behaves identically
+ * everywhere, not just on one screen. */
+const EXPR_CONFIG = {
+  laughing:  { label: "Laughing 🤣",  color: "#10B981", aura: "aura-happy",     vrm: "laughing" },
+  happy:     { label: "Happy 😊",     color: "#10B981", aura: "aura-happy",     vrm: "happy" },
+  sad:       { label: "Sad 😢",       color: "#48CAE4", aura: "aura-sad",       vrm: "sad" },
+  crying:    { label: "Crying 😢",    color: "#4060E0", aura: "aura-sad",       vrm: "crying" },
+  angry:     { label: "Angry 😠",     color: "#F2647C", aura: "aura-angry",     vrm: "angry" },
+  surprised: { label: "Surprised 😲", color: "#9D7BF0", aura: "aura-stressed",  vrm: "surprised" },
+  tired:     { label: "Tired 🥱",     color: "#F59E0B", aura: "aura-stressed",  vrm: "relaxed" },
+  neutral:   { label: "Neutral 😐",   color: "#53D7F0", aura: "",               vrm: "neutral" },
+};
+
+function classifyExpression(landmarks) {
+  const lipLeft = landmarks[61];
+  const lipRight = landmarks[291];
+  const lipTop = landmarks[13];
+  const lipBottom = landmarks[14];
+  const mouthWidth = Math.abs(lipRight.x - lipLeft.x);
+  const mouthHeight = Math.abs(lipBottom.y - lipTop.y);
+  const smileRatio = mouthWidth / Math.max(mouthHeight, 0.0001);
+  const lipAvgY = (lipTop.y + lipBottom.y) / 2;
+  const cornersDrooping = (lipLeft.y > lipAvgY + 0.01) && (lipRight.y > lipAvgY + 0.01);
+  const mouthOpen = mouthHeight > 0.035;
+  const mouthWideOpen = mouthHeight > 0.06;
+  const browInnerDist = Math.abs((landmarks[107]?.x || 0) - (landmarks[336]?.x || 0));
+  const browFurrowed = browInnerDist > 0 && browInnerDist < 0.065;
+  const browRaised = landmarks[70] && landmarks[159] && (landmarks[70].y < landmarks[159].y - 0.06);
+  const isSmiling = smileRatio > 5.2 || (lipLeft.y < lipAvgY - 0.008 && lipRight.y < lipAvgY - 0.008);
+
+  if (isSmiling && mouthWideOpen) return "laughing";
+  if (isSmiling) return "happy";
+  if (cornersDrooping && (mouthOpen || browFurrowed)) return "crying";
+  if (cornersDrooping) return "sad";
+  if (browFurrowed && !mouthOpen) return "angry";
+  if (mouthOpen && browRaised) return "surprised";
+  if (landmarks[159] && landmarks[145] && Math.abs(landmarks[159].y - landmarks[145].y) < 0.008) return "tired";
+  return "neutral";
+}
+
+/* Reacts to a newly-detected user expression: updates whichever avatar is
+ * currently mounted (dashboard or the full-screen Live Call one), the mood
+ * aura/particles, and throttled backend telemetry. Shared by both cameras. */
+function reactToExpression(detectedExpr) {
+  if (state.lastDetectedExpr === detectedExpr) return;
+  state.lastDetectedExpr = detectedExpr;
+  state.lastDetectedExprAt = Date.now();
+  const cfg = EXPR_CONFIG[detectedExpr] || EXPR_CONFIG.neutral;
+  const targetAvatar = state.inCall ? state.callAvatar : state.avatar;
+  if (targetAvatar && !targetAvatar._isSpeaking) targetAvatar.setEmotion(cfg.vrm);
+  updateAvatarMoodAura(detectedExpr);
+  emitEmotionParticles(detectedExpr);
+
+  const nowMs = Date.now();
+  if (!state.lastExprTelemetryTime || (nowMs - state.lastExprTelemetryTime) > 5000) {
+    state.lastExprTelemetryTime = nowMs;
+    sendTelemetryEvent("expression_change", detectedExpr);
+  }
+}
+
+/* A short visual-context hint prepended (invisibly, not shown in the chat
+ * bubble) to what's sent to the model during a Live Call, so LIA can
+ * naturally acknowledge how the user looks right now — this is what makes
+ * "she can see you" actually affect the conversation, not just her face. */
+function buildVisualHint() {
+  if (!state.inCall) return '';
+  const expr = state.lastDetectedExpr;
+  if (!expr || expr === 'neutral') return '';
+  if (Date.now() - (state.lastDetectedExprAt || 0) > 10000) return '';
+  const phrase = {
+    laughing: 'laughing', happy: 'smiling and happy', sad: 'sad', crying: 'crying or tearful',
+    angry: 'angry or frustrated', surprised: 'surprised', tired: 'tired',
+  }[expr];
+  if (!phrase) return '';
+  return `[Through the camera you can see the user looks ${phrase} right now. Respond naturally; ` +
+         `briefly and warmly acknowledge it only if it fits, don't force it.] `;
+}
+
+/* Lazily creates a FaceMesh instance dedicated to the Live Call camera feed,
+ * kept separate from the dashboard's `trackerFace` (which is tied to its own
+ * video/canvas elements) so a call works whether or not the Vision panel was
+ * ever opened this session. */
+function ensureCallFaceTracker() {
+  if (callTrackerFace) return callTrackerFace;
+  callTrackerFace = new FaceMesh({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+  });
+  callTrackerFace.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+  callTrackerFace.onResults(results => {
+    const presenceCard = $('#call-vision-badge');
+    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+      if (presenceCard) presenceCard.textContent = '👁 Watching';
+      reactToExpression(classifyExpression(results.multiFaceLandmarks[0]));
+    } else if (presenceCard) {
+      presenceCard.textContent = '👁 Looking for you…';
+    }
+  });
+  return callTrackerFace;
+}
+
+async function _callFaceLoop() {
+  if (!state.inCall || !state.callCamOn || !callTrackerFace) return;
+  const vid = $('#call-webcam');
+  if (vid && vid.readyState >= 2) {
+    try { await callTrackerFace.send({ image: vid }); } catch (e) {}
+  }
+  _callFaceRAF = requestAnimationFrame(_callFaceLoop);
+}
 
 async function setupMediaPipeSensors() {
   const videoElement = $('#webcam-video');
@@ -2397,60 +2538,15 @@ async function setupMediaPipeSensors() {
         attentionCard.style.color = "#F59E0B";
       }
 
-      // Smile Recognition
-      const lipLeft = landmarks[61];
-      const lipRight = landmarks[291];
-      const lipTop = landmarks[13];
-      const lipCenterY = (lipLeft.y + lipRight.y) / 2;
-      const lipAvgY = (lipTop.y + lipBottom.y) / 2;
-      const cornersDrooping = (lipLeft.y > lipAvgY + 0.01) && (lipRight.y > lipAvgY + 0.01);
-      const mouthOpen = Math.abs(lipBottom.y - lipTop.y) > 0.035;
-      const browInnerDist = Math.abs((landmarks[107]?.x || 0) - (landmarks[336]?.x || 0));
-      const browRaised = landmarks[70] && landmarks[159] && (landmarks[70].y < landmarks[159].y - 0.06);
-
-      let detectedExpr = "neutral";
-      if (smileRatio > 5.2 || (lipLeft.y < lipAvgY - 0.008 && lipRight.y < lipAvgY - 0.008)) {
-        detectedExpr = "happy";
-      } else if (cornersDrooping) {
-        detectedExpr = "sad";
-      } else if (browInnerDist > 0 && browInnerDist < 0.065 && !mouthOpen) {
-        detectedExpr = "angry";
-      } else if (mouthOpen && browRaised) {
-        detectedExpr = "surprised";
-      } else if (landmarks[159] && landmarks[145] && Math.abs(landmarks[159].y - landmarks[145].y) < 0.008) {
-        detectedExpr = "tired";
-      }
-
+      // Smile / expression recognition
+      const detectedExpr = classifyExpression(landmarks);
+      const cfg = EXPR_CONFIG[detectedExpr] || EXPR_CONFIG.neutral;
       const expressionCard = $('#tel-expression');
-      const exprConfig = {
-        happy:     { label: "Happy 😊",     color: "#10B981", aura: "aura-happy",     vrm: "happy" },
-        sad:       { label: "Sad 😢",       color: "#48CAE4", aura: "aura-sad",       vrm: "sad" },
-        angry:     { label: "Angry 😠",     color: "#F2647C", aura: "aura-angry",     vrm: "angry" },
-        surprised: { label: "Surprised 😲", color: "#9D7BF0", aura: "aura-stressed",  vrm: "surprised" },
-        tired:     { label: "Tired 🥱",     color: "#F59E0B", aura: "aura-stressed",  vrm: "relaxed" },
-        neutral:   { label: "Neutral 😐",   color: "#53D7F0", aura: "",               vrm: "neutral" },
-      };
-
-      const cfg = exprConfig[detectedExpr] || exprConfig.neutral;
       if (expressionCard) {
         expressionCard.textContent = cfg.label;
         expressionCard.style.color = cfg.color;
       }
-
-      // Update 3D avatar expression and mood aura ring
-      if (state.lastDetectedExpr !== detectedExpr) {
-        state.lastDetectedExpr = detectedExpr;
-        if (state.avatar) state.avatar.setEmotion(cfg.vrm);
-        updateAvatarMoodAura(detectedExpr);
-        emitEmotionParticles(detectedExpr);
-
-        // Throttle backend telemetry to once every 5s per expression change
-        const nowMs = Date.now();
-        if (!state.lastExprTelemetryTime || (nowMs - state.lastExprTelemetryTime) > 5000) {
-          state.lastExprTelemetryTime = nowMs;
-          sendTelemetryEvent("expression_change", detectedExpr);
-        }
-      }
+      reactToExpression(detectedExpr);
     } else {
       // User Left Desk
       const presentCard = $('#tel-presence');
@@ -2832,7 +2928,7 @@ function startCallRecognition() {
     
     try {
       const p = state.profile || {};
-      await streamChat(text,
+      await streamChat(buildVisualHint() + text,
         (token) => {
           if (!aiBubble) {
             aiBubble = addMsg('ai', '');
@@ -2925,6 +3021,13 @@ async function _startCallCam() {
     vid.style.display = '';
     const btn = $('#btn-call-cam');
     if (btn) { btn.classList.remove('off'); btn.textContent = '📷'; }
+    // Let LIA actually see the user's face during the call, not just show a
+    // self-view PiP: starts the shared expression classifier against this feed.
+    const badge = $('#call-vision-badge');
+    if (badge) badge.hidden = false;
+    ensureCallFaceTracker();
+    cancelAnimationFrame(_callFaceRAF);
+    _callFaceLoop();
   } catch(e) {
     const vid2 = $('#call-webcam');
     if (vid2) vid2.style.display = 'none';
@@ -2942,6 +3045,10 @@ function _stopCallCam() {
   if (state._callCamStream) { state._callCamStream.getTracks().forEach(t => t.stop()); state._callCamStream = null; }
   const vid = $('#call-webcam'); if (vid) vid.srcObject = null;
   state.callCamOn = false;
+  cancelAnimationFrame(_callFaceRAF);
+  _callFaceRAF = null;
+  const badge = $('#call-vision-badge');
+  if (badge) badge.hidden = true;
 }
 
 $('#btn-live-call').onclick = async () => {
